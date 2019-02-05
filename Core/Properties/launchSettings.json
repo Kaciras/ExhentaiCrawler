@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Core": {
+      "commandName": "Project"
+    },
+    "CmdHelp": {
+      "commandName": "Project",
+      "commandLineArgs": "download https://www.nuget.org/packages/Microsoft.Extensions.CommandLineUtils"
+    }
+  }
+}
