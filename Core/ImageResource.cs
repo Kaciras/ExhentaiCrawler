@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Net;
+using System.Net.Http;
 
 namespace Core
 {
@@ -8,6 +10,7 @@ namespace Core
 	{
 		public Gallery Gallery { get; }
 		public string ImageKey { get; }
+		public string ShowKey { get; set; }
 
 		ImageResource(Gallery gallery, string imageKey)
 		{
@@ -15,6 +18,24 @@ namespace Core
 			ImageKey = imageKey;
 		}
 
+		//public ImageResource GetPrevious()
+		//{
+			
+		//}
 
+		//public ImageResource GetNext()
+		//{
+
+		//}
+
+		public static void ParsePage(string html)
+		{
+
+		}
+
+		public static void ParseApi(string content)
+		{
+			
+		}
 	}
 }

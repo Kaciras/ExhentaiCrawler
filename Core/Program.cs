@@ -29,7 +29,18 @@ namespace Core
 
 		static void DownloadGallery(DownloadOptions options)
 		{
-			Console.WriteLine(options.Uri);
+			var client = new ExhentaiClient("2723232", "67674c89175c751095d4c840532e6363");
+			var task = client.GetGallery(options.Uri);
+			task.Wait();
+
+			if(task.IsCompleted)
+			{
+				Console.WriteLine("下载完毕");
+			}
+			else
+			{
+				Console.WriteLine("下载失败:" + task.Exception.Message);
+			}
 		}
 
 		static void RunStatisticsCrawler(StatisticsOptions options)

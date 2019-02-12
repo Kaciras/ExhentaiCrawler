@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Test
 {
 	[TestClass]
-	public class UnitTest1
+	public class FilterOptionsTest
 	{
 		[TestMethod]
 		public void FilterOptionsDefault()
