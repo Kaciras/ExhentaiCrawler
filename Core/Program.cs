@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -50,6 +51,12 @@ namespace Core
 
 			var i0 = await gallery.GetImage(1);
 			var i1 = await i0.GetNext();
+
+			using (var rs = await i1.GetOriginal())
+			using (var fs = File.OpenWrite(@"C:\Users\XuFan\Desktop\" + i1.FileName))
+			{
+				rs.CopyTo(fs);
+			}
 		}
 
 		static void RunStatisticsCrawler(StatisticsOptions options)

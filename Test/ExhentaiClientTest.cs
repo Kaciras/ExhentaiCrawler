@@ -18,5 +18,13 @@ namespace Test
 			var html = await client.RequestPage("https://exhentai.org/g/518681/2aa630b122");
 			StringAssert.Contains(html, "[田中あじ] アンスイート 寝取られ堕ちた女たち");
 		}
+
+		[TestMethod]
+		public async Task GetCost()
+		{
+			var cost = await client.GetCost();
+			Assert.IsTrue(cost >= 0);
+			Assert.IsTrue(cost <= 5000);
+		}
     }
 }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace Core
 	{
 		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?$";
 
+		static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 		static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?");
 		static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -28,6 +30,7 @@ namespace Core
 			cookies.Add(new Cookie("ipb_pass_hash", passHash, "/", ".exhentai.org"));
 
 			client = new HttpClient(new SocketsHttpHandler {
+				AllowAutoRedirect = true,
 				CookieContainer = cookies,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 			});
@@ -58,6 +61,19 @@ namespace Core
 			return gallery;
 		}
 
+		public async Task<int> GetCost()
+		{
+			var html = await RequestPage($"https://e-hentai.org/home.php");
+			return int.Parse(COST.Match(html).Groups[1].Value);
+		}
+
+		internal async Task<HttpContent> RequestImage(string url)
+		{
+			var response = await client.GetAsync(url);
+			response.EnsureSuccessStatusCode();
+			return response.Content;
+		}
+
 		internal async Task<string> RequestPage(string url)
 		{
 			var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -70,11 +86,12 @@ namespace Core
 			request.Headers.CacheControl = CacheControlHeaderValue.Parse("max-age=0, no-cache");
 			request.Headers.Connection.ParseAdd("keep-alive");
 
-			var response = await client.SendAsync(request);
-			var content = await response.Content.ReadAsStringAsync();
-			CheckResponse(response, content);
-
-			return content;
+			using (var response = await client.SendAsync(request))
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				CheckResponse(response, content);
+				return content;
+			}
 		}
 
 		internal async Task<JObject> RequestApi(object body)
@@ -85,14 +102,23 @@ namespace Core
 			request.Headers.AcceptLanguage.ParseAdd("zh,zh-CN;q=0.7,en;q=0.3");
 
 			var response = await client.SendAsync(request);
-			var x = await response.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<JObject>(x);
+			var text = await response.Content.ReadAsStringAsync();
+
+			try
+			{
+				return JsonConvert.DeserializeObject<JObject>(text);
+			}
+			catch (JsonException)
+			{
+				throw new ExhentaiException("API请求出错：" + text);
+			}
 		}
 
 		public static async Task<ExhentaiClient> Login(string username, string password)
 		{
 			var cookieContainer = new CookieContainer();
 			var client = new HttpClient(new SocketsHttpHandler {
+				AllowAutoRedirect = true,
 				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 			});
