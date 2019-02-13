@@ -26,6 +26,8 @@ namespace Core
 
 		public TagCollection Tags { get; set; }
 
+		public int TorrnetCount { get; set; }
+
 		readonly ExhentaiClient client;
 		internal ICollection<string> firstImagePage;
 

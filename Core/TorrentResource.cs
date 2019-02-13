@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core
 {
-	class TorrentResource
+	public class TorrentResource
 	{
 	}
 }
