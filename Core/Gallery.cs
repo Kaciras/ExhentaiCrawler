@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Core
 {
 	public class Gallery
 	{
+
 		public int Id { get; }
 		public string Token { get; }
 
@@ -29,7 +32,7 @@ namespace Core
 		public int TorrnetCount { get; set; }
 
 		readonly ExhentaiClient client;
-		internal ICollection<string> firstImagePage;
+		internal IList<string> firstImagePage;
 
 		public Gallery(ExhentaiClient client, int id, string token)
 		{
@@ -43,9 +46,26 @@ namespace Core
 		/// </summary>
 		/// <param name="page">页码，从1开始</param>
 		/// <returns></returns>
-		public ImageResource GetImage(int page)
+		public async Task<ImageResource> GetImage(int page)
 		{
-			throw new NotImplementedException();
+			string url;
+
+			if(page <= firstImagePage.Count)
+			{
+				url = firstImagePage[page - 1];
+			}
+			else
+			{
+				throw new NotImplementedException();
+			}
+
+			var html = await client.RequestPage(url);
+			var ik = ImageResource.IMAGE_PATH.Match(url).Groups["IMG_KEY"].Value;
+
+			var resource = new ImageResource(client, this, page, ik);
+			ImageResource.ParsePage(resource, html);
+
+			return resource;
 		}
 	}
 }

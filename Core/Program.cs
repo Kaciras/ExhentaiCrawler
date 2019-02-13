@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("Test")]
 namespace Core
@@ -29,8 +30,7 @@ namespace Core
 
 		static void DownloadGallery(DownloadOptions options)
 		{
-			var client = new ExhentaiClient("2723232", "67674c89175c751095d4c840532e6363");
-			var task = client.GetGallery(options.Uri);
+			var task = DoDownloadGallery(options);
 			task.Wait();
 
 			if(task.IsCompleted)
@@ -41,6 +41,15 @@ namespace Core
 			{
 				Console.WriteLine("下载失败:" + task.Exception.Message);
 			}
+		}
+
+		static async Task DoDownloadGallery(DownloadOptions options)
+		{
+			var client = new ExhentaiClient("2723232", "67674c89175c751095d4c840532e6363");
+			var gallery = await client.GetGallery(options.Uri);
+
+			var i0 = await gallery.GetImage(1);
+			var i1 = await i0.GetNext();
 		}
 
 		static void RunStatisticsCrawler(StatisticsOptions options)
