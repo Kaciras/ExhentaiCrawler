@@ -8,7 +8,6 @@ namespace Core
 {
 	public class Gallery
 	{
-
 		public int Id { get; }
 		public string Token { get; }
 
@@ -23,7 +22,7 @@ namespace Core
 		public bool Visible { get; set; }
 		public Language Language { get; set; }
 		public bool IsTranslated { get; set; }
-		public long FileSize { get; set; }
+		public long FileSize { get; set; } // 单位是KB
 		public int Length { get; set; }
 		public int Favorited { get; set; }
 
@@ -32,7 +31,11 @@ namespace Core
 		public int TorrnetCount { get; set; }
 
 		readonly ExhentaiHttpClient client;
-		internal IList<string> firstImagePage;
+
+		/// <summary>
+		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
+		/// </summary>
+		internal IList<string>[] imageListPage;
 
 		public Gallery(ExhentaiHttpClient client, int id, string token)
 		{
@@ -44,25 +47,31 @@ namespace Core
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="page">页码，从1开始</param>
+		/// <param name="index">页码，从1开始</param>
 		/// <returns></returns>
-		public async Task<ImageResource> GetImage(int page)
+		public async Task<ImageResource> GetImage(int index)
 		{
-			string url;
-
-			if(page <= firstImagePage.Count)
+			if(index < 1 || index > Length)
 			{
-				url = firstImagePage[page - 1];
-			}
-			else
-			{
-				throw new NotImplementedException();
+				throw new ArgumentOutOfRangeException("错误的页码：" + index);
 			}
 
-			var html = await client.RequestPage(url);
-			var ik = ImageResource.IMAGE_PATH.Match(url).Groups["IMG_KEY"].Value;
+			// 除了图片页面的URL以外，其他均由0开始算的
+			index--;
 
-			var resource = new ImageResource(client, this, page, ik);
+			var pageSize = imageListPage[0].Count;
+			var page = index / pageSize;
+			index = index % pageSize;
+
+			var list = imageListPage[page];
+			if (list == null)
+			{
+				var galleryPage = await client.RequestPage($"https://exhentai.org/g/{Id}/{Token}?p={page}");
+				imageListPage[page] = GalleryParser.ParseImages(galleryPage);
+			}
+
+			var html = await client.RequestPage(list[index]);
+			var resource = new ImageResource(client, this, index + 1);
 			ImageResource.ParsePage(resource, html);
 
 			return resource;

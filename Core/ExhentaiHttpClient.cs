@@ -38,11 +38,21 @@ namespace Core
 				Proxy = proxy,
 				UseProxy = proxy != null,
 			});
+			client.Timeout = TimeSpan.FromSeconds(10);
 		}
 
 		internal async Task<HttpContent> RequestImage(string url)
 		{
 			var response = await client.GetAsync(url);
+
+			// 说好的 AllowAutoRedirect 呢？
+			if (response.StatusCode == HttpStatusCode.Redirect)
+			{
+				var redirect = response.Headers.Location;
+				response.Dispose();
+				return await RequestImage(redirect.ToString());
+			}
+
 			response.EnsureSuccessStatusCode();
 			return response.Content;
 		}

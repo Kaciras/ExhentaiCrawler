@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("Test")]
@@ -31,34 +32,52 @@ namespace Core
 
 		static void DownloadGallery(DownloadOptions options)
 		{
-			var task = DoDownloadGallery(options);
-			task.Wait();
+			RunAsyncTask(() => DoDownloadGallery(options)).Wait();
+		}
 
-			if(task.IsCompleted)
+		static async Task RunAsyncTask(Func<Task> asyncAction)
+		{
+			try
 			{
-				Console.WriteLine("下载完毕");
+				await asyncAction();
 			}
-			else
+			catch(Exception e)
 			{
-				Console.WriteLine("下载失败:" + task.Exception.Message);
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.StackTrace);
+				Debugger.Break();
 			}
 		}
 
 		static async Task DoDownloadGallery(DownloadOptions options)
 		{
+			const string STORE_PATH = @"C:\Users\XuFan\Desktop\";
 			var client = ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363");
 			var exhentai = new Exhentai(client);
 
 			var gallery = await exhentai.GetGallery(options.Uri);
 
-			var i0 = await gallery.GetImage(1);
-			var i1 = await i0.GetNext();
+			// 0.2MB消耗一点限额，这么算不准，因为一些小图片不走fullimg.php
+			var cost = gallery.FileSize / 1024 * 5;
 
-			using (var rs = await i1.GetOriginal())
-			using (var fs = File.OpenWrite(@"C:\Users\XuFan\Desktop\" + i1.FileName))
+			Console.WriteLine(gallery.Name);
+			Console.WriteLine($"共{gallery.Length}张图片，预计下载将消耗{cost}点限额");
+
+			async Task Download(int index)
 			{
-				rs.CopyTo(fs);
+				var image = await gallery.GetImage(index);
+				using (var rs = await image.GetOriginal())
+				using (var fs = File.OpenWrite(STORE_PATH + image.FileName))
+				{
+					rs.ReadTimeout = 3;
+					rs.CopyTo(fs);
+				}
 			}
+
+			await Download(40);
+			await Download(41);
+
+			Console.WriteLine("下载完毕");
 		}
 
 		static void RunStatisticsCrawler(StatisticsOptions options)
