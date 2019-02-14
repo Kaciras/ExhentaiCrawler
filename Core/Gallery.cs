@@ -31,10 +31,10 @@ namespace Core
 
 		public int TorrnetCount { get; set; }
 
-		readonly ExhentaiClient client;
+		readonly ExhentaiHttpClient client;
 		internal IList<string> firstImagePage;
 
-		public Gallery(ExhentaiClient client, int id, string token)
+		public Gallery(ExhentaiHttpClient client, int id, string token)
 		{
 			this.client = client;
 			Id = id;

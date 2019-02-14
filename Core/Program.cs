@@ -46,8 +46,10 @@ namespace Core
 
 		static async Task DoDownloadGallery(DownloadOptions options)
 		{
-			var client = new ExhentaiClient("2723232", "67674c89175c751095d4c840532e6363");
-			var gallery = await client.GetGallery(options.Uri);
+			var client = ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363");
+			var exhentai = new Exhentai(client);
+
+			var gallery = await exhentai.GetGallery(options.Uri);
 
 			var i0 = await gallery.GetImage(1);
 			var i1 = await i0.GetNext();

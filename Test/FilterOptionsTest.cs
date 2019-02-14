@@ -29,28 +29,13 @@ namespace Test
 
 		}
 
-		[TestMethod]
-		public async Task Panda()
-		{
-			var client = new ExhentaiClient("123", "qweasdzxc");
-			try
-			{
-				await client.GetGallery(1360036, "b43a1a73e1");
-				Assert.Fail("没看见熊猫");
-			}
-			catch(ExhentaiException e)
-			{
-				Assert.AreEqual("熊猫了", e.Message);
-			}
-		}
-
 		// proxy
 		[TestMethod]
 		public async Task LoginFail()
 		{
 			try
 			{
-				await ExhentaiClient.Login("qweasdzxc", "qweasdzxc");
+				await ExhentaiHttpClient.Login("qweasdzxc", "qweasdzxc");
 				Assert.Fail("Expect to throw an exception");
 			}
 			catch(ExhentaiException e)

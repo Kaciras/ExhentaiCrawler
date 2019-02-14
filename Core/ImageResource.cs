@@ -37,9 +37,9 @@ namespace Core
 		internal string PreviousImageKey { get; set; }
 		internal string NextImageKey { get; set; }
 
-		readonly ExhentaiClient client;
+		readonly ExhentaiHttpClient client;
 
-		public ImageResource(ExhentaiClient client, Gallery gallery, int page, string imageKey)
+		public ImageResource(ExhentaiHttpClient client, Gallery gallery, int page, string imageKey)
 		{
 			this.client = client;
 			Gallery = gallery;
