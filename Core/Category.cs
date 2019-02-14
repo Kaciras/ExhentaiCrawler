@@ -28,7 +28,7 @@ namespace Core
 			{
 				return Category.NonH;
 			}
-			return Enum.Parse<Category>(text);
+			return Enum.Parse<Category>(char.ToUpper(text[0]) + text.Substring(1));
 		}
 	}
 }

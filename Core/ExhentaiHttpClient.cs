@@ -14,6 +14,8 @@ namespace Core
 {
 	public class ExhentaiHttpClient
 	{
+		const int TIMEOUT = 5;
+
 		static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
 		public ICollection<IWebProxy> Proxies { get; } = new List<IWebProxy>();
@@ -38,19 +40,19 @@ namespace Core
 				Proxy = proxy,
 				UseProxy = proxy != null,
 			});
-			client.Timeout = TimeSpan.FromSeconds(10);
+			client.Timeout = TimeSpan.FromSeconds(TIMEOUT);
 		}
 
 		internal async Task<HttpContent> RequestImage(string url)
 		{
 			var response = await client.GetAsync(url);
-
-			// 说好的 AllowAutoRedirect 呢？
+			
+			// 有可能是fullimg.php跳转，说好的 AllowAutoRedirect 呢？
 			if (response.StatusCode == HttpStatusCode.Redirect)
 			{
 				var redirect = response.Headers.Location;
 				response.Dispose();
-				return await RequestImage(redirect.ToString());
+				response = await client.GetAsync(redirect);
 			}
 
 			response.EnsureSuccessStatusCode();

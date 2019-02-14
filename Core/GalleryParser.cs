@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Web;
+using System.Globalization;
 
 namespace Core
 {
@@ -32,6 +33,7 @@ namespace Core
 			gallery.imageListPage[0] = firstList;
 
 			gallery.TorrnetCount = int.Parse(TORRENT.Match(html).Groups[1].Value);
+			gallery.CommentCount = doc.GetElementbyId("cdiv").ChildNodes.Count / 2;
 
 			return gallery;
 		}
@@ -58,21 +60,45 @@ namespace Core
 		{
 			var categoryName = doc.GetElementbyId("gdc").FirstChild.FirstChild.Attributes["alt"].Value;
 			gallery.Category = CategoryHelper.Parse(categoryName);
-
 			gallery.Uploader = doc.GetElementbyId("gdn").FirstChild.InnerText;
 
 			// 中间的表格元素，包含上传时间、文件大小等。
 			// 需要注意的是表格不完整，<tbody>是依靠浏览器自动补全的
 			var tableRows = doc.GetElementbyId("gdd").FirstChild.ChildNodes;
 
-			// 第5项：File Size:	12.34 [MKG]B
-			// 没见到比KB还小的单位
+			// 第1项Posted: 2018-02-20 19:52
+			var posted = tableRows[0].LastChild.InnerText;
+			gallery.Posted = DateTime.ParseExact(posted, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+
+			// 第2项Parent: 1167472 是个连接
+			var parent = tableRows[1].LastChild.FirstChild;
+			if (parent.NodeType != HtmlNodeType.Text)
+			{
+				gallery.Parent = new Uri(parent.Attributes["href"].Value);
+			}
+
+			// 第3项Visible:	Yes[No]
+			gallery.Visible = tableRows[2].LastChild.InnerText == "Yes";
+
+			// 第4项Language: Chinese &nbsp;(TR)?
+			var lang = tableRows[3].LastChild.FirstChild;
+			gallery.Language = Enum.Parse<Language>(lang.InnerText.Split(" ")[0]);
+			gallery.IsTranslated = lang.NextSibling != null;
+
+			// 第5项File Size: 39.64 [MKG]B，没见到比KB还小的单位
 			var sizePart = tableRows[4].LastChild.InnerText.Split(" ");
 			var f = Array.IndexOf(SIZE_UNIT, sizePart[1][0]);
-			gallery.FileSize = (long)double.Parse(sizePart[0]) * (1 << (10 * f));
-
-			// 第6项：Length: \d+ pages
+			gallery.FileSize = (long)(double.Parse(sizePart[0]) * (1 << (10 * f)));
+			
+			// 第6项Length: 152 pages
 			gallery.Length = int.Parse(tableRows[5].LastChild.InnerText.Split(" ")[0]);
+
+			// 第7项Favorited: 2406 times
+			gallery.Favorited = int.Parse(tableRows[6].LastChild.InnerText.Split(" ")[0]);
+
+			var ratingCount = int.Parse(doc.GetElementbyId("rating_count").InnerText);
+			var ratingAvg = double.Parse(doc.GetElementbyId("rating_label").InnerText.Split(" ")[1]);
+			gallery.Rating = new Rating(ratingCount, ratingAvg);
 		}
 
 		static TagCollection ParseTags(HtmlDocument doc)

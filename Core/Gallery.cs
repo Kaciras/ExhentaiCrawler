@@ -18,7 +18,7 @@ namespace Core
 		public string Uploader { get; set; }
 
 		public DateTime Posted { get; set; }
-		public string Parent { get; set; }
+		public Uri Parent { get; set; }
 		public bool Visible { get; set; }
 		public Language Language { get; set; }
 		public bool IsTranslated { get; set; }
@@ -26,9 +26,13 @@ namespace Core
 		public int Length { get; set; }
 		public int Favorited { get; set; }
 
+		public Rating Rating { get; set; }
+
 		public TagCollection Tags { get; set; }
 
 		public int TorrnetCount { get; set; }
+
+		public int CommentCount { get; set; }
 
 		readonly ExhentaiHttpClient client;
 
