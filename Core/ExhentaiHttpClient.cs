@@ -16,19 +16,27 @@ namespace Core
 	{
 		static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
-		readonly CookieContainer cookies;
+		public ICollection<IWebProxy> Proxies { get; } = new List<IWebProxy>();
+
+		readonly CookieContainer cookieContainer;
 
 		HttpClient client;
 
 		ExhentaiHttpClient(CookieContainer cookies)
 		{
-			this.cookies = cookies;
+			cookieContainer = cookies;
+			SetHttpClient(null);
+		}
 
+		void SetHttpClient(IWebProxy proxy)
+		{
 			client = new HttpClient(new SocketsHttpHandler
 			{
 				AllowAutoRedirect = true,
-				CookieContainer = cookies,
+				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+				Proxy = proxy,
+				UseProxy = proxy != null,
 			});
 		}
 
@@ -123,7 +131,7 @@ namespace Core
 		/// </summary>
 		/// <param name="response">响应</param>
 		/// <param name="html">HTML页面</param>
-		/// <exception cref="TemporarilyBannedException">如果被封禁了</exception>
+		/// <exception cref="TempBannedException">如果被封禁了</exception>
 		/// <exception cref="ExhentaiException">如果出现熊猫</exception>
 		public static void CheckResponse(HttpResponseMessage response, string html)
 		{
@@ -138,7 +146,7 @@ namespace Core
 			{
 				var time = int.Parse(match.Groups[1]?.Value ?? "0");
 				time += int.Parse(match.Groups[2]?.Value ?? "0") * 60;
-				throw new TemporarilyBannedException(time);
+				throw new TempBannedException(time);
 			}
 		}
 	}

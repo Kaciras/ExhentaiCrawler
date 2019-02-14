@@ -25,13 +25,13 @@ namespace Core
 
 	public struct GalleryTag
 	{
-		public bool IsLowPrower;
 		public string Value;
+		public bool IsLowPrower;
 
-		public GalleryTag(bool lowPrower, string value)
+		public GalleryTag(string value, bool lowPrower)
 		{
-			IsLowPrower = lowPrower;
 			Value = value;
+			IsLowPrower = lowPrower;
 		}
 	}
 }

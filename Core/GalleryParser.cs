@@ -41,7 +41,7 @@ namespace Core
 		static void ParseAttrGroup(Gallery gallery, HtmlDocument doc)
 		{
 			var categoryName = doc.GetElementbyId("gdc").FirstChild.FirstChild.Attributes["alt"].Value;
-			gallery.Category = CategoryExtention.Parse(categoryName);
+			gallery.Category = CategoryHelper.Parse(categoryName);
 
 			gallery.Uploader = doc.GetElementbyId("gdn").FirstChild.InnerText;
 
@@ -59,18 +59,20 @@ namespace Core
 
 			foreach (var row in rows.ChildNodes)
 			{
+				// 表格第一列是标签的命名空间
 				var name = row.FirstChild.InnerText;
 				name = char.ToUpper(name[0]) + name.Substring(1, name.Length - 2);
 
 				var property = typeof(TagCollection).GetProperty(name)
 					?? throw new MissingMemberException($"发现程序中未定义的标签类型：{name}");
 
+				// 后面每一个都是标签
 				var list = new List<GalleryTag>();
 				foreach (var item in row.LastChild.ChildNodes)
 				{
 					var lowPrower = item.HasClass("gtl");
 					var value = item.FirstChild.InnerText;
-					list.Add(new GalleryTag(lowPrower, value));
+					list.Add(new GalleryTag(value, lowPrower));
 				}
 				property.SetValue(tags, list);
 			}

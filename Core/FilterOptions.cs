@@ -4,7 +4,10 @@ using System.Linq;
 
 namespace Core
 {
-	class FilterOptions
+	/// <summary>
+	/// 网站最上面的搜索框，以及高级搜索选项。不包括文件搜索。
+	/// </summary>
+	public sealed class FilterOptions
 	{
 		ISet<Category> categories = new HashSet<Category>((Category[])Enum.GetValues(typeof(Category)));
 

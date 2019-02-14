@@ -11,7 +11,7 @@ namespace Core
 	}
 
 	// non-h 得特殊处理下
-	public static class CategoryExtention
+	public static class CategoryHelper
 	{
 		public static string GetString(this Category category)
 		{
