@@ -14,33 +14,78 @@ namespace Core
 {
 	public class ExhentaiHttpClient
 	{
-		const int TIMEOUT = 5;
+		private const int TIMEOUT = 5;
+		private const int LIMIT_PERIOD = 20;
 
-		static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
+		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
-		public ICollection<IWebProxy> Proxies { get; } = new List<IWebProxy>();
+		private readonly PriorityQueue<IPRecord> banQueue = new PriorityQueue<IPRecord>((a, b) => DateTime.Compare(a.BanExpires, b.BanExpires));
+		private readonly PriorityQueue<IPRecord> limitQueue = new PriorityQueue<IPRecord>((a, b) => DateTime.Compare(a.LimitReached, b.LimitReached));
 
-		readonly CookieContainer cookieContainer;
+		private readonly CookieContainer cookieContainer;
 
-		HttpClient client;
+		private HttpClient client;
 
-		ExhentaiHttpClient(CookieContainer cookies)
+		public LinkedList<IPRecord> Proxies { get; } = new LinkedList<IPRecord>();
+
+		private ExhentaiHttpClient(CookieContainer cookies)
 		{
 			cookieContainer = cookies;
-			SetHttpClient(null);
+			Proxies.AddFirst(IPRecord.Local);
 		}
 
-		void SetHttpClient(IWebProxy proxy)
+		private void SetHttpClient(IPRecord iPRecord)
 		{
-			client = new HttpClient(new SocketsHttpHandler
+			var handler = new SocketsHttpHandler
 			{
 				AllowAutoRedirect = true,
 				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-				Proxy = proxy,
-				UseProxy = proxy != null,
-			});
-			client.Timeout = TimeSpan.FromSeconds(TIMEOUT);
+			};
+			iPRecord.ConfigureHttpHandler(handler);
+
+			client?.Dispose();
+			client = new HttpClient(handler, true)
+			{
+				Timeout = TimeSpan.FromSeconds(TIMEOUT)
+			};
+		}
+
+		// 查找一个可用的IP
+		private bool TryGetAvailable(out IPRecord record)
+		{
+			var free = Proxies.First;
+			if (free != null)
+			{
+				record = free.Value;
+				Proxies.RemoveFirst();
+			}
+			else
+			{
+				record = FindInQueue(banQueue) ?? FindInQueue(limitQueue);
+			}
+			return record != null;
+		}
+
+		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue)
+		{
+			if(queue.Count == 0)
+			{
+				return null;
+			}
+			var now = DateTime.Now;
+			var aval = queue.Peek();
+
+			if (aval.BanExpires < now)
+			{
+				// 每分钟回复3点限额
+				var costReduction = (now - aval.LimitReached).Minutes * 3;
+				if (costReduction > LIMIT_PERIOD)
+				{
+					return banQueue.Dequeue();
+				}
+			}
+			return null;
 		}
 
 		internal async Task<HttpContent> RequestImage(string url)
