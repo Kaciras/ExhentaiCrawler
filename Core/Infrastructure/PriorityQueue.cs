@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Core
+namespace Core.Infrastructure
 {
 	public sealed class PriorityQueue<T>
 	{

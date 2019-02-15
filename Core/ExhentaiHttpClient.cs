@@ -1,14 +1,13 @@
-﻿using HtmlAgilityPack;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Core.Infrastructure;
 
 namespace Core
 {
@@ -71,7 +70,7 @@ namespace Core
 
 		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue)
 		{
-			if(queue.Count == 0)
+			if (queue.Count == 0)
 			{
 				return null;
 			}
@@ -87,14 +86,14 @@ namespace Core
 					return banQueue.Dequeue();
 				}
 			}
-			
+
 			return null;
 		}
 
 		internal async Task<HttpContent> RequestImage(string url)
 		{
 			var response = await client.GetAsync(url);
-			
+
 			// 有可能是fullimg.php跳转，说好的 AllowAutoRedirect 呢？
 			if (response.StatusCode == HttpStatusCode.Redirect)
 			{
@@ -151,7 +150,8 @@ namespace Core
 		public static async Task<ExhentaiHttpClient> Login(string username, string password)
 		{
 			var cookieContainer = new CookieContainer();
-			var client = new HttpClient(new SocketsHttpHandler {
+			var client = new HttpClient(new SocketsHttpHandler
+			{
 				AllowAutoRedirect = true,
 				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,

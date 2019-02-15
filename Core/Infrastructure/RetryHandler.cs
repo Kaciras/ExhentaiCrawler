@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Core.Infrastructure
 {
 	public sealed class RetryHandler : DelegatingHandler
 	{
