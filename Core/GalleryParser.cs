@@ -101,7 +101,7 @@ namespace Core
 			gallery.Rating = new Rating(ratingCount, ratingAvg);
 		}
 
-		static TagCollection ParseTags(HtmlDocument doc)
+		internal static TagCollection ParseTags(HtmlDocument doc)
 		{
 			var tags = new TagCollection();
 
@@ -121,14 +121,34 @@ namespace Core
 				var list = new List<GalleryTag>();
 				foreach (var item in row.LastChild.ChildNodes)
 				{
-					var lowPrower = item.HasClass("gtl");
 					var value = item.FirstChild.InnerText;
-					list.Add(new GalleryTag(value, lowPrower));
+					var cred = ParseTagCredibility(item.GetClasses().First());
+					list.Add(new GalleryTag(value, cred));
 				}
 				property.SetValue(tags, list);
 			}
 
 			return tags;
+		}
+
+		/// <summary>
+		/// 由标签元素的样式类解析标签的可信度。
+		/// </summary>
+		/// <param name="class">CSS类名</param>
+		/// <returns>可信度枚举</returns>
+		private static TagCredibility ParseTagCredibility(string @class)
+		{
+			switch (@class)
+			{
+				case "gt":
+					return TagCredibility.Confidence;
+				case "gtl":
+					return TagCredibility.Unconfidence;
+				case "gtw":
+					return TagCredibility.Incorrect;
+				default:
+					throw new NotSupportedException("Unrecognized tag class: " + @class);
+			}
 		}
 
 		internal static IList<string> ParseImages(string html)

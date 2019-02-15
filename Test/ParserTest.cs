@@ -1,9 +1,10 @@
 ﻿using Core;
+using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace Test
 {
@@ -38,6 +39,19 @@ namespace Test
 			Assert.AreEqual(1, gallery.TorrnetCount);
 
 			Assert.AreEqual(181, gallery.CommentCount);
+		}
+
+		[TestMethod]
+		public void ParseTags()
+		{
+			var doc = new HtmlDocument();
+			doc.Load("WebArchive/GalleryTagStub.html");
+
+			var tags = GalleryParser.ParseTags(doc);
+
+			Assert.AreEqual(new GalleryTag("bak hyeong jun", TagCredibility.Confidence), tags.Artist.First());
+			Assert.AreEqual(new GalleryTag("story arc", TagCredibility.Incorrect), tags.Misc.First());
+			Assert.AreEqual(new GalleryTag("webtoon", TagCredibility.Unconfidence), tags.Misc.Last());
 		}
 	}
 }
