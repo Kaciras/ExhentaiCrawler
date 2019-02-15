@@ -32,6 +32,7 @@ namespace Core
 		{
 			cookieContainer = cookies;
 			Proxies.AddFirst(IPRecord.Local);
+			SetHttpClient(null);
 		}
 
 		private void SetHttpClient(IPRecord iPRecord)
@@ -42,7 +43,7 @@ namespace Core
 				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 			};
-			iPRecord.ConfigureHttpHandler(handler);
+			//iPRecord.ConfigureHttpHandler(handler);
 
 			client?.Dispose();
 			client = new HttpClient(handler, true)

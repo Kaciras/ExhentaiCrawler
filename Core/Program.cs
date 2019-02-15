@@ -4,38 +4,69 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 [assembly: InternalsVisibleTo("Test")]
 namespace Core
 {
 	[Verb("download", HelpText = "下载图册")]
-	sealed class DownloadOptions
+	internal sealed class DownloadOptions
 	{
-		[Value(0, Required =true, HelpText ="图册网址")]
+		[Value(0, Required =true, HelpText ="图册网址，格式为")]
 		public string Uri { get; set; }
+
+		[Value(1, HelpText = "页码范围，格式：X-Y，表示从X到Y页，XY其中之一可以省略，分别表示第一页和最后一页。也可以是一个整数，表示下载指定页")]
+		public string Pages { get; set; }
 	}
 
 	[Verb("statistics", HelpText = "启动统计爬虫")]
-	sealed class StatisticsOptions
+	internal sealed class StatisticsOptions
 	{
 
 	}
 
-	static class Program
+	internal static class Program
 	{
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
 			Parser.Default.ParseArguments<DownloadOptions, StatisticsOptions>(args)
 				.WithParsed<DownloadOptions>(DownloadGallery)
 				.WithParsed<StatisticsOptions>(RunStatisticsCrawler);
 		}
 
-		static void DownloadGallery(DownloadOptions options)
+		private static void DownloadGallery(DownloadOptions options)
 		{
-			RunAsyncTask(() => DoDownloadGallery(options)).Wait();
+			int? start, end;
+
+			// 先来解析 options.Pages 参数
+			if (options.Pages == null)
+			{
+				start = end = null;
+			}
+			else if (int.TryParse(options.Pages, out var index))
+			{
+				start = end = index;
+			}
+			else
+			{
+				var match = Regex.Match(options.Pages, @"^(\d*)-(\d*)$");
+				if (match.Success)
+				{
+					start = StringToNullableInt(match.Groups[1].Value);
+					end = StringToNullableInt(match.Groups[2].Value);
+				}
+				else
+				{
+					throw new ArgumentException("页码范围参数错误：" + options.Pages);
+				}
+			}
+
+			var exhentai = new Exhentai(ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363"));
+			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end);
+			RunAsyncTask(work.Run).Wait();
 		}
 
-		static async Task RunAsyncTask(Func<Task> asyncAction)
+		private static async Task RunAsyncTask(Func<Task> asyncAction)
 		{
 			try
 			{
@@ -49,40 +80,22 @@ namespace Core
 			}
 		}
 
-		static async Task DoDownloadGallery(DownloadOptions options)
+		private static void RunStatisticsCrawler(StatisticsOptions options)
 		{
-			const string STORE_PATH = @"C:\Users\XuFan\Desktop\";
-			var client = ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363");
-			var exhentai = new Exhentai(client);
 
-			var gallery = await exhentai.GetGallery(options.Uri);
-
-			// 0.2MB消耗一点限额，这么算不准，因为一些小图片不走fullimg.php
-			var cost = gallery.FileSize / 1024 * 5;
-
-			Console.WriteLine(gallery.Name);
-			Console.WriteLine($"共{gallery.Length}张图片，预计下载将消耗{cost}点限额");
-
-			async Task Download(int index)
-			{
-				var image = await gallery.GetImage(index);
-				using (var rs = await image.GetOriginal())
-				using (var fs = File.OpenWrite(STORE_PATH + image.FileName))
-				{
-					rs.ReadTimeout = 3;
-					rs.CopyTo(fs);
-				}
-			}
-
-			await Download(40);
-			await Download(41);
-
-			Console.WriteLine("下载完毕");
 		}
 
-		static void RunStatisticsCrawler(StatisticsOptions options)
+		// 不能用三元运算，因为null和int不兼容，虽然返回值两个都兼容
+		private static int? StringToNullableInt(string @string)
 		{
-
+			if (string.IsNullOrEmpty(@string))
+			{
+				return null;
+			}
+			else
+			{
+				return int.Parse(@string);
+			}
 		}
 	}
 }
