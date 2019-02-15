@@ -42,11 +42,12 @@ namespace Core
 				AllowAutoRedirect = true,
 				CookieContainer = cookieContainer,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+				ConnectTimeout = TimeSpan.FromSeconds(3),
 			};
 			//iPRecord.ConfigureHttpHandler(handler);
 
 			client?.Dispose();
-			client = new HttpClient(handler, true)
+			client = new HttpClient(new RetryHandler(handler), true)
 			{
 				Timeout = TimeSpan.FromSeconds(TIMEOUT)
 			};
@@ -86,6 +87,7 @@ namespace Core
 					return banQueue.Dequeue();
 				}
 			}
+			
 			return null;
 		}
 
