@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Web;
 using System.Globalization;
+using Core.Infrastructure;
 
 namespace Core
 {
@@ -86,7 +87,7 @@ namespace Core
 			gallery.IsTranslated = lang.NextSibling != null;
 
 			// 第5项File Size: 39.64 [MKG]B，没见到比KB还小的单位
-			gallery.FileSize = (long)Utils.ParseSize(tableRows[4].LastChild.InnerText, 'K');
+			gallery.FileSize = (long)Utils.ParseSize(tableRows[4].LastChild.InnerText, SizeUnit.KB);
 			
 			// 第6项Length: 152 pages
 			gallery.Length = int.Parse(tableRows[5].LastChild.InnerText.Split(" ")[0]);

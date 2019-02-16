@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Core;
+using Core.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Test
@@ -22,15 +23,18 @@ namespace Test
 		[TestMethod]
 		public void ParseSize()
 		{
-			Assert.AreEqual(1024, Utils.ParseSize("1 MB", 'K'));
+			Assert.AreEqual(1, Utils.ParseSize("1 EB", SizeUnit.EB));
 
-			Assert.AreEqual(6710886.4, Utils.ParseSize("6.40 PB", 'G'));
+			Assert.AreEqual(1024, Utils.ParseSize("1 MB", SizeUnit.KB));
 
-			Assert.AreEqual(6.4, Utils.ParseSize("6710886.4 GiB", 'P'));
+			Assert.AreEqual(6710886.4, Utils.ParseSize("6.40 PB", SizeUnit.GB));
 
-			Assert.AreEqual(512, Utils.ParseSize(" 0.5K ")); // 前后头有空格也可以
+			Assert.AreEqual(6.4, Utils.ParseSize("6710886.4 GiB", SizeUnit.PB));
 
-			Assert.AreEqual(100D / 1024, Utils.ParseSize("100 kb", 'm'));
+			// 前后头有空格也可以
+			Assert.AreEqual(512, Utils.ParseSize(" 0.5K ", SizeUnit.Bytes));
+
+			Assert.AreEqual(100D / 1024, Utils.ParseSize("100 kb", SizeUnit.MB));
 		}
 	}
 }

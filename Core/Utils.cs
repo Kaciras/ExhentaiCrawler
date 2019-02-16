@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Core.Infrastructure;
 
 namespace Core
 {
@@ -69,7 +70,7 @@ namespace Core
 		/// <param name="string">表示大小的字符串</param>
 		/// <param name="targetUnit">返回数值的单位，null表示字节</param>
 		/// <returns>大小数值</returns>
-		public static double ParseSize(string @string, char? targetUnit = null)
+		public static double ParseSize(string @string, SizeUnit targetUnit)
 		{
 			var match = SIZE_TEXT.Match(@string);
 			if (!match.Success)
@@ -78,28 +79,18 @@ namespace Core
 			}
 
 			var unit = match.Groups[2].Value;
-			var level = -1;
+			var level = 0;
 
 			if (unit.Length > 0)
 			{
-				level = Array.IndexOf(SIZE_UNITS, char.ToUpper(unit[0]));
-				if (level == -1)
+				level = Array.IndexOf(SIZE_UNITS, char.ToUpper(unit[0])) + 1;
+				if (level == 0)
 				{
 					throw new ArgumentException("无法识别的大小单位：" + unit[0]);
 				}
 			}
 
-			var targetLevel = -1; // 这段跟上面的好像可以提取个公共的方法
-			if (targetUnit.HasValue)
-			{
-				targetLevel = Array.IndexOf(SIZE_UNITS, char.ToUpper(targetUnit.Value));
-				if (targetLevel == -1)
-				{
-					throw new ArgumentException("无法识别的目标单位" + targetUnit);
-				}
-			}
-
-			return double.Parse(match.Groups[1].Value) * Math.Pow(1024, level - targetLevel);
+			return double.Parse(match.Groups[1].Value) * Math.Pow(1024, level - (int)targetUnit);
 		}
 	}
 }
