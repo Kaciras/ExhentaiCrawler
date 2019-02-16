@@ -23,6 +23,9 @@
     <None Update="WebArchive\GalleryTagStub.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="WebArchive\TorrentPageStub.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

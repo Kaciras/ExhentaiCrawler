@@ -53,5 +53,15 @@ namespace Test
 			Assert.AreEqual(new GalleryTag("story arc", TagCredibility.Incorrect), tags.Misc.First());
 			Assert.AreEqual(new GalleryTag("webtoon", TagCredibility.Unconfidence), tags.Misc.Last());
 		}
+
+		[TestMethod]
+		public void ParseTorrent()
+		{
+			var torrents = TorrentResource.Parse(File.ReadAllText("WebArchive/TorrentPageStub.html"));
+			Assert.AreEqual(2, torrents.Count);
+
+			var torrent = torrents[0];
+			// 懒得写了
+		}
 	}
 }

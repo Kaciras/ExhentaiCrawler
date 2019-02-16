@@ -48,6 +48,12 @@ namespace Core
 			Token = token;
 		}
 
+		public async Task<IList<TorrentResource>> GetTorrents()
+		{
+			var html = await client.RequestPage($"https://exhentai.org/gallerytorrents.php?gid={Id}&t={Token}");
+			return TorrentResource.Parse(html);
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
