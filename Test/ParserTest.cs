@@ -14,7 +14,7 @@ namespace Test
 		[TestMethod]
 		public void ParseGallery()
 		{
-			var html = File.ReadAllText("WebArchive/GalleryPage.html");
+			var html = File.ReadAllText("WebArchive/GalleryPageStub.html");
 			var gallery = new Gallery(null, 518681, "2aa630b122");
 
 			GalleryParser.Parse(gallery, html);

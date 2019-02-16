@@ -22,23 +22,4 @@ namespace Core
 
 		public ICollection<GalleryTag> Misc { get; set; }
 	}
-
-	public enum TagCredibility
-	{
-		Confidence, // 实线边框
-		Unconfidence, // 虚线边框
-		Incorrect, // 点线边框
-	}
-
-	public struct GalleryTag
-	{
-		public string Value;
-		public TagCredibility Credibility;
-
-		public GalleryTag(string value, TagCredibility credibility)
-		{
-			Value = value;
-			Credibility = credibility;
-		}
-	}
 }

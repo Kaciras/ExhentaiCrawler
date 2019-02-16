@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="WebArchive\GalleryPage.html">
+    <None Update="WebArchive\GalleryPageStub.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="WebArchive\GalleryTagStub.html">
