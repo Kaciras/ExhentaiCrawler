@@ -86,9 +86,7 @@ namespace Core
 			gallery.IsTranslated = lang.NextSibling != null;
 
 			// 第5项File Size: 39.64 [MKG]B，没见到比KB还小的单位
-			var sizePart = tableRows[4].LastChild.InnerText.Split(" ");
-			var f = Array.IndexOf(SIZE_UNIT, sizePart[1][0]);
-			gallery.FileSize = (long)(double.Parse(sizePart[0]) * (1 << (10 * f)));
+			gallery.FileSize = (long)Utils.ParseSize(tableRows[4].LastChild.InnerText, 'K');
 			
 			// 第6项Length: 152 pages
 			gallery.Length = int.Parse(tableRows[5].LastChild.InnerText.Split(" ")[0]);
