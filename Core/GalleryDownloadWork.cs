@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Core
 {
 	public sealed class GalleryDownloadWork
 	{
-		const string STORE_PATH = @"E:\漫画\(成年コミック) [なるさわ景] 亡国魔王の星彦くん [中国翻訳]";
+		const string STORE_PATH = @"C:\Users\XuFan\Desktop\exd";
+
+		public int Concurrent { get; set; } = 4;
 
 		private readonly Exhentai exhentai;
 
@@ -19,6 +23,8 @@ namespace Core
 		private readonly bool force;
 
 		private Gallery gallery;
+		private ISet<string> downloaded;
+		private int index;
 
 		public GalleryDownloadWork(Exhentai exhentai, string uri, int? startPage, int? endPage, bool force)
 		{
@@ -31,35 +37,34 @@ namespace Core
 
 		public async Task Run()
 		{
+			Directory.CreateDirectory(STORE_PATH);
+
 			gallery = await exhentai.GetGallery(uri);
+			downloaded = force ? new SortedSet<string>() : ScanDownloaded();
+
+			Console.WriteLine("下载图册：" + gallery.Name);
 			var start = startPage ?? 1;
 			var end = endPage ?? gallery.Length;
 
-			// 0.2MB消耗一点限额，这么算不准，因为一些小图片不走fullimg.php
-			//var cost = gallery.FileSize / 1024 * 5;
-			//Console.WriteLine(gallery.Name);
-			//Console.WriteLine($"共{gallery.Length}张图片，预计下载将消耗{cost}点限额");
+			//var tasks = new Task[Concurrent];
+			//for (int i = 0; i <= tasks.Length; i++)
+			//{
+			//	tasks[i] = RunWorker();
+			//}
 
-			var downloaded = force ? new SortedSet<string>() : ScanDownloaded();
+			await DownloadImage(40);
+			await DownloadImage(41);
 
-			for (int i = 1; i <= gallery.Length; i++)
-			{
-				var image = await gallery.GetImage(i);
-				if (!downloaded.Contains(image.FileName))
-				{
-					await DownloadImage(image);
-				}
-			}
-
-			await DownloadImage(await gallery.GetImage(40));
-			await DownloadImage(await gallery.GetImage(41));
-
+			//await Task.WhenAll(tasks);
 			Console.WriteLine("下载完毕");
 		}
 
+		/// <summary>
+		/// 扫描存储目录中已存在的图片文件
+		/// </summary>
+		/// <returns>文件名集合</returns>
 		private ISet<string> ScanDownloaded()
 		{
-			Console.WriteLine("扫描存储目录中已存在的图片文件...");
 			var exists = new HashSet<string>();
 			var dirInfo = new DirectoryInfo(STORE_PATH);
 
@@ -67,7 +72,7 @@ namespace Core
 			{
 				try
 				{
-					// 如果一次下载中断，可能出现不完整的图片文件，故不能只看名字，必须测试读取图片。
+					// 如果一次下载中断，可能出现不完整的文件，故不能只看名字，必须测试读取。
 					Image.FromFile(file.FullName).Dispose();
 					exists.Add(file.Name);
 				}
@@ -80,13 +85,36 @@ namespace Core
 			return exists;
 		}
 
-		private async Task DownloadImage(ImageResource image)
+		private async Task RunWorker()
 		{
-			using (var rs = await image.GetOriginal())
-			using (var fs = File.OpenWrite(Path.Combine(STORE_PATH, image.FileName)))
+			var index = Interlocked.Increment(ref this.index);
+			if (index > gallery.Length)
 			{
-				rs.ReadTimeout = 3;
-				await rs.CopyToAsync(fs);
+				return;
+			}
+			try
+			{
+				await DownloadImage(index);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
+			}
+			await RunWorker();
+		}
+
+		private async Task DownloadImage(int index)
+		{
+			var image = await gallery.GetImage(index);
+			if (downloaded.Contains(image.FileName))
+			{
+				return;
+			}
+			using (var input = await image.GetOriginal())
+			using (var output = File.OpenWrite(Path.Combine(STORE_PATH, image.FileName)))
+			{
+				input.ReadTimeout = 2000;
+				await input.CopyToAsync(output);
 			}
 		}
 	}

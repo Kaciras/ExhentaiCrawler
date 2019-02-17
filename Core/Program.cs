@@ -18,8 +18,11 @@ namespace Core
 		[Value(1, Default = "-", HelpText = "页码范围，格式：X-Y，表示从X到Y页，XY其中之一可以省略，分别表示第一页和最后一页。也可以是一个整数，表示下载指定页")]
 		public string Pages { get; set; }
 
-		[Option('f', HelpText = "强制重新下载，即使在目录中以下载了部分图片")]
+		[Option('f', "force", HelpText = "强制重新下载，即使在目录中以下载了部分图片")]
 		public bool Force { get; set; }
+
+		[Option('c', "concurrent", HelpText = "并发下载数")]
+		public int Concurrent { get; set; }
 	}
 
 	[Verb("statistics", HelpText = "启动统计爬虫")]
@@ -43,6 +46,7 @@ namespace Core
 
 			var exhentai = new Exhentai(ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363"));
 			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end, options.Force);
+			work.Concurrent = options.Concurrent;
 			RunAsyncTask(work.Run).Wait();
 		}
 
