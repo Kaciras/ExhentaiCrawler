@@ -1,10 +1,8 @@
-﻿using CommandLine;
-using System;
-using System.IO;
-using System.Runtime.CompilerServices;
+﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
+using CommandLine;
 
 [assembly: InternalsVisibleTo("Test")]
 namespace Core
@@ -21,7 +19,7 @@ namespace Core
 		[Option('f', "force", HelpText = "强制重新下载，即使在目录中以下载了部分图片")]
 		public bool Force { get; set; }
 
-		[Option('c', "concurrent", HelpText = "并发下载数")]
+		[Option('c', "concurrent", Default = GalleryDownloadWork.DEFAULT_CONCURRENT, HelpText = "并发下载数")]
 		public int Concurrent { get; set; }
 	}
 

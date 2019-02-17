@@ -20,6 +20,16 @@ namespace Core
 			this.client = client;
 		}
 
+		public async Task<string[]> GetList(FilterOptions options, int page)
+		{
+			if(page < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(page));
+			}
+			var html = await client.RequestPage($"https://exhentai.org/?page={page}&" + options.ToString());
+			throw new NotImplementedException();
+		}
+
 		public Task<Gallery> GetGallery(string url)
 		{
 			var match = GALLERY.Match(url);

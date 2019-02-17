@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Core.Infrastructure
@@ -16,7 +14,7 @@ namespace Core.Infrastructure
 		private static readonly char[] SIZE_UNITS = { 'K', 'M', 'G', 'T', 'P', 'E' };
 		private static readonly Regex SIZE_TEXT = new Regex(@"([+-]?[0-9.]+)\s*([A-Z]?)i?B?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-		public readonly long Bytes;
+		public long Bytes { get; }
 
 		public DataSize(long bytes)
 		{
@@ -39,6 +37,7 @@ namespace Core.Infrastructure
 		/// <param name="string">表示大小的字符串</param>
 		/// <param name="targetUnit">返回数值的单位，null表示字节</param>
 		/// <returns>大小数值</returns>
+		/// <exception cref="FormatException">如果无法解析输入的字符串</exception>
 		public static DataSize Parse(string @string)
 		{
 			var match = SIZE_TEXT.Match(@string);

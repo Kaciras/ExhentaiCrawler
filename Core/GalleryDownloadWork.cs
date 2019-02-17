@@ -11,9 +11,10 @@ namespace Core
 {
 	public sealed class GalleryDownloadWork
 	{
+		public const int DEFAULT_CONCURRENT = 4;
 		const string STORE_PATH = @"C:\Users\XuFan\Desktop\exd";
 
-		public int Concurrent { get; set; } = 4;
+		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
 		private readonly Exhentai exhentai;
 

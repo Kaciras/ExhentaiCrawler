@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core
 {
-	public struct Rating
+	public readonly struct Rating
 	{
 		public int Count { get; }
 		public double Average { get; }

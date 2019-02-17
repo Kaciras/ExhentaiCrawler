@@ -9,7 +9,7 @@ using Core.Infrastructure;
 
 namespace Core
 {
-	sealed class GalleryParser
+	static class GalleryParser
 	{
 		readonly static Regex IMAGE_URL = new Regex(@"https://exhentai.org/s/([^/]+)/(\d+)-(\d+)", RegexOptions.Compiled);
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core
 {
-	public class DataStore
+	public sealed class DataStore
 	{
 		public DataStore(string connectString)
 		{
