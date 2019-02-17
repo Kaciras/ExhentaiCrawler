@@ -11,7 +11,7 @@ namespace Core
 	public class TorrentResource
 	{
 		public DateTime Posted { get; set; }
-		public int Size { get; set; } //KB
+		public DataSize Size { get; set; }
 		public int Seeds { get; set; }
 		public int Peers { get; set; }
 		public int Downloads { get; set; }
@@ -43,7 +43,7 @@ namespace Core
 				=> node.SelectSingleNode($"tr[{row}]/td[{col}]").LastChild.InnerText.TrimStart();
 
 			torrent.Posted = DateTime.ParseExact(CellValue(1, 1), "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-			torrent.Size = (int)Utils.ParseSize(CellValue(1, 2), SizeUnit.KB);
+			torrent.Size = DataSize.Parse(CellValue(1, 2));
 			torrent.Seeds = int.Parse(CellValue(1, 4));
 			torrent.Peers = int.Parse(CellValue(1, 5));
 			torrent.Uploader = CellValue(2, 1);

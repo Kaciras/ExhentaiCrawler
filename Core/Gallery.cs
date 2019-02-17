@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Core.Infrastructure;
 
 namespace Core
 {
@@ -22,7 +23,7 @@ namespace Core
 		public bool Visible { get; set; }
 		public Language Language { get; set; }
 		public bool IsTranslated { get; set; }
-		public long FileSize { get; set; } // 单位是KB
+		public DataSize FileSize { get; set; }
 		public int Length { get; set; }
 		public int Favorited { get; set; }
 

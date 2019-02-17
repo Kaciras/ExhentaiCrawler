@@ -21,20 +21,33 @@ namespace Test
 		}
 
 		[TestMethod]
-		public void ParseSize()
+		public void ParseDataSize()
 		{
-			Assert.AreEqual(1, Utils.ParseSize("1 EB", SizeUnit.EB));
+			Assert.AreEqual(new DataSize(0), DataSize.Parse("0 EB"));
 
-			Assert.AreEqual(1024, Utils.ParseSize("1 MB", SizeUnit.KB));
+			Assert.AreEqual(new DataSize(1L << 60), DataSize.Parse("1 EB"));
 
-			Assert.AreEqual(6710886.4, Utils.ParseSize("6.40 PB", SizeUnit.GB));
+			var fiveMB = new DataSize(5 << 20);
+			Assert.AreEqual(fiveMB, DataSize.Parse("5MB"));
+			Assert.AreEqual(fiveMB, DataSize.Parse("5mb"));
+			Assert.AreEqual(fiveMB, DataSize.Parse("5MiB"));
+			Assert.AreEqual(fiveMB, DataSize.Parse("5M"));
+			Assert.AreEqual(fiveMB, DataSize.Parse("+5MB"));
+			Assert.AreEqual(fiveMB, DataSize.Parse(" 5MB "));
 
-			Assert.AreEqual(6.4, Utils.ParseSize("6710886.4 GiB", SizeUnit.PB));
+			Assert.AreEqual(new DataSize(-(5 << 20)), DataSize.Parse("-5MB"));
+		}
 
-			// 前后头有空格也可以
-			Assert.AreEqual(512, Utils.ParseSize(" 0.5K ", SizeUnit.Bytes));
+		[TestMethod]
+		public void ConvertDataSize()
+		{
+			Assert.AreEqual(500, new DataSize(500).OfUnit(SizeUnit.Bytes));
 
-			Assert.AreEqual(100D / 1024, Utils.ParseSize("100 kb", SizeUnit.MB));
+			Assert.AreEqual(1.0, new DataSize(1024).OfUnit(SizeUnit.KB));
+
+			Assert.AreEqual(0, new DataSize(0).OfUnit(SizeUnit.TB));
+
+			Assert.AreEqual(-1, new DataSize(-1048576).OfUnit(SizeUnit.MB));
 		}
 	}
 }
