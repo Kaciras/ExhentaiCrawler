@@ -160,15 +160,16 @@ namespace Core
 		internal static IList<ImageLink> ParseImages(HtmlDocument doc)
 		{
 			var nodes = doc.GetElementbyId("gdt").ChildNodes;
-			var result = new List<ImageLink>();
+			nodes.RemoveAt(nodes.Count - 1); // 去掉最后空白的div
 
+			var result = new List<ImageLink>();
 			foreach (var item in nodes)
 			{
 				var anchor = item.FirstChild.FirstChild;
 
 				var match = ImageResource.IMAGE_PATH.Match(anchor.Attributes["href"].Value);
 				var imageKey = match.Groups["KEY"].Value;
-				var name = item.FirstChild.Attributes["title"].Value.Split(": ")[1];
+				var name = anchor.FirstChild.Attributes["title"].Value.Split(": ")[1];
 				result.Add(new ImageLink(imageKey, name));
 			}
 			return result;

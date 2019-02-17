@@ -63,5 +63,17 @@ namespace Test
 			var torrent = torrents[0];
 			// 懒得写了
 		}
+
+		[TestMethod]
+		public void ParseImages()
+		{
+			var html = File.ReadAllText("WebArchive/GalleryPageStub.html");
+
+			var links = GalleryParser.ParseImages(html);
+
+			Assert.AreEqual(40, links.Count);
+			Assert.AreEqual("01_01.png", links[3].FileName);
+			Assert.AreEqual("410aa30071", links[3].Key);
+		}
 	}
 }

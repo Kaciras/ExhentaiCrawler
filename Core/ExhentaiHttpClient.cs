@@ -191,7 +191,7 @@ namespace Core
 		/// </summary>
 		/// <param name="response">响应</param>
 		/// <param name="html">HTML页面</param>
-		/// <exception cref="TempBannedException">如果被封禁了</exception>
+		/// <exception cref="BannedException">如果被封禁了</exception>
 		/// <exception cref="ExhentaiException">如果出现熊猫</exception>
 		public static void CheckResponse(HttpResponseMessage response, string html)
 		{
@@ -206,7 +206,7 @@ namespace Core
 			{
 				var time = int.Parse(match.Groups[1]?.Value ?? "0");
 				time += int.Parse(match.Groups[2]?.Value ?? "0") * 60;
-				throw new TempBannedException(time);
+				throw new BannedException(time);
 			}
 		}
 	}
