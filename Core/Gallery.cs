@@ -7,7 +7,7 @@ using Core.Infrastructure;
 
 namespace Core
 {
-	public class Gallery
+	public sealed class Gallery
 	{
 		public int Id { get; }
 		public string Token { get; }
@@ -35,7 +35,7 @@ namespace Core
 
 		public int CommentCount { get; set; }
 
-		readonly ExhentaiHttpClient client;
+		private readonly ExhentaiHttpClient client;
 
 		/// <summary>
 		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
