@@ -44,7 +44,7 @@ namespace Core.Infrastructure
 			var match = SIZE_TEXT.Match(@string);
 			if (!match.Success)
 			{
-				throw new ArgumentException("无法识别的大小文本：" + @string);
+				throw new FormatException("无法识别的大小文本：" + @string);
 			}
 
 			var unit = match.Groups[2].Value;
@@ -55,7 +55,7 @@ namespace Core.Infrastructure
 				level = Array.IndexOf(SIZE_UNITS, char.ToUpper(unit[0])) + 1;
 				if (level == 0)
 				{
-					throw new ArgumentException("无法识别的大小单位：" + unit[0]);
+					throw new FormatException("无法识别的大小单位：" + unit[0]);
 				}
 			}
 
