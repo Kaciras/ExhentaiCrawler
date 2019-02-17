@@ -56,13 +56,18 @@ namespace Core
 		}
 
 		/// <summary>
-		/// 
+		/// 获取该画册的一张图片。
 		/// </summary>
 		/// <param name="index">页码，从1开始</param>
 		/// <returns></returns>
-		public async Task<ImageResource> GetImage(int index)
+		public async ValueTask<ImageResource> GetImage(int index)
 		{
-			if(index < 1 || index > Length)
+			// ValueTask的使用：
+			//	   ValueTask的创建开销比Task小，但传递开销更大，故其适合使用的场景应当满足以下条件：
+			//	   1) 调用方只是简单地等待，而不对其做更多使用
+			//	   2) 大多情况是同步返回，常见于具有缓存的逻辑
+			// 虽然这里用哪个性能都没啥差别，但还是尝试下ValueTask。
+			if (index < 1 || index > Length)
 			{
 				throw new ArgumentOutOfRangeException("错误的页码：" + index);
 			}

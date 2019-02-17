@@ -46,9 +46,10 @@ namespace Core
 		/// <summary>
 		/// 访问图片页面将消耗1点配额，所以使用了懒加载，尽量推迟访问图片页。
 		/// </summary>
-		private async ValueTask EnsureImagePageLoaded()
+		private async Task EnsureImagePageLoaded()
 		{
-			if(ImageUrl != null)
+			// 该方法虽然也是同步返回的情况多，但编译器能自动使用Task.CompletedTask避免分配，故没必要用ValueTask
+			if (ImageUrl != null)
 			{
 				return; // 已经加载过了
 			}
