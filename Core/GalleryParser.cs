@@ -28,9 +28,9 @@ namespace Core
 			gallery.Tags = ParseTags(doc);
 
 			// 计算图片列表一共几页，第一页已经包含在这次的响应里了
-			var firstList = ParseImages(html);
+			var firstList = ParseImages(doc);
 			var pages = 1 + (gallery.Length - 1) / firstList.Count;
-			gallery.imageListPage = new IList<string>[pages];
+			gallery.imageListPage = new IList<ImageLink>[pages];
 			gallery.imageListPage[0] = firstList;
 
 			gallery.TorrnetCount = int.Parse(TORRENT.Match(html).Groups[1].Value);
@@ -150,9 +150,28 @@ namespace Core
 			}
 		}
 
-		internal static IList<string> ParseImages(string html)
+		internal static IList<ImageLink> ParseImages(string html)
 		{
-			return IMAGE_URL.Matches(html).Select(match => match.Value).ToList();
+			var doc = new HtmlDocument();
+			doc.LoadHtml(html);
+			return ParseImages(doc);
+		}
+
+		internal static IList<ImageLink> ParseImages(HtmlDocument doc)
+		{
+			var nodes = doc.GetElementbyId("gdt").ChildNodes;
+			var result = new List<ImageLink>();
+
+			foreach (var item in nodes)
+			{
+				var anchor = item.FirstChild.FirstChild;
+
+				var match = ImageResource.IMAGE_PATH.Match(anchor.Attributes["href"].Value);
+				var imageKey = match.Groups["KEY"].Value;
+				var name = item.FirstChild.Attributes["title"].Value.Split(": ")[1];
+				result.Add(new ImageLink(imageKey, name));
+			}
+			return result;
 		}
 	}
 }

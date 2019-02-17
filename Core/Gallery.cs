@@ -40,7 +40,7 @@ namespace Core
 		/// <summary>
 		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
 		/// </summary>
-		internal IList<string>[] imageListPage;
+		internal IList<ImageLink>[] imageListPage;
 
 		public Gallery(ExhentaiHttpClient client, int id, string token)
 		{
@@ -78,14 +78,11 @@ namespace Core
 			if (list == null)
 			{
 				var galleryPage = await client.RequestPage($"https://exhentai.org/g/{Id}/{Token}?p={page}");
-				imageListPage[page] = GalleryParser.ParseImages(galleryPage);
+				list = imageListPage[page] = GalleryParser.ParseImages(galleryPage);
 			}
 
-			var html = await client.RequestPage(list[index]);
-			var resource = new ImageResource(client, this, index + 1);
-			ImageResource.ParsePage(resource, html);
-
-			return resource;
+			var link = list[index];
+			return new ImageResource(client, this, index, link.Key, link.FileName);
 		}
 	}
 }
