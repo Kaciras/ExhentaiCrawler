@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -25,9 +26,9 @@ namespace Core
 		internal string ImageUrl { get; set; }
 		internal string FullImageUrl { get; set; }
 
-		private readonly ExhentaiHttpClient client;
+		private readonly IExhentaiClient client;
 
-		public ImageResource(ExhentaiHttpClient client, Gallery gallery, int page, string imageKey, string filename)
+		public ImageResource(IExhentaiClient client, Gallery gallery, int page, string imageKey, string filename)
 		{
 			this.client = client;
 			Gallery = gallery;
@@ -36,11 +37,24 @@ namespace Core
 			FileName = filename;
 		}
 
+		/// <summary>
+		/// 下载原始图片，此操作将消耗限额。
+		/// </summary>
 		public async Task<Stream> GetOriginal()
 		{
 			await EnsureImagePageLoaded();
-			var content = await client.RequestImage(FullImageUrl ?? ImageUrl);
-			return await content.ReadAsStreamAsync();
+			var uri = new Uri(ImageUrl);
+
+			if (FullImageUrl != null)
+			{
+				var redirect = await client.Request(new Uri(FullImageUrl));
+				redirect.Dispose();
+				uri = redirect.Headers.Location;
+			}
+
+			var response = await client.Request(uri);
+			response.EnsureSuccessStatusCode();
+			return await response.Content.ReadAsStreamAsync();
 		}
 
 		/// <summary>

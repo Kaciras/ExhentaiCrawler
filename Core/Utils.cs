@@ -8,9 +8,11 @@ namespace Core
 {
 	internal static class Utils
 	{
-		public static IEnumerable<T> SingleEnumerable<T>(T value)
+		public static IEnumerable<T> SingleEnumerable<T>(T value) => new T[] { value };
+
+		public static void ForEach<T>(this IEnumerable<T> enumable, Action<T> action)
 		{
-			return new T[] { value };
+			foreach (var item in enumable) action(item);
 		}
 
 		/// <summary>

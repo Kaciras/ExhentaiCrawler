@@ -61,5 +61,10 @@ namespace Core.Infrastructure
 			var bytes = double.Parse(match.Groups[1].Value) * Math.Pow(1024, level);
 			return new DataSize((long)Math.Round(bytes));
 		}
+
+		internal double OfUnit(object sizeunit)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

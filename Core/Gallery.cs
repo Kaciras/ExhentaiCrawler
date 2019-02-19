@@ -32,17 +32,16 @@ namespace Core
 		public TagCollection Tags { get; set; }
 
 		public int TorrnetCount { get; set; }
-
 		public int CommentCount { get; set; }
 
-		private readonly ExhentaiHttpClient client;
+		private readonly IExhentaiClient client;
 
 		/// <summary>
 		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
 		/// </summary>
 		internal IList<ImageLink>[] imageListPage;
 
-		public Gallery(ExhentaiHttpClient client, int id, string token)
+		public Gallery(IExhentaiClient client, int id, string token)
 		{
 			this.client = client;
 			Id = id;

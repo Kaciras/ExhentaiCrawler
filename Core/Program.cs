@@ -42,7 +42,9 @@ namespace Core
 		{
 			(var start, var end) = Utils.ParseRange(options.Pages);
 
-			var exhentai = new Exhentai(ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363"));
+			var exhentai = new Exhentai(new ExhentaiHttpClient());
+			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
+
 			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end, options.Force);
 			work.Concurrent = options.Concurrent;
 			RunAsyncTask(work.Run).Wait();

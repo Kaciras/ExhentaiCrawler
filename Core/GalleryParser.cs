@@ -39,7 +39,7 @@ namespace Core
 			return gallery;
 		}
 
-		static void ParseTitleGroup(Gallery gallery, HtmlDocument doc)
+		internal static void ParseTitleGroup(Gallery gallery, HtmlDocument doc)
 		{
 			var name = doc.GetElementbyId("gn").InnerText;
 			if (name != null)
@@ -48,7 +48,7 @@ namespace Core
 			}
 
 			var jpname = doc.GetElementbyId("gj")?.InnerText;
-			if (jpname != null)
+			if (jpname.Length > 0)
 			{
 				gallery.JapaneseName = HttpUtility.HtmlDecode(jpname);
 			}

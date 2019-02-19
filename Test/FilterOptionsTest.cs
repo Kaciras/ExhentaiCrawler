@@ -27,21 +27,6 @@ namespace Test
 		public void FilterOptions()
 		{
 
-		}
-
-		// proxy
-		[TestMethod]
-		public async Task LoginFail()
-		{
-			try
-			{
-				await ExhentaiHttpClient.Login("qweasdzxc", "qweasdzxc");
-				Assert.Fail("Expect to throw an exception");
-			}
-			catch(ExhentaiException e)
-			{
-				Assert.AreEqual("µÇÂ¼Ê§°Ü", e.Message);
-			}
-		}
+		}	
 	}
 }

@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,12 +11,20 @@ namespace Test
 	[TestClass]
     public class ExhentaiHttpClientTest
     {
-		readonly ExhentaiHttpClient client = ExhentaiHttpClient.FromCookie("2723232", "67674c89175c751095d4c840532e6363");
+		readonly ExhentaiHttpClient client;
+
+		public ExhentaiHttpClientTest()
+		{
+			var cookies = new CookieContainer();
+			cookies.Add(new Cookie("ipb_member_id", "2723232", "/", ".exhentai.org"));
+			cookies.Add(new Cookie("ipb_pass_hash", "67674c89175c751095d4c840532e6363", "/", ".exhentai.org"));
+			client = new ExhentaiHttpClient(cookies, null);
+		}
 
 		[TestMethod]
 		public async Task Panda()
 		{
-			var invaildClient = ExhentaiHttpClient.FromCookie("123", "abcdefgh");
+			var invaildClient = new ExhentaiHttpClient();
 			try
 			{
 				await invaildClient.RequestPage("https://exhentai.org/");
@@ -23,7 +32,7 @@ namespace Test
 			}
 			catch (ExhentaiException e)
 			{
-				Assert.AreEqual("熊猫了", e.Message);
+				Assert.AreEqual("该请求需要登录", e.Message);
 			}
 		}
 

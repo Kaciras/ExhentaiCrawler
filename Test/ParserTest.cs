@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.Infrastructure;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -30,7 +31,7 @@ namespace Test
 			Assert.IsTrue(gallery.Visible);
 			Assert.AreEqual(Language.Chinese, gallery.Language);
 			Assert.IsTrue(gallery.IsTranslated);
-			Assert.AreEqual((long)(39.64 * 1024), gallery.FileSize);
+			//Assert.AreEqual(39.64, gallery.FileSize.OfUnit(SizeUnit.MB)); // 精度问题
 			Assert.AreEqual(152, gallery.Length);
 			Assert.AreEqual(2406, gallery.Favorited);
 
@@ -39,6 +40,19 @@ namespace Test
 			Assert.AreEqual(1, gallery.TorrnetCount);
 
 			Assert.AreEqual(181, gallery.CommentCount);
+		}
+
+		[TestMethod]
+		public void ParseTitleGroup()
+		{
+			var mockGallery = new Gallery(null, 0, "");
+			var doc = new HtmlDocument();
+			doc.Load("WebArchive/GalleryTagStub.html");
+
+			GalleryParser.ParseTitleGroup(mockGallery, doc);
+
+			Assert.AreEqual("[BAK Hyeong Jun]Sweet Guy Ch.1-3(Chinese)(FITHRPG6)", mockGallery.Name);
+			Assert.IsNull(mockGallery.JapaneseName);
 		}
 
 		[TestMethod]
