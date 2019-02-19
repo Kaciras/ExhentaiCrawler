@@ -12,6 +12,7 @@ namespace Core.Infrastructure
 	public readonly struct DataSize
 	{
 		private static readonly char[] SIZE_UNITS = { 'K', 'M', 'G', 'T', 'P', 'E' };
+
 		private static readonly Regex SIZE_TEXT = new Regex(@"([+-]?[0-9.]+)\s*([A-Z]?)i?B?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		public long Bytes { get; }
@@ -21,14 +22,21 @@ namespace Core.Infrastructure
 			Bytes = bytes;
 		}
 
+		public DataSize(double value, SizeUnit unit)
+		{
+			Bytes = (long)(value * Math.Pow(1024, (double)unit));
+		}
+
 		/// <summary>
 		/// 获取该大小量在指定单位下的数值。
 		/// </summary>
 		/// <param name="unit">单位</param>
 		/// <returns>数值</returns>
-		public double OfUnit(SizeUnit unit)
+		public double OfUnit(SizeUnit unit) => ToDimension((double)unit);
+
+		private double ToDimension(double dimension)
 		{
-			return Bytes / Math.Pow(1024, (double)unit);
+			return Bytes / Math.Pow(1024, dimension);
 		}
 
 		/// <summary>
@@ -62,9 +70,17 @@ namespace Core.Infrastructure
 			return new DataSize((long)Math.Round(bytes));
 		}
 
-		internal double OfUnit(object sizeunit)
+		public static double ConvertUnit(double value, SizeUnit origin, SizeUnit target)
 		{
-			throw new NotImplementedException();
+			return new DataSize(value, origin).OfUnit(target);
+		}
+
+		public override string ToString()
+		{
+			var dim = (int)Math.Log(Bytes, 1024);
+			var unit = dim == 0 ? "" : SIZE_UNITS[dim - 1].ToString();
+			var number = Math.Round(ToDimension(dim), 2);
+			return $"{number} {unit}B";
 		}
 	}
 }

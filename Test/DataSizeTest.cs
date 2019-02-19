@@ -44,5 +44,16 @@ namespace Test
 
 			Assert.AreEqual(-1, new DataSize(-1048576).OfUnit(SizeUnit.MB));
 		}
+
+		[TestMethod]
+		public void TestToString()
+		{
+			Assert.AreEqual("500 B", new DataSize(500).ToString());
+			Assert.AreEqual("20.19 TB", new DataSize(20.19, SizeUnit.TB).ToString());
+
+			Assert.AreEqual("500 KB", new DataSize(500 << 10).ToString());
+
+			Assert.AreEqual("12.25 MB", new DataSize((12 << 20) + (252 << 10)).ToString());
+		}
 	}
 }
