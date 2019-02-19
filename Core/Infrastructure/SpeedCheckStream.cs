@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Core.Infrastructure
 {
@@ -20,36 +22,51 @@ namespace Core.Infrastructure
 
 		private readonly Stream innerStream;
 
-		private long readLength;
-		private long minRead;
+		private bool disposed;
 
-		private long writeLength;
-
-		private DateTime time;
+		private DataSize minRead;
+		private DateTime lastRead;
 
 		public SpeedCheckStream(Stream innerStream)
 		{
 			this.innerStream = innerStream;
 		}
 
-		public void StartReadCheck(long min)
+		public void StartReadCheck(DataSize min)
 		{
-			ReadTimeout = 1000;
 			minRead = min;
-			time = DateTime.Now;
+			lastRead = DateTime.Now;
+		}
+
+		private async Task ReadTimeoutLoop()
+		{
+			await Task.Delay(1000);
 		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			var length = innerStream.Read(buffer, offset, count);
-			readLength += length;
+
+			var speed = length / (DateTime.Now - lastRead).TotalMilliseconds;
+			if (speed < minRead.Bytes)
+			{
+				var sps = new DataSize((long)speed);
+				throw new IOException($"当前读取速度{sps} < {minRead}/S");
+			}
+
+			lastRead = DateTime.Now;
 			return length;
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
 			innerStream.Write(buffer, offset, count);
-			writeLength += count;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			disposed = true;
+			innerStream.Dispose();
 		}
 
 		public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);

@@ -16,6 +16,8 @@ namespace Core
 
 		public CookieContainer Cookies { get; } = new CookieContainer();
 
+		public bool Rotation { get; set; }
+
 		private readonly LinkedList<IPRecord> proxies = new LinkedList<IPRecord>();
 
 		private bool disposed;
@@ -83,11 +85,16 @@ namespace Core
 			return null;
 		}
 
-		public Task<HttpResponseMessage> Request(HttpRequestMessage request)
+		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
 		{
 			if (TryGetAvailable(out var record))
 			{
-				return record.Client.Request(request);
+				var result = await record.Client.Request(request);
+				if (Rotation)
+					proxies.AddLast(record);
+				else
+					proxies.AddFirst(record);
+				return result;
 			}
 			throw new ExhentaiException("没有可用的IP");
 		}
@@ -101,7 +108,10 @@ namespace Core
 				try
 				{
 					var result = await record.Client.RequestPage(url);
-					proxies.AddLast(record);
+					if (Rotation)
+						proxies.AddLast(record);
+					else
+						proxies.AddFirst(record);
 					return result;
 				}
 				catch (BannedException e)

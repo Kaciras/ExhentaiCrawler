@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Infrastructure;
 
 namespace Core
 {
@@ -53,7 +54,7 @@ namespace Core
 			//	tasks[i] = RunWorker();
 			//}
 
-			await DownloadImage(40);
+			await DownloadImage(40); // 这页是真的下载慢
 			await DownloadImage(41);
 
 			//await Task.WhenAll(tasks);
@@ -80,7 +81,7 @@ namespace Core
 				catch
 				{
 					// 读取失败抛OOM异常什么鬼啦？？？
-					Console.WriteLine($"无法解析图片文件：{file.Name}");
+					Console.WriteLine($"无法解析已存在的图片文件：{file.Name}");
 				}
 			}
 			return exists;
@@ -114,7 +115,6 @@ namespace Core
 			using (var input = await image.GetOriginal())
 			using (var output = File.OpenWrite(Path.Combine(STORE_PATH, image.FileName)))
 			{
-				input.ReadTimeout = 2000;
 				await input.CopyToAsync(output);
 			}
 		}

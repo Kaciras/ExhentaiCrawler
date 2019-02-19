@@ -76,7 +76,6 @@ namespace Core
 
 			var pageSize = imageListPage[0].Count;
 			var page = index / pageSize;
-			index = index % pageSize;
 
 			var list = imageListPage[page];
 			if (list == null)
@@ -85,8 +84,8 @@ namespace Core
 				list = imageListPage[page] = GalleryParser.ParseImages(galleryPage);
 			}
 
-			var link = list[index];
-			return new ImageResource(client, this, index, link.Key, link.FileName);
+			var link = list[index % pageSize];
+			return new ImageResource(client, this, index + 1, link.Key, link.FileName);
 		}
 	}
 }

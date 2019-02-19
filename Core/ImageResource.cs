@@ -52,9 +52,20 @@ namespace Core
 				uri = redirect.Headers.Location;
 			}
 
-			var response = await client.Request(uri);
-			response.EnsureSuccessStatusCode();
-			return await response.Content.ReadAsStreamAsync();
+			for (int i = 0; i < 2; i++)
+			{
+				try
+				{
+					var response = await client.Request(uri);
+					response.EnsureSuccessStatusCode();
+					return await response.Content.ReadAsStreamAsync();
+				}
+				catch (TaskCanceledException)
+				{
+					// TODO: 据测试这里必须要重试一次，原因未知
+				}
+			}
+			throw new TaskCanceledException();
 		}
 
 		/// <summary>

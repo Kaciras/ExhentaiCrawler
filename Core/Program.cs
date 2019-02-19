@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommandLine;
@@ -40,11 +41,14 @@ namespace Core
 
 		private static void DownloadGallery(DownloadOptions options)
 		{
-			(var start, var end) = Utils.ParseRange(options.Pages);
+			var client = new PooledExhentaiClient();
+			client.AddLocalIP();
+			client.AddProxy(new WebProxy("localhost", 2080), true);
 
-			var exhentai = new Exhentai(new ExhentaiHttpClient());
+			var exhentai = new Exhentai(client);
 			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
 
+			(var start, var end) = Utils.ParseRange(options.Pages);
 			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end, options.Force);
 			work.Concurrent = options.Concurrent;
 			RunAsyncTask(work.Run).Wait();

@@ -23,10 +23,7 @@ namespace Core.Infrastructure
 			for (var i = MaxRetries; i >= 0; i--)
 			{
 				response = await base.SendAsync(request, token);
-				if (response.IsSuccessStatusCode)
-				{
 					return response;
-				}
 			}
 			return response;
 		}
