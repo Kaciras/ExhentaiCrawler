@@ -33,7 +33,7 @@ namespace Core
 				ConnectTimeout = TimeSpan.FromSeconds(3),
 				ResponseDrainTimeout = TimeSpan.FromSeconds(3),
 			};
-			client = new HttpClient(new RetryHandler(handler), true)
+			client = new HttpClient(handler, true)
 			{
 				Timeout = TimeSpan.FromSeconds(TIMEOUT)
 			};
@@ -41,14 +41,13 @@ namespace Core
 
 		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
 		{
-			// 据说这两个头不同会影响返回的页面
+			// 可能有Referer检测，使用反跟踪来绕过
 			request.Headers.Add("DNT", "1");
 			request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+
+			// 据说这两个头不同会影响返回的页面
 			request.Headers.UserAgent.ParseAdd(@"Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0");
 			request.Headers.AcceptLanguage.ParseAdd("zh,zh-CN;q=0.7,en;q=0.3");
-			request.Headers.Pragma.ParseAdd("no-cache");
-			request.Headers.CacheControl = CacheControlHeaderValue.Parse("no-cache");
-			request.Version = new Version(1, 1);
 
 			var response = await client.SendAsync(request);
 			if (response.StatusCode == HttpStatusCode.Found && response.Headers.Location.Host == "forums.e-hentai.org")

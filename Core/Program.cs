@@ -8,6 +8,19 @@ using CommandLine;
 [assembly: InternalsVisibleTo("Test")]
 namespace Core
 {
+	[Verb("login", HelpText = "设置并保存登录信息，以便以后使用")]
+	internal sealed class LoginOptions
+	{
+		[Value(0, Required = true, HelpText = "用户名")]
+		public string UserName { get; set; }
+
+		[Value(1, Required = true, HelpText = "密码")]
+		public string Password { get; set; }
+
+		[Option('c', "cookie", HelpText = "Cookie模式，分别设置UserName和Password为 ipb_member_id 和 ipb_pass_hash")]
+		public bool CookieMode { get; set; }
+	}
+
 	[Verb("download", HelpText = "下载图册")]
 	internal sealed class DownloadOptions
 	{
@@ -24,19 +37,18 @@ namespace Core
 		public int Concurrent { get; set; }
 	}
 
-	[Verb("statistics", HelpText = "启动统计爬虫")]
-	internal sealed class StatisticsOptions
-	{
-
-	}
-
 	internal static class Program
 	{
 		private static void Main(string[] args)
 		{
-			Parser.Default.ParseArguments<DownloadOptions, StatisticsOptions>(args)
-				.WithParsed<DownloadOptions>(DownloadGallery)
-				.WithParsed<StatisticsOptions>(RunStatisticsCrawler);
+			Parser.Default.ParseArguments<DownloadOptions, LoginOptions>(args)
+				.WithParsed<LoginOptions>(Login)
+				.WithParsed<DownloadOptions>(DownloadGallery);
+		}
+
+		private static void Login(LoginOptions options)
+		{
+
 		}
 
 		private static void DownloadGallery(DownloadOptions options)
@@ -52,11 +64,6 @@ namespace Core
 			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end, options.Force);
 			work.Concurrent = options.Concurrent;
 			RunAsyncTask(work.Run).Wait();
-		}
-
-		private static void RunStatisticsCrawler(StatisticsOptions options)
-		{
-
 		}
 
 		private static async Task RunAsyncTask(Func<Task> asyncAction)

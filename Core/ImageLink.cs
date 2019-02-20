@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Core
+﻿namespace Core
 {
 	/// <summary>
 	/// 从画册页面的图片列表上能得到的信息。

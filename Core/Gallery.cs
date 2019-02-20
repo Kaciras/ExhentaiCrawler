@@ -58,7 +58,6 @@ namespace Core
 		/// 获取该画册的一张图片。
 		/// </summary>
 		/// <param name="index">页码，从1开始</param>
-		/// <returns></returns>
 		public async ValueTask<ImageResource> GetImage(int index)
 		{
 			// ValueTask的使用：
