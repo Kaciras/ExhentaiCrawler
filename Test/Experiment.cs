@@ -25,7 +25,7 @@ namespace Test
 
 			Assert.AreNotEqual("name2", match.Name);
 			Assert.AreEqual(1, match.Captures.Count);
-			Assert.AreNotSame(match, match.Captures[0]);
+			Assert.AreSame(match, match.Captures[0]);
 		}
 
 		[TestMethod]
@@ -37,17 +37,6 @@ namespace Test
 			var match = re.Match(text);
 
 			Assert.IsTrue(match.Captures.Count > 0);
-		}
-
-		[TestMethod]
-		public void MyTestMethod()
-		{
-			var text = "12345678";
-			var re = new Regex(@"(?<=[0-9]{3})");
-
-			var replaced = re.Replace(text, "_");
-
-			Assert.AreEqual("12_345_678", replaced);
 		}
 	}
 }

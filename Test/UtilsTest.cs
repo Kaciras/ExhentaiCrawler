@@ -19,7 +19,5 @@ namespace Test
 			Assert.AreEqual((64, 128), Utils.ParseRange("64-128"));
 			Assert.AreEqual((null, null), Utils.ParseRange("-"));
 		}
-
-		
 	}
 }

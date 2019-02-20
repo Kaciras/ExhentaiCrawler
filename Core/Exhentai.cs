@@ -12,10 +12,10 @@ namespace Core
 	{
 		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?$";
 
-		static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
-		static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
+		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
+		private static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
-		readonly IExhentaiClient client;
+		private readonly IExhentaiClient client;
 
 		public Exhentai(IExhentaiClient client)
 		{

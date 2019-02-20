@@ -9,14 +9,10 @@ using Core.Infrastructure;
 
 namespace Core
 {
-	static class GalleryParser
+	internal static class GalleryParser
 	{
-		readonly static Regex IMAGE_URL = new Regex(@"https://exhentai.org/s/([^/]+)/(\d+)-(\d+)", RegexOptions.Compiled);
-
 		// 种子直接正则了，注意以>开头，保证与文本中的符号(&gt;)区分开
 		readonly static Regex TORRENT = new Regex(@">Torrent Download \( (\d+) \)");
-
-		readonly static char[] SIZE_UNIT = { 'K', 'M', 'G', 'T' };
 
 		public static Gallery Parse(Gallery gallery, string html)
 		{

@@ -11,11 +11,6 @@ namespace Core
 	{
 		public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)");
 
-		private static readonly Regex FULL_IMG = new Regex("https://exhentai.org/fullimg.php[^\"]+");
-		private static readonly Regex IMG_SRC = new Regex(" src=\"([^\"]+)");
-		private static readonly Regex SHOWKEY_VAR = new Regex("var showkey=\"(\\w+)\";");
-		private static readonly Regex FULLIMAGE = new Regex(@"fullimg.php\?gid=\d+&page=\d+&key=(\w+)");
-
 		public Gallery Gallery { get; }
 
 		public string ImageKey { get; }
