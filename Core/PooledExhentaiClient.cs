@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Core.Infrastructure;
 
@@ -32,7 +33,53 @@ namespace Core
 			proxies.AddFirst(new IPRecord(null, GFW));
 		}
 
+		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
+		{
+			if (TryGetAvailable(out var record))
+			{
+				var result = await record.Client.Request(request);
+				GiveBack(record);
+				return result;
+			}
+			throw new ExhentaiException("没有可用的IP");
+		}
+
+		public async Task<string> RequestPage(string url)
+		{
+			Exception lastException = null;
+
+			while (TryGetAvailable(out var record))
+			{
+				try
+				{
+					var result = await record.Client.RequestPage(url);
+					GiveBack(record);
+					return result;
+				}
+				catch (BannedException e)
+				{
+					lastException = e;
+					record.BanExpires = e.ReleaseTime;
+					AddToQueue(record, banQueue);
+				}
+				catch(LimitReachedException e)
+				{
+					lastException = e;
+					record.LimitReached = DateTime.Now;
+					AddToQueue(record, limitQueue);
+				}
+			}
+			throw lastException;
+		}
+
+		public void Dispose()
+		{
+			disposed = true;
+			proxies.ForEach(r => r.Client?.Dispose());
+		}
+
 		// 查找一个可用的IP
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		private bool TryGetAvailable(out IPRecord record)
 		{
 			if (disposed)
@@ -51,7 +98,7 @@ namespace Core
 				record = FindInQueue(banQueue) ?? FindInQueue(limitQueue);
 			}
 
-			if(record == null)
+			if (record == null)
 			{
 				return false;
 			}
@@ -62,7 +109,7 @@ namespace Core
 			}
 			return true;
 		}
-
+		
 		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue)
 		{
 			if (queue.Count == 0)
@@ -81,63 +128,24 @@ namespace Core
 					return banQueue.Dequeue();
 				}
 			}
-
 			return null;
 		}
 
-		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		private void GiveBack(IPRecord record)
 		{
-			if (TryGetAvailable(out var record))
-			{
-				var result = await record.Client.Request(request);
-				if (Rotation)
-					proxies.AddLast(record);
-				else
-					proxies.AddFirst(record);
-				return result;
-			}
-			throw new ExhentaiException("没有可用的IP");
+			if (Rotation)
+				proxies.AddLast(record);
+			else
+				proxies.AddFirst(record);
 		}
 
-		public async Task<string> RequestPage(string url)
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		private void AddToQueue(IPRecord record, PriorityQueue<IPRecord> queue)
 		{
-			Exception lastException = null;
-
-			while (TryGetAvailable(out var record))
-			{
-				try
-				{
-					var result = await record.Client.RequestPage(url);
-					if (Rotation)
-						proxies.AddLast(record);
-					else
-						proxies.AddFirst(record);
-					return result;
-				}
-				catch (BannedException e)
-				{
-					lastException = e;
-					record.Client.Dispose();
-					record.Client = null;
-					record.BanExpires = e.ReleaseTime;
-					banQueue.Enqueue(record);
-				}
-				catch(LimitReachedException e)
-				{
-					lastException = e;
-					record.Client.Dispose();
-					record.Client = null;
-					record.LimitReached = DateTime.Now;
-					limitQueue.Enqueue(record);
-				}
-			}
-			throw lastException;
-		}
-
-		public void Dispose()
-		{
-			disposed = true;
-			proxies.ForEach(r => r.Client?.Dispose());
+			record.Client.Dispose();
+			record.Client = null;
+			queue.Enqueue(record);
 		}
 	}
 }
