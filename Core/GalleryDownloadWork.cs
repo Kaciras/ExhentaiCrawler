@@ -10,8 +10,8 @@ namespace Core
 {
 	public sealed class GalleryDownloadWork
 	{
-		public const int DEFAULT_CONCURRENT = 4;
-		const string STORE_PATH = @"C:\Users\XuFan\Desktop\exd";
+		public const int DEFAULT_CONCURRENT = 1;
+		const string STORE_PATH = @"C:\Users\XuFan\Desktop";
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
@@ -23,6 +23,7 @@ namespace Core
 		private readonly bool force;
 
 		private Gallery gallery;
+		private string store;
 		private ISet<string> downloaded;
 		private int index;
 
@@ -37,25 +38,24 @@ namespace Core
 
 		public async Task Run()
 		{
-			Directory.CreateDirectory(STORE_PATH);
-
 			gallery = await exhentai.GetGallery(uri);
+
+			// 以画册名创建文件夹保存，优先使用日本名
+			store = Path.Combine(STORE_PATH, gallery.JapaneseName ?? gallery.Name);
+			Directory.CreateDirectory(store);
 			downloaded = force ? new SortedSet<string>() : ScanDownloaded();
 
 			Console.WriteLine("下载图册：" + gallery.Name);
 			var start = startPage ?? 1;
 			var end = endPage ?? gallery.Length;
 
-			//var tasks = new Task[Concurrent];
-			//for (int i = 0; i <= tasks.Length; i++)
-			//{
-			//	tasks[i] = RunWorker();
-			//}
+			var tasks = new Task[Concurrent];
+			for (int i = 0; i < tasks.Length; i++)
+			{
+				tasks[i] = RunWorker();
+			}
 
-			await DownloadImage(40); // 这页是真的下载慢
-			await DownloadImage(41);
-
-			//await Task.WhenAll(tasks);
+			await Task.WhenAll(tasks);
 			Console.WriteLine("下载完毕");
 		}
 
@@ -66,7 +66,7 @@ namespace Core
 		private ISet<string> ScanDownloaded()
 		{
 			var exists = new HashSet<string>();
-			var dirInfo = new DirectoryInfo(STORE_PATH);
+			var dirInfo = new DirectoryInfo(store);
 
 			foreach (var file in dirInfo.EnumerateFiles())
 			{
@@ -95,6 +95,7 @@ namespace Core
 			try
 			{
 				await DownloadImage(index);
+				Console.WriteLine($"第{index}张图片下载完毕");
 			}
 			catch(Exception e)
 			{
@@ -111,7 +112,7 @@ namespace Core
 				return;
 			}
 			using (var input = await image.GetOriginal())
-			using (var output = File.OpenWrite(Path.Combine(STORE_PATH, image.FileName)))
+			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
 				await input.CopyToAsync(output);
 			}
