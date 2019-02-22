@@ -91,6 +91,7 @@ namespace Core
 			// 第7项Favorited: 2406 times
 			gallery.Favorited = int.Parse(tableRows[6].LastChild.InnerText.Split(" ")[0]);
 
+			// 最下面的星星
 			var ratingCount = int.Parse(doc.GetElementbyId("rating_count").InnerText);
 			var ratingAvg = double.Parse(doc.GetElementbyId("rating_label").InnerText.Split(" ")[1]);
 			gallery.Rating = new Rating(ratingCount, ratingAvg);

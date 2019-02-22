@@ -35,7 +35,7 @@ namespace Core
 
 		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
 		{
-			if (TryGetAvailable(out var record))
+			if (TryGetAvailable(out var record, 0))
 			{
 				var result = await record.Client.Request(request);
 				GiveBack(record);
@@ -46,7 +46,7 @@ namespace Core
 
 		public async Task<string> RequestPage(string url)
 		{
-			while (TryGetAvailable(out var record))
+			while (TryGetAvailable(out var record, 0))
 			{
 				try
 				{
@@ -76,7 +76,7 @@ namespace Core
 
 		// 查找一个可用的IP
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		private bool TryGetAvailable(out IPRecord record)
+		private bool TryGetAvailable(out IPRecord record, int cost)
 		{
 			if (disposed)
 			{
@@ -91,7 +91,7 @@ namespace Core
 			}
 			else
 			{
-				record = FindInQueue(banQueue) ?? FindInQueue(limitQueue);
+				record = FindInQueue(banQueue, cost) ?? FindInQueue(limitQueue, cost);
 			}
 
 			if (record == null)
@@ -106,7 +106,7 @@ namespace Core
 			return true;
 		}
 		
-		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue)
+		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue, int costRequire)
 		{
 			if (queue.Count == 0)
 			{
@@ -118,8 +118,8 @@ namespace Core
 			if (available.BanExpires < now)
 			{
 				// 每分钟回复3点限额
-				var costReduction = (now - available.LimitReached).Minutes * 3;
-				if (costReduction > LIMIT_PERIOD)
+				var restoration = (now - available.LimitReached).Minutes * 3;
+				if (restoration >= costRequire)
 				{
 					return banQueue.Dequeue();
 				}

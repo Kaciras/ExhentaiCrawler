@@ -64,8 +64,15 @@ namespace Core
 			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
 
 			(var start, var end) = Utils.ParseRange(options.Pages);
-			var work = new GalleryDownloadWork(exhentai, options.Uri, start, end, options.Force);
-			work.Concurrent = options.Concurrent;
+
+			var work = new GalleryDownloadWork(exhentai, options.Uri)
+			{
+				StartPage = start,
+				EndPage = end,
+				Force = options.Force,
+				StorePath = @"C:\Users\XuFan\Desktop",
+				Concurrent = options.Concurrent
+			};
 			RunAsyncTask(work.Run).Wait();
 		}
 

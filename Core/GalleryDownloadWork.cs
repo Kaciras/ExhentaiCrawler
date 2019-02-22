@@ -11,29 +11,27 @@ namespace Core
 	public sealed class GalleryDownloadWork
 	{
 		public const int DEFAULT_CONCURRENT = 1;
-		const string STORE_PATH = @"C:\Users\XuFan\Desktop";
+
+		public int? StartPage { get; set; }
+		public int? EndPage { get; set; }
+
+		public bool Force { get; set; }
+		public string StorePath { get; set; }
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
 		private readonly Exhentai exhentai;
-
 		private readonly string uri;
-		private readonly int? startPage;
-		private readonly int? endPage;
-		private readonly bool force;
 
 		private Gallery gallery;
 		private string store;
 		private ISet<string> downloaded;
 		private int index;
 
-		public GalleryDownloadWork(Exhentai exhentai, string uri, int? startPage, int? endPage, bool force)
+		public GalleryDownloadWork(Exhentai exhentai, string uri)
 		{
 			this.exhentai = exhentai;
 			this.uri = uri;
-			this.startPage = startPage;
-			this.endPage = endPage;
-			this.force = force;
 		}
 
 		public async Task Run()
@@ -41,13 +39,13 @@ namespace Core
 			gallery = await exhentai.GetGallery(uri);
 
 			// 以画册名创建文件夹保存，优先使用日本名
-			store = Path.Combine(STORE_PATH, gallery.JapaneseName ?? gallery.Name);
+			store = Path.Combine(StorePath ?? Environment.CurrentDirectory, gallery.JapaneseName ?? gallery.Name);
 			Directory.CreateDirectory(store);
-			downloaded = force ? new SortedSet<string>() : ScanDownloaded();
+			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
 
 			Console.WriteLine("下载图册：" + gallery.Name);
-			var start = startPage ?? 1;
-			var end = endPage ?? gallery.Length;
+			var start = StartPage ?? 1;
+			var end = EndPage ?? gallery.Length;
 
 			var tasks = new Task[Concurrent];
 			for (int i = 0; i < tasks.Length; i++)
@@ -60,19 +58,19 @@ namespace Core
 		}
 
 		/// <summary>
-		/// 扫描存储目录中已存在的图片文件
+		/// 扫描存储目录中已存在的图片文件，这些文件将被跳过不再去下载。
 		/// </summary>
 		/// <returns>文件名集合</returns>
 		private ISet<string> ScanDownloaded()
 		{
-			var exists = new HashSet<string>();
 			var dirInfo = new DirectoryInfo(store);
+			var exists = new HashSet<string>();
 
 			foreach (var file in dirInfo.EnumerateFiles())
 			{
 				try
 				{
-					// 如果一次下载中断，可能出现不完整的文件，故不能只看名字，必须测试读取。
+					// 如果一次下载中断，可能出现不完整的文件，故必须测试读取。
 					Image.FromFile(file.FullName).Dispose();
 					exists.Add(file.Name);
 				}

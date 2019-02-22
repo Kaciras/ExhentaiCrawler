@@ -1,7 +1,7 @@
 ﻿namespace Core
 {
 	/// <summary>
-	/// 从画册页面的图片列表上能得到的信息。
+	/// 从画册页面的图片预览列表上能得到的信息。
 	/// </summary>
 	internal readonly struct ImageLink
 	{
