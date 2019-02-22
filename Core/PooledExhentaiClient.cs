@@ -46,8 +46,6 @@ namespace Core
 
 		public async Task<string> RequestPage(string url)
 		{
-			Exception lastException = null;
-
 			while (TryGetAvailable(out var record))
 			{
 				try
@@ -58,18 +56,16 @@ namespace Core
 				}
 				catch (BannedException e)
 				{
-					lastException = e;
 					record.BanExpires = e.ReleaseTime;
 					AddToQueue(record, banQueue);
 				}
-				catch(LimitReachedException e)
+				catch (LimitReachedException)
 				{
-					lastException = e;
 					record.LimitReached = DateTime.Now;
 					AddToQueue(record, limitQueue);
 				}
 			}
-			throw lastException;
+			throw new ExhentaiException("没有可用的IP");
 		}
 
 		public void Dispose()

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Core.Infrastructure
 {
+	/// <summary>
+	/// 扩展默认的HttpClient，使其更像浏览器。
+	/// </summary>
 	public class BrowserLikeHttpClient : HttpClient
 	{
 		private const string ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";

@@ -44,6 +44,9 @@ namespace Core
 			Parser.Default.ParseArguments<DownloadOptions, LoginOptions>(args)
 				.WithParsed<LoginOptions>(Login)
 				.WithParsed<DownloadOptions>(DownloadGallery);
+
+			Console.WriteLine("运行结束，按任意键继续");
+			Console.Read();
 		}
 
 		private static void Login(LoginOptions options)

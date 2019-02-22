@@ -95,7 +95,6 @@ namespace Core
 			try
 			{
 				await DownloadImage(index);
-				Console.WriteLine($"第{index}张图片下载完毕");
 			}
 			catch(Exception e)
 			{
@@ -109,12 +108,14 @@ namespace Core
 			var image = await gallery.GetImage(index);
 			if (downloaded.Contains(image.FileName))
 			{
+				//Console.WriteLine($"第{index}张图片{image.FileName}已经存在");
 				return;
 			}
 			using (var input = await image.GetOriginal())
 			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
 				await input.CopyToAsync(output);
+				Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
 			}
 		}
 	}
