@@ -17,6 +17,7 @@ namespace Core
 
 		public bool Force { get; set; }
 		public string StorePath { get; set; }
+		public bool Flatten { get; set; } // 不自动创建文件夹
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
@@ -38,8 +39,12 @@ namespace Core
 		{
 			gallery = await exhentai.GetGallery(uri);
 
-			// 以画册名创建文件夹保存，优先使用日本名
-			store = Path.Combine(StorePath ?? Environment.CurrentDirectory, gallery.JapaneseName ?? gallery.Name);
+			store = StorePath ?? Environment.CurrentDirectory;
+			if(!Flatten)
+			{
+				// 以画册名创建文件夹保存，优先使用日本名
+				store = Path.Combine(store, gallery.JapaneseName ?? gallery.Name);
+			}
 			Directory.CreateDirectory(store);
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
 
