@@ -10,7 +10,7 @@ namespace Core
 {
 	public class Exhentai
 	{
-		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?$";
+		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/";
 
 		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 		private static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);

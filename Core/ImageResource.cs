@@ -45,7 +45,7 @@ namespace Core
 		{
 			await EnsureImagePageLoaded();
 
-			if (FullImageUrl != null)
+			if (FullImageUrl == null)
 			{
 				return null;
 			}

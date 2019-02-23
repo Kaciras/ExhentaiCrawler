@@ -102,6 +102,7 @@ namespace Core
 			catch(Exception e)
 			{
 				Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
+				Console.WriteLine(e.StackTrace);
 			}
 			await RunWorker();
 		}
