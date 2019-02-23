@@ -27,7 +27,9 @@ namespace Core
 		private Gallery gallery;
 		private string store;
 		private ISet<string> downloaded;
+
 		private int index;
+		private DataSize downloadSize;
 
 		public GalleryDownloadWork(Exhentai exhentai, string uri)
 		{
@@ -59,7 +61,7 @@ namespace Core
 			}
 
 			await Task.WhenAll(tasks);
-			Console.WriteLine("下载完毕");
+			Console.WriteLine("下载完毕，下载了" + downloadSize);
 		}
 
 		/// <summary>
@@ -120,7 +122,10 @@ namespace Core
 			using (var input = await (originImg == null ? image.GetImageStream(): originImg.GetStream()))
 			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
-				await input.CopyToAsync(output);
+				var statisticStream = new StatisticStream(input);
+				await statisticStream.CopyToAsync(output);
+
+				downloadSize += statisticStream.ReadCount;
 				Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
 			}
 		}

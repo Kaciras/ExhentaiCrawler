@@ -82,5 +82,20 @@ namespace Core.Infrastructure
 			var number = Math.Round(ToDimension(dim), 2);
 			return $"{number} {unit}B";
 		}
+
+		public static DataSize operator +(DataSize left, DataSize right)
+		{
+			return new DataSize(left.Bytes + right.Bytes);
+		}
+
+		public static DataSize operator -(DataSize left, DataSize right)
+		{
+			return new DataSize(left.Bytes - right.Bytes);
+		}
+
+		/// <summary>
+		/// 字节转大小
+		/// </summary>
+		public static implicit operator DataSize(int bytes) => new DataSize(bytes);
 	}
 }
