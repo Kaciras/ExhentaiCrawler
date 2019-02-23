@@ -6,18 +6,17 @@ using System.Threading.Tasks;
 
 namespace Core.Request
 {
-	public class HtmlPageRequest : ExhentaiRequest<string>
+	public class HtmlPageRequest<T> : SiteRequest<T>
 	{
-		private readonly Uri uri;
+		private readonly Func<string, T> parser;
 
-		public HtmlPageRequest(Uri uri)
+		public HtmlPageRequest(Uri uri, Func<string, T> parser) : base(uri)
 		{
-			this.uri = uri;
+			this.parser = parser;
 		}
 
-		public Task<string> Execute(HttpClient httpClient)
-		{
-			return httpClient.GetStringAsync(uri);
-		}
+		protected override HttpRequestMessage CreateRequestMessage() => new HttpRequestMessage(HttpMethod.Get, uri);
+
+		protected override T HandleResponse(HttpResponseMessage response, string body) => parser(body);
 	}
 }

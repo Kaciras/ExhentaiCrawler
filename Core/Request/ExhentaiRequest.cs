@@ -13,6 +13,10 @@ namespace Core.Request
 	/// <typeparam name="T">返回结果类型</typeparam>
 	public interface ExhentaiRequest<T>
 	{
+		int Cost { get; }
+
+		bool GFW { get; }
+
 		Task<T> Execute(HttpClient httpClient);
 	}
 }

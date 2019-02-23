@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Core.Request;
 
 namespace Core
 {
@@ -15,9 +15,9 @@ namespace Core
 		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 		private static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
-		private readonly IExhentaiClient client;
+		private readonly ExhentaiClient client;
 
-		public Exhentai(IExhentaiClient client)
+		public Exhentai(ExhentaiClient client)
 		{
 			this.client = client;
 		}

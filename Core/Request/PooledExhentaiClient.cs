@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Core.Infrastructure;
 
-namespace Core
+namespace Core.Request
 {
-	public sealed class PooledExhentaiClient : IExhentaiClient
+	public sealed class PooledExhentaiClient : ExhentaiClient
 	{
 		private const int LIMIT_PERIOD = 20;
 
@@ -31,41 +31,6 @@ namespace Core
 		public void AddLocalIP(bool GFW = false)
 		{
 			proxies.AddFirst(new IPRecord(null, GFW));
-		}
-
-		public async Task<HttpResponseMessage> Request(HttpRequestMessage request)
-		{
-			if (TryGetAvailable(out var record, 0))
-			{
-				var result = await record.Client.Request(request);
-				GiveBack(record);
-				return result;
-			}
-			throw new ExhentaiException("没有可用的IP");
-		}
-
-		public async Task<string> RequestPage(string url)
-		{
-			while (TryGetAvailable(out var record, 0))
-			{
-				try
-				{
-					var result = await record.Client.RequestPage(url);
-					GiveBack(record);
-					return result;
-				}
-				catch (BannedException e)
-				{
-					record.BanExpires = e.ReleaseTime;
-					AddToQueue(record, banQueue);
-				}
-				catch (LimitReachedException)
-				{
-					record.LimitReached = DateTime.Now;
-					AddToQueue(record, limitQueue);
-				}
-			}
-			throw new ExhentaiException("没有可用的IP");
 		}
 
 		public void Dispose()
@@ -142,6 +107,30 @@ namespace Core
 			record.Client.Dispose();
 			record.Client = null;
 			queue.Enqueue(record);
+		}
+
+		public async Task<T> Request<T>(ExhentaiRequest<T> request)
+		{
+			while (TryGetAvailable(out var record, 0))
+			{
+				try
+				{
+					var result = await record.Client.Request(request);
+					GiveBack(record);
+					return result;
+				}
+				catch (BannedException e)
+				{
+					record.BanExpires = e.ReleaseTime;
+					AddToQueue(record, banQueue);
+				}
+				catch (LimitReachedException)
+				{
+					record.LimitReached = DateTime.Now;
+					AddToQueue(record, limitQueue);
+				}
+			}
+			throw new ExhentaiException("没有可用的IP");
 		}
 	}
 }
