@@ -32,35 +32,27 @@ namespace Core
 			FileName = filename;
 		}
 
+		public async Task<Stream> GetImageStream()
+		{
+			return await (await client.Request(ImageUrl)).Content.ReadAsStreamAsync();
+		}
+
 		/// <summary>
 		/// 下载原始图片，此操作将消耗限额。
+		/// 如果没有原图，则返回null
 		/// </summary>
-		public async Task<Stream> GetOriginal()
+		public async Task<OriginImage> GetOriginal()
 		{
 			await EnsureImagePageLoaded();
-			var uri = new Uri(ImageUrl);
 
 			if (FullImageUrl != null)
 			{
-				var redirect = await client.Request(new Uri(FullImageUrl));
-				redirect.Dispose();
-				uri = redirect.Headers.Location;
+				return null;
 			}
-
-			for (int i = 0; i < 2; i++)
+			using (var redirect = await client.Request(FullImageUrl))
 			{
-				try
-				{
-					var response = await client.Request(uri);
-					response.EnsureSuccessStatusCode();
-					return await response.Content.ReadAsStreamAsync();
-				}
-				catch (TaskCanceledException)
-				{
-					// TODO: 据测试这里必须要重试一次，原因未知
-				}
+				return new OriginImage(client, redirect.Headers.Location);
 			}
-			throw new TaskCanceledException();
 		}
 
 		/// <summary>

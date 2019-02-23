@@ -114,7 +114,9 @@ namespace Core
 				//Console.WriteLine($"第{index}张图片{image.FileName}已经存在");
 				return;
 			}
-			using (var input = await image.GetOriginal())
+			var originImg = await image.GetOriginal();
+
+			using (var input = await (originImg == null ? image.GetImageStream(): originImg.GetStream()))
 			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
 				await input.CopyToAsync(output);
