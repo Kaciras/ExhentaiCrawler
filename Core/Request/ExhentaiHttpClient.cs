@@ -11,10 +11,6 @@ namespace Core.Request
 {
 	public class ExhentaiHttpClient : ExhentaiClient
 	{
-		private const string ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-		private const string USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
-		private const string ACCEPT_LANGUAGE = "zh,zh-CN;q=0.7,en;q=0.3";
-
 		public CookieContainer Cookies { get; }
 
 		public TimeSpan Timeout
@@ -38,17 +34,16 @@ namespace Core.Request
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 			};
 
-			client = new HttpClient(handler);
-
-			var headers = client.DefaultRequestHeaders;
-			headers.Accept.ParseAdd(ACCEPT);
-			headers.Add("DNT", "1");
-			headers.AcceptLanguage.ParseAdd(ACCEPT_LANGUAGE);
-			headers.UserAgent.ParseAdd(USER_AGENT);
+			client = new BrowserLikeHttpClient(handler);			
 		}
+
+		//const int REQUEST_PER_SECOND = 5;
+
+		//private int token = REQUEST_PER_SECOND;
 
 		public Task<T> Request<T>(ExhentaiRequest<T> request)
 		{
+			// TODO: Rate limiter
 			return request.Execute(client);
 		}
 
