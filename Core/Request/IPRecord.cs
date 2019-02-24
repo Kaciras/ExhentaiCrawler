@@ -3,12 +3,12 @@ using System.Net;
 
 namespace Core.Request
 {
-	internal sealed class IPRecord
+	public sealed class IPRecord
 	{
 		/// <summary>
 		/// 最近被封禁的到期时间，没有被封禁则视为在DateTime.MinValue的时间封禁。
 		/// </summary>
-		public DateTime BanExpires { get; set; } = DateTime.MinValue;
+		internal DateTime BanExpires { get; set; } = DateTime.MinValue;
 
 		/// <summary>
 		/// 最近达到限额的时间，没有达到过限额也视为在DateTime.MinValue达到过。
@@ -17,12 +17,12 @@ namespace Core.Request
 		///		故不维护限额的具体数值，而是一旦被限制就认为剩余限额为0并记录时间。
 		///	-->
 		/// </summary>
-		public DateTime LimitReached { get; set; } = DateTime.MinValue;
+		internal DateTime LimitReached { get; set; } = DateTime.MinValue;
 
 		/// <summary>
 		/// 该IP所对应的客户端
 		/// </summary>
-		public ExhentaiClient Client { get; set; }
+		internal ExhentaiClient Client { get; set; }
 
 		/// <summary>
 		/// 该IP是否处于中国特色网络环境中
