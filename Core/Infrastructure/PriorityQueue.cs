@@ -18,7 +18,7 @@ namespace Core.Infrastructure
 			items = new T[capacity];
 		}
 
-		private bool IsHigherPriority(int left, int right)
+		private bool IsHigher(int left, int right)
 		{
 			return compare(items[left], items[right]) < 0;
 		}
@@ -31,9 +31,8 @@ namespace Core.Infrastructure
 			}
 
 			var parent = (index - 1) / 2;
-			while (parent >= 0 && parent != index && IsHigherPriority(index, parent))
+			while (parent >= 0 && parent != index && IsHigher(index, parent))
 			{
-				// swap index and parent
 				var temp = items[index];
 				items[index] = items[parent];
 				items[parent] = temp;
@@ -58,12 +57,12 @@ namespace Core.Infrastructure
 				var right = 2 * index + 2;
 				var first = index;
 
-				if (left < Count && IsHigherPriority(left, first))
+				if (left < Count && IsHigher(left, first))
 				{
 					first = left;
 				}
 
-				if (right < Count && IsHigherPriority(right, first))
+				if (right < Count && IsHigher(right, first))
 				{
 					first = right;
 				}

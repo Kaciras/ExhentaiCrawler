@@ -55,7 +55,7 @@ namespace Core.Request
 		/// </summary>
 		/// <param name="response">响应</param>
 		/// <param name="body">响应内容</param>
-		/// <exception cref="BannedException">如果被封禁了</exception>
+		/// <exception cref="BanException">如果被封禁了</exception>
 		/// <exception cref="ExhentaiException">如果出现熊猫</exception>
 		public static void CheckResponse(HttpResponseMessage response, string body)
 		{
@@ -78,7 +78,7 @@ namespace Core.Request
 			{
 				var time = int.Parse(match.Groups[1]?.Value ?? "0");
 				time += int.Parse(match.Groups[2]?.Value ?? "0") * 60;
-				throw new BannedException(time);
+				throw new BanException(time);
 			}
 		}
 	}

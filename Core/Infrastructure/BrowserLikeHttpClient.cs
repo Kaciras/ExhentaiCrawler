@@ -24,7 +24,7 @@ namespace Core.Infrastructure
 
 		public override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
-			// 使用 DoNotTrack 来代替Referer头
+			// 如果没有 Referrer 头，就设置一个 DoNotTrack 来代替
 			if (request.Headers.Referrer == null)
 			{
 				request.Headers.Add("DNT", "1");

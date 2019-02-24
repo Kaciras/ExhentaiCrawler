@@ -35,8 +35,8 @@ namespace Core
 			var match = Regex.Match(@string, @"^(\d*)-(\d*)$");
 			if (match.Success)
 			{
-				var start = StringToNullableInt(match.Groups[1].Value);
-				var end = StringToNullableInt(match.Groups[2].Value);
+				var start = ParseNullableInt(match.Groups[1].Value);
+				var end = ParseNullableInt(match.Groups[2].Value);
 				return (start, end);
 			}
 			else if (int.TryParse(@string, out var index))
@@ -50,7 +50,7 @@ namespace Core
 		}
 
 		// 不能用三元运算，因为null和int不兼容，虽然返回值两个都兼容
-		private static int? StringToNullableInt(string @string)
+		private static int? ParseNullableInt(string @string)
 		{
 			if (string.IsNullOrEmpty(@string))
 			{

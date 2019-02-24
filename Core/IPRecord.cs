@@ -23,6 +23,9 @@ namespace Core
 		/// </summary>
 		public DateTime LimitReached { get; set; } = DateTime.MinValue;
 
+		/// <summary>
+		/// 该IP所对应的客户端
+		/// </summary>
 		public ExhentaiClient Client { get; set; }
 
 		/// <summary>

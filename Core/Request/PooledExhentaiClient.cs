@@ -111,7 +111,7 @@ namespace Core.Request
 					GiveBack(record);
 					return result;
 				}
-				catch (BannedException e)
+				catch (BanException e)
 				{
 					record.BanExpires = e.ReleaseTime;
 					AddToQueue(record, banQueue);
