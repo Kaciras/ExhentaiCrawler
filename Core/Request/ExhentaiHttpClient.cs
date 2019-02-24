@@ -11,11 +11,19 @@ namespace Core.Request
 {
 	public class ExhentaiHttpClient : ExhentaiClient
 	{
-		private const int TIMEOUT = 3;
+		private const string ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+		private const string USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0";
+		private const string ACCEPT_LANGUAGE = "zh,zh-CN;q=0.7,en;q=0.3";
 
 		public CookieContainer Cookies { get; }
 
-		private HttpClient client;
+		public TimeSpan Timeout
+		{
+			get => client.Timeout;
+			set => client.Timeout = value;
+		}
+
+		private readonly HttpClient client;
 
 		public ExhentaiHttpClient(IWebProxy proxy = null) : this(new CookieContainer(), proxy) { }
 
@@ -28,30 +36,16 @@ namespace Core.Request
 				AllowAutoRedirect = false, // 对未登录的判定和Peer记录要求不自动跳转
 				CookieContainer = cookies,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-				ConnectTimeout = TimeSpan.FromSeconds(3),
-				ResponseDrainTimeout = TimeSpan.FromSeconds(3),
 			};
-			client = new BrowserLikeHttpClient(handler)
-			{
-				Timeout = TimeSpan.FromSeconds(TIMEOUT)
-			};
+
+			client = new HttpClient(handler);
+
+			var headers = client.DefaultRequestHeaders;
+			headers.Accept.ParseAdd(ACCEPT);
+			headers.Add("DNT", "1");
+			headers.AcceptLanguage.ParseAdd(ACCEPT_LANGUAGE);
+			headers.UserAgent.ParseAdd(USER_AGENT);
 		}
-
-		//internal async Task<JObject> RequestApi(object body)
-		//{
-		//	var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-		//	var response = await client.PostAsync("https://exhentai.org/api.php", content);
-		//	var text = await response.Content.ReadAsStringAsync();
-
-		//	try
-		//	{
-		//		return JsonConvert.DeserializeObject<JObject>(text);
-		//	}
-		//	catch (JsonException)
-		//	{
-		//		throw new ExhentaiException("API请求出错：" + text);
-		//	}
-		//}
 
 		public Task<T> Request<T>(ExhentaiRequest<T> request)
 		{

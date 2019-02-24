@@ -8,27 +8,42 @@ using System.Threading.Tasks;
 
 namespace Core.Request
 {
-	public abstract class SiteRequest<T> : ExhentaiRequest<T>
+	// 内置的 HttpRequestHeaders 做了很大的建模，这里也不想在搞一套了，所以将配置部分暴露出来
+	public delegate void RequestConfigurer(HttpRequestMessage request);
+
+	public delegate T ResponseHandler<T>(HttpResponseMessage response, string body);
+
+	public class SiteRequest<T> : ExhentaiRequest<T>
 	{
 		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
 		public int Cost { get; set; }
+		public Uri Uri { get; }
 
-		public bool GFW => uri.Host == "exhentai.org";
+		private RequestConfigurer RrequestConfigurer { get; set; }
 
-		protected Uri uri;
+		private readonly ResponseHandler<T> responseHandler;
 
-		public SiteRequest(Uri uri)
+		public SiteRequest(Uri uri, ResponseHandler<T> responseHandler)
 		{
-			this.uri = uri;
+			Uri = uri;
+			this.responseHandler = responseHandler;
 		}
 
 		public async Task<T> Execute(HttpClient httpClient)
 		{
-			var response = await httpClient.SendAsync(CreateRequestMessage(), HttpCompletionOption.ResponseHeadersRead);
-			var body = await response.Content.ReadAsStringAsync();
-			CheckResponse(response, body);
-			return HandleResponse(response, body);
+			// HttpCompletionOption.ResponseHeadersRead 太长了写在下面不好看
+			const HttpCompletionOption HEADERS_READ = HttpCompletionOption.ResponseHeadersRead;
+
+			var request = new HttpRequestMessage(HttpMethod.Get, Uri);
+			RrequestConfigurer?.Invoke(request);
+
+			using (var response = await httpClient.SendAsync(request, HEADERS_READ))
+			{
+				var body = await response.Content.ReadAsStringAsync();
+				CheckResponse(response, body);
+				return responseHandler(response, body);
+			}
 		}
 
 		/// <summary>
@@ -62,9 +77,5 @@ namespace Core.Request
 				throw new BannedException(time);
 			}
 		}
-
-		protected abstract HttpRequestMessage CreateRequestMessage();
-
-		protected abstract T HandleResponse(HttpResponseMessage response, string body);
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using Core.Request;
 
 namespace Core
 {
@@ -22,14 +23,14 @@ namespace Core
 		/// </summary>
 		public DateTime LimitReached { get; set; } = DateTime.MinValue;
 
+		public ExhentaiClient Client { get; set; }
+
 		/// <summary>
-		/// 是否处于中国特色网络环境
+		/// 该IP是否处于中国特色网络环境中
 		/// </summary>
 		public bool GFW { get; }
 
 		public IWebProxy Proxy { get; }
-
-		public ExhentaiHttpClient Client { get; set; }
 
 		public IPRecord(IWebProxy proxy, bool GFW)
 		{

@@ -24,7 +24,9 @@ namespace Core
 
 		public async Task Login(string username, string password)
 		{
-			var x = new HttpRequestMessage(HttpMethod.Post, "https://forums.e-hentai.org/index.php?act=Login&CODE=01");
+			UriBuilder
+			var uri = new Uri("https://forums.e-hentai.org/index.php?act=Login&CODE=01");
+			var x = new HttpRequestMessage(HttpMethod.Post, uri);
 			x.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
 
 			x.Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -37,28 +39,38 @@ namespace Core
 				{ "ipb_login_submit", "Login!" },
 			});
 
-			using (var response = await client.Request(x))
+			HttpResponseMessage ResponseHandler(HttpResponseMessage response, string body)
 			{
 				response.EnsureSuccessStatusCode();
-
 				var body = await response.Content.ReadAsStringAsync();
+
 				if (!body.Contains("You are now logged in as"))
 				{
 					throw new ExhentaiException("登录失败");
 				}
 			}
+			
+			var request = new SiteRequest<HttpResponseMessage>(uri, (r,b) => r);
+
 
 			// 复制 .e-hentai 的Cookie到 .exhentai
-			var collection = client.Cookies.GetCookies(new Uri(".e-hentai.org"));
-			void CopyCookie(string name)
+			void CopyCookie(CookieCollection cookies, string name)
 			{
-				var cookie = collection[name];
+				var cookie = cookies[name];
 				client.Cookies.Add(new Cookie(name, cookie.Value, "/", ".exhentai.org"));
 			}
-			CopyCookie("ipb_member_id");
-			CopyCookie("ipb_pass_hash");
+
+			var collection = client.Cookies.GetCookies(new Uri(".e-hentai.org"));
+			CopyCookie(collection, "ipb_member_id");
+			CopyCookie(collection, "ipb_pass_hash");
 		}
 
+		/// <summary>
+		/// 设置与用户登录状态相关的几个Cookie。
+		/// </summary>
+		/// <param name="memberId">ipb_member_id 的值</param>
+		/// <param name="passHash">ipb_pass_hash 的值</param>
+		/// 
 		public void SetUser(string memberId, string passHash)
 		{
 			var cookies = client.Cookies;

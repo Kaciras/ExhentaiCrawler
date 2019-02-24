@@ -10,8 +10,6 @@ namespace Core.Request
 {
 	public sealed class PooledExhentaiClient : ExhentaiClient
 	{
-		private const int LIMIT_PERIOD = 20;
-
 		private readonly PriorityQueue<IPRecord> banQueue = new PriorityQueue<IPRecord>((a, b) => DateTime.Compare(a.BanExpires, b.BanExpires));
 		private readonly PriorityQueue<IPRecord> limitQueue = new PriorityQueue<IPRecord>((a, b) => DateTime.Compare(a.LimitReached, b.LimitReached));
 
@@ -33,15 +31,9 @@ namespace Core.Request
 			proxies.AddFirst(new IPRecord(null, GFW));
 		}
 
-		public void Dispose()
-		{
-			disposed = true;
-			proxies.ForEach(r => r.Client?.Dispose());
-		}
-
 		// 查找一个可用的IP
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		private bool TryGetAvailable(out IPRecord record, int cost)
+		private bool TryGetAvailable(int cost, out IPRecord record)
 		{
 			if (disposed)
 			{
@@ -111,7 +103,7 @@ namespace Core.Request
 
 		public async Task<T> Request<T>(ExhentaiRequest<T> request)
 		{
-			while (TryGetAvailable(out var record, 0))
+			while (TryGetAvailable(request.Cost, out var record))
 			{
 				try
 				{
@@ -131,6 +123,12 @@ namespace Core.Request
 				}
 			}
 			throw new ExhentaiException("没有可用的IP");
+		}
+
+		public void Dispose()
+		{
+			disposed = true;
+			proxies.ForEach(r => r.Client?.Dispose());
 		}
 	}
 }

@@ -15,7 +15,7 @@ namespace Core.Request
 	{
 		int Cost { get; }
 
-		bool GFW { get; }
+		Uri Uri { get; }
 
 		Task<T> Execute(HttpClient httpClient);
 	}
