@@ -30,7 +30,7 @@ namespace Core.Request
 			this.responseHandler = responseHandler;
 		}
 
-		public async Task<T> Execute(HttpClient httpClient)
+		public async Task<T> Execute(HttpClient client)
 		{
 			// HttpCompletionOption.ResponseHeadersRead 太长了写在下面不好看
 			const HttpCompletionOption HEADERS_READ = HttpCompletionOption.ResponseHeadersRead;
@@ -38,8 +38,12 @@ namespace Core.Request
 			var request = new HttpRequestMessage(HttpMethod.Get, Uri);
 			RrequestConfigurer?.Invoke(request);
 
-			using (var response = await httpClient.SendAsync(request, HEADERS_READ))
+			using (var response = await client.SendAsync(request, HEADERS_READ))
 			{
+				if((int)response.StatusCode >= 400)
+				{
+					throw new HttpStatusException((int)response.StatusCode);
+				}
 				var body = await response.Content.ReadAsStringAsync();
 				CheckResponse(response, body);
 				return responseHandler(response, body);

@@ -24,12 +24,7 @@ namespace Core
 
 		public async Task Login(string username, string password)
 		{
-			UriBuilder
-			var uri = new Uri("https://forums.e-hentai.org/index.php?act=Login&CODE=01");
-			var x = new HttpRequestMessage(HttpMethod.Post, uri);
-			x.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
-
-			x.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+			var form = new Dictionary<string, string>
 			{
 				{ "CookieDate", "1" },
 				{ "b", "d" },
@@ -37,21 +32,21 @@ namespace Core
 				{ "UserName", username },
 				{ "PassWord", password },
 				{ "ipb_login_submit", "Login!" },
-			});
+			};
 
-			HttpResponseMessage ResponseHandler(HttpResponseMessage response, string body)
+			var html = await client.NewRequest()
+				.ForUri("https://forums.e-hentai.org/index.php?act=Login&CODE=01")
+				.ConfigureRequest(request => {
+					request.Method = HttpMethod.Post;
+					request.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
+					request.Content = new FormUrlEncodedContent(form);
+				})
+				.ExecuteForContent();
+
+			if (!html.Contains("You are now logged in"))
 			{
-				response.EnsureSuccessStatusCode();
-				var body = await response.Content.ReadAsStringAsync();
-
-				if (!body.Contains("You are now logged in as"))
-				{
-					throw new ExhentaiException("登录失败");
-				}
+				throw new ExhentaiException("登录失败");
 			}
-			
-			var request = new SiteRequest<HttpResponseMessage>(uri, (r,b) => r);
-
 
 			// 复制 .e-hentai 的Cookie到 .exhentai
 			void CopyCookie(CookieCollection cookies, string name)
@@ -84,11 +79,15 @@ namespace Core
 
 		public async Task<string[]> GetList(FilterOptions options, int page)
 		{
-			if(page < 0)
+			if (page < 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(page));
 			}
-			var html = await client.RequestPage($"https://exhentai.org/?page={page}&" + options.ToString());
+
+			var html = await client.NewRequest()
+				.ForUri($"https://exhentai.org/?page={page}&" + options.ToString())
+				.Execute();
+
 			throw new NotImplementedException();
 		}
 
@@ -105,15 +104,20 @@ namespace Core
 		public async Task<Gallery> GetGallery(int id, string token)
 		{
 			// hc=1 显示全部评论
-			var content = await client.RequestPage($"https://exhentai.org/g/{id}/{token}?hc=1");
+			var html = await client.NewRequest()
+				.ForUri($"https://exhentai.org/g/{id}/{token}?hc=1")
+				.ExecuteForContent();
+
 			var gallery = new Gallery(client, id, token);
-			GalleryParser.Parse(gallery, content);
+			GalleryParser.Parse(gallery, html);
 			return gallery;
 		}
 
 		public async Task<int> GetCost()
 		{
-			var html = await client.RequestPage($"https://e-hentai.org/home.php");
+			var html = await client.NewRequest()
+				.ForUri($"https://e-hentai.org/home.php")
+				.ExecuteForContent();
 			return int.Parse(COST.Match(html).Groups[1].Value);
 		}
 	}
