@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using Core.Request;
 
-namespace Core
+namespace Core.Request
 {
 	internal sealed class IPRecord
 	{
