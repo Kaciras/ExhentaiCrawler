@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Core.Request;
 using HtmlAgilityPack;
 
 namespace Core
@@ -21,9 +22,9 @@ namespace Core
 		internal string ImageUrl { get; set; }
 		internal string FullImageUrl { get; set; }
 
-		private readonly IExhentaiClient client;
+		private readonly ExhentaiClient client;
 
-		public ImageResource(IExhentaiClient client, Gallery gallery, int page, string imageKey, string filename)
+		public ImageResource(ExhentaiClient client, Gallery gallery, int page, string imageKey, string filename)
 		{
 			this.client = client;
 			Gallery = gallery;

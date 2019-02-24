@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Core.Request;
 
 namespace Core
 {
@@ -15,19 +15,16 @@ namespace Core
 		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 		private static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
-		private readonly IExhentaiClient client;
+		private readonly ExhentaiClient client;
 
-		public Exhentai(IExhentaiClient client)
+		public Exhentai(ExhentaiClient client)
 		{
 			this.client = client;
 		}
 
 		public async Task Login(string username, string password)
 		{
-			var x = new HttpRequestMessage(HttpMethod.Post, "https://forums.e-hentai.org/index.php?act=Login&CODE=01");
-			x.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
-
-			x.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+			var form = new Dictionary<string, string>
 			{
 				{ "CookieDate", "1" },
 				{ "b", "d" },
@@ -35,30 +32,40 @@ namespace Core
 				{ "UserName", username },
 				{ "PassWord", password },
 				{ "ipb_login_submit", "Login!" },
-			});
+			};
 
-			using (var response = await client.Request(x))
+			var html = await client.NewRequest()
+				.ForUri("https://forums.e-hentai.org/index.php?act=Login&CODE=01")
+				.ConfigureRequest(request => {
+					request.Method = HttpMethod.Post;
+					request.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
+					request.Content = new FormUrlEncodedContent(form);
+				})
+				.ExecuteForContent();
+
+			if (!html.Contains("You are now logged in"))
 			{
-				response.EnsureSuccessStatusCode();
-
-				var body = await response.Content.ReadAsStringAsync();
-				if (!body.Contains("You are now logged in as"))
-				{
-					throw new ExhentaiException("登录失败");
-				}
+				throw new ExhentaiException("登录失败");
 			}
 
 			// 复制 .e-hentai 的Cookie到 .exhentai
-			var collection = client.Cookies.GetCookies(new Uri(".e-hentai.org"));
-			void CopyCookie(string name)
+			void CopyCookie(CookieCollection cookies, string name)
 			{
-				var cookie = collection[name];
+				var cookie = cookies[name];
 				client.Cookies.Add(new Cookie(name, cookie.Value, "/", ".exhentai.org"));
 			}
-			CopyCookie("ipb_member_id");
-			CopyCookie("ipb_pass_hash");
+
+			var collection = client.Cookies.GetCookies(new Uri(".e-hentai.org"));
+			CopyCookie(collection, "ipb_member_id");
+			CopyCookie(collection, "ipb_pass_hash");
 		}
 
+		/// <summary>
+		/// 设置与用户登录状态相关的几个Cookie。
+		/// </summary>
+		/// <param name="memberId">ipb_member_id 的值</param>
+		/// <param name="passHash">ipb_pass_hash 的值</param>
+		/// 
 		public void SetUser(string memberId, string passHash)
 		{
 			var cookies = client.Cookies;
@@ -72,11 +79,15 @@ namespace Core
 
 		public async Task<string[]> GetList(FilterOptions options, int page)
 		{
-			if(page < 0)
+			if (page < 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(page));
 			}
-			var html = await client.RequestPage($"https://exhentai.org/?page={page}&" + options.ToString());
+
+			var html = await client.NewRequest()
+				.ForUri($"https://exhentai.org/?page={page}&" + options.ToString())
+				.Execute();
+
 			throw new NotImplementedException();
 		}
 
@@ -93,15 +104,20 @@ namespace Core
 		public async Task<Gallery> GetGallery(int id, string token)
 		{
 			// hc=1 显示全部评论
-			var content = await client.RequestPage($"https://exhentai.org/g/{id}/{token}?hc=1");
+			var html = await client.NewRequest()
+				.ForUri($"https://exhentai.org/g/{id}/{token}?hc=1")
+				.ExecuteForContent();
+
 			var gallery = new Gallery(client, id, token);
-			GalleryParser.Parse(gallery, content);
+			GalleryParser.Parse(gallery, html);
 			return gallery;
 		}
 
 		public async Task<int> GetCost()
 		{
-			var html = await client.RequestPage($"https://e-hentai.org/home.php");
+			var html = await client.NewRequest()
+				.ForUri($"https://e-hentai.org/home.php")
+				.ExecuteForContent();
 			return int.Parse(COST.Match(html).Groups[1].Value);
 		}
 	}

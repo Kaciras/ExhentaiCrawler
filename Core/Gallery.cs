@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Core.Infrastructure;
+using Core.Request;
 
 namespace Core
 {
@@ -34,14 +33,14 @@ namespace Core
 		public int TorrnetCount { get; set; }
 		public int CommentCount { get; set; }
 
-		private readonly IExhentaiClient client;
+		private readonly ExhentaiClient client;
 
 		/// <summary>
 		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
 		/// </summary>
 		internal IList<ImageLink>[] imageListPage;
 
-		public Gallery(IExhentaiClient client, int id, string token)
+		public Gallery(ExhentaiClient client, int id, string token)
 		{
 			this.client = client;
 			Id = id;
