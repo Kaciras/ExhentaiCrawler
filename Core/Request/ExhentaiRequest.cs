@@ -15,8 +15,12 @@ namespace Core.Request
 	{
 		int Cost { get; }
 
-		Uri Uri { get; }
+		bool GfwIntercepted { get; }
 
-		Task<T> Execute(HttpClient httpClient);
+		/// <summary>
+		/// 在拿到可用的client后执行请求。
+		/// 懒得再套一层封装了，所以请勿在此方法里修改HttpClient。
+		/// </summary>
+		Task<T> Execute(IPRecord ip, HttpClient httpClient);
 	}
 }

@@ -18,24 +18,25 @@ namespace Core.Request
 		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
 		public int Cost { get; set; }
-		public Uri Uri { get; }
+		public bool GfwIntercepted => uri.Host == "exhentai.org";
 
 		private RequestConfigurer RrequestConfigurer { get; set; }
 
 		private readonly ResponseHandler<T> responseHandler;
+		private readonly Uri uri;
 
 		public SiteRequest(Uri uri, ResponseHandler<T> responseHandler)
 		{
-			Uri = uri;
+			this.uri = uri;
 			this.responseHandler = responseHandler;
 		}
 
-		public async Task<T> Execute(HttpClient client)
+		public async Task<T> Execute(IPRecord iPRecord, HttpClient client)
 		{
 			// HttpCompletionOption.ResponseHeadersRead 太长了写在下面不好看
 			const HttpCompletionOption HEADERS_READ = HttpCompletionOption.ResponseHeadersRead;
 
-			var request = new HttpRequestMessage(HttpMethod.Get, Uri);
+			var request = new HttpRequestMessage(HttpMethod.Get, uri);
 			RrequestConfigurer?.Invoke(request);
 
 			using (var response = await client.SendAsync(request, HEADERS_READ))

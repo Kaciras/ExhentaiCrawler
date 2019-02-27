@@ -10,18 +10,37 @@ namespace Core.Request
 	public class PeerImageRequest : ExhentaiRequest<Stream>
 	{
 		public int Cost => 0;
-		public Uri Uri { get; }
+		public bool GfwIntercepted => false;
 
-		public PeerImageRequest(string uri) : this(new Uri(uri)) { }
+		private readonly Uri uri;
+
+		public PeerImageRequest(string uri)
+		{
+			this.uri = new Uri(uri);
+		}
 
 		public PeerImageRequest(Uri uri)
 		{
-			Uri = uri;
+			this.uri = uri;
 		}
 
-		public Task<Stream> Execute(HttpClient httpClient)
+		public async Task<Stream> Execute(IPRecord ip, HttpClient httpClient)
 		{
-			return httpClient.GetStreamAsync(Uri);
+			for (int i = 0; i < 2; i++)
+			{
+				try
+				{
+					//var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+					//response.EnsureSuccessStatusCode();
+
+					return await httpClient.GetStreamAsync(uri);
+				}
+				catch (TaskCanceledException)
+				{
+					// TODO: 据测试这里必须要重试一次，原因未知
+				}
+			}
+			throw new TaskCanceledException();
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Request;
 
 namespace Core
 {
@@ -14,30 +15,17 @@ namespace Core
 	{
 		public Uri Uri { get; }
 
-		private readonly IExhentaiClient client;
+		private readonly ExhentaiClient client;
 
-		public OriginImage(IExhentaiClient client, Uri uri)
+		public OriginImage(ExhentaiClient client, Uri uri)
 		{
 			this.client = client;
 			Uri = uri;
 		}
 
-		public async Task<Stream> GetStream()
+		public Task<Stream> GetStream()
 		{
-			for (int i = 0; i < 2; i++)
-			{
-				try
-				{
-					var response = await client.Request(Uri);
-					response.EnsureSuccessStatusCode();
-					return await response.Content.ReadAsStreamAsync();
-				}
-				catch (TaskCanceledException)
-				{
-					// TODO: 据测试这里必须要重试一次，原因未知
-				}
-			}
-			throw new TaskCanceledException();
+			return client.Request(new PeerImageRequest(Uri));
 		}
 	}
 }

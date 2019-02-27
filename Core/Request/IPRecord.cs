@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 
 namespace Core.Request
 {
@@ -20,14 +21,11 @@ namespace Core.Request
 		internal DateTime LimitReached { get; set; } = DateTime.MinValue;
 
 		/// <summary>
-		/// 该IP所对应的客户端
-		/// </summary>
-		internal ExhentaiClient Client { get; set; }
-
-		/// <summary>
 		/// 该IP是否处于中国特色网络环境中
 		/// </summary>
 		public bool GFW { get; }
+
+		internal bool Removed { set; get; }
 
 		public IWebProxy Proxy { get; }
 
