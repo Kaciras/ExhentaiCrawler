@@ -112,32 +112,13 @@ namespace Core
 		private async Task DownloadImage(int index)
 		{
 			var image = await gallery.GetImage(index);
+
 			if (downloaded.Contains(image.FileName))
 			{
-				//Console.WriteLine($"第{index}张图片{image.FileName}已经存在");
 				return;
 			}
-			var originImg = await image.GetOriginal();
-			Stream input;
 
-			// 选择图片的下载方式
-			if(originImg == null)
-			{
-				input = await image.GetImageStream();
-			}
-			else
-			{
-				try
-				{
-					input = await originImg.GetStream();
-				}
-				catch (ObjectDisposedException)
-				{
-					input = await originImg.GetStream(false);
-				}
-			}
-
-			using (input)
+			using (var input = await GetStream(image))
 			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
 				var statisticStream = new StatisticStream(input);
@@ -145,6 +126,34 @@ namespace Core
 
 				downloadSize += statisticStream.ReadCount;
 				Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
+			}
+		}
+
+		// 选择图片的下载方式，优先使用与页面请求是同一个的IP
+		private async Task<Stream> GetStream(ImageResource image)
+		{
+			var originImage = await image.GetOriginal();
+			if (originImage == null)
+			{
+				try
+				{
+					return await image.GetImageStream();
+				}
+				catch (ObjectDisposedException)
+				{
+					return await image.GetImageStream(false);
+				}
+			}
+			else
+			{
+				try
+				{
+					return await originImage.GetStream();
+				}
+				catch (ObjectDisposedException)
+				{
+					return await originImage.GetStream(false);
+				}
 			}
 		}
 	}

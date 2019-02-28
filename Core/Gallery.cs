@@ -86,7 +86,7 @@ namespace Core
 			}
 
 			var link = list[index % pageSize];
-			return new ImageResource(client, this, index + 1, link.Key, link.FileName);
+			return new ImageResource(client, this, index + 1, link);
 		}
 	}
 }

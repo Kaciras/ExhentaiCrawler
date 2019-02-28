@@ -27,18 +27,29 @@ namespace Core
 
 		private readonly ExhentaiClient client;
 
-		public ImageResource(ExhentaiClient client, Gallery gallery, int page, string imageKey, string filename)
+		private IPRecord bindIP;
+
+		internal ImageResource(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
 		{
 			this.client = client;
 			Gallery = gallery;
 			Page = page;
-			ImageKey = imageKey;
-			FileName = filename;
+			ImageKey = link.Key;
+			FileName = link.FileName;
 		}
 
-		public Task<Stream> GetImageStream()
+		public async Task<Stream> GetImageStream(bool useBindIP = true)
 		{
-			return client.Request(new PeerImageRequest(ImageUrl));
+			await EnsureImagePageLoaded();
+
+			if (useBindIP)
+			{
+				return await client.Request(new PeerImageRequest(ImageUrl), bindIP);
+			}
+			else
+			{
+				return await client.Request(new PeerImageRequest(ImageUrl));
+			}
 		}
 
 		/// <summary>
@@ -70,8 +81,11 @@ namespace Core
 				return; // 已经加载过了
 			}
 			var uri = $"https://exhentai.org/s/{ImageKey}/{Gallery.Id}-{Page}";
+			var resp = await client.NewSiteRequest(uri).Execute();
+			bindIP = resp.IPRecord;
+
 			var doc = new HtmlDocument();
-			doc.LoadHtml(await client.NewSiteRequest(uri).ExecuteForContent());
+			doc.LoadHtml(resp.Content);
 
 			ImageUrl = doc.GetElementbyId("i3").FirstChild.FirstChild.Attributes["src"].Value;
 
