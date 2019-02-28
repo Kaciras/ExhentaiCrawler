@@ -77,7 +77,7 @@ namespace Core.Infrastructure
 
 		public override string ToString()
 		{
-			var dim = (int)Math.Log(Bytes, 1024);
+			var dim = Bytes == 0 ? 0 : (int)Math.Log(Bytes, 1024);
 			var unit = dim == 0 ? "" : SIZE_UNITS[dim - 1].ToString();
 			var number = Math.Round(ToDimension(dim), 2);
 			return $"{number} {unit}B";

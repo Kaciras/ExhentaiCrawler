@@ -48,7 +48,9 @@ namespace Test
 		[TestMethod]
 		public void TestToString()
 		{
+			Assert.AreEqual("0 B", new DataSize().ToString());
 			Assert.AreEqual("500 B", new DataSize(500).ToString());
+
 			Assert.AreEqual("20.19 TB", new DataSize(20.19, SizeUnit.TB).ToString());
 
 			Assert.AreEqual("500 KB", new DataSize(500 << 10).ToString());
