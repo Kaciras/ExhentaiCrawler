@@ -45,7 +45,7 @@ namespace Core.Request
 						continue;
 					}
 
-					if (free.BanExpires < DateTime.Now)
+					if (free.BanExpires > DateTime.Now)
 					{
 						banQueue.Enqueue(free);
 					}
@@ -100,10 +100,10 @@ namespace Core.Request
 		/// </summary>
 		/// <param name="iPRecord">IP记录</param>
 		/// <returns>可用的限额</returns>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private int LimitAvaliable(IPRecord iPRecord)
 		{
-			return (int)(DateTime.Now - iPRecord.LimitReached).TotalMinutes * 3;
+			var minutes = (DateTime.Now - iPRecord.LimitReached).TotalMinutes;
+			return (int)Math.Min(minutes * 3, 5000); // 防止整数溢出
 		}
 	}
 }

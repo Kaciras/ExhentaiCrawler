@@ -16,17 +16,17 @@ namespace Test
 
 		public ExhentaiHttpClientTest()
 		{
-			var cookies = new CookieContainer();
-			cookies.Add(new Cookie("ipb_member_id", "2723232", "/", ".exhentai.org"));
-			cookies.Add(new Cookie("ipb_pass_hash", "67674c89175c751095d4c840532e6363", "/", ".exhentai.org"));
 			client = new ExhentaiClient();
-			// TODO
+			client.AddLocalIP();
+			client.Cookies.Add(new Cookie("ipb_member_id", "2723232", "/", ".exhentai.org"));
+			client.Cookies.Add(new Cookie("ipb_pass_hash", "67674c89175c751095d4c840532e6363", "/", ".exhentai.org"));
 		}
 
 		[TestMethod]
 		public async Task Panda()
 		{
 			var invaildClient = new ExhentaiClient();
+			invaildClient.AddLocalIP();
 			try
 			{
 				await invaildClient.NewSiteRequest("https://exhentai.org/").Execute();
