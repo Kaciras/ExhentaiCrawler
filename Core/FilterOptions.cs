@@ -37,10 +37,15 @@ namespace Core
 
 		public override string ToString()
 		{
+			return string.Join('&', AsParameters());
+		}
+
+		public IEnumerable<string> AsParameters()
+		{
 			var x = categories.Select((c) => $"f_{c.GetString()}=1");
 			x = x.Concat(Utils.SingleEnumerable($"f_search={SreachText ?? ""}"));
 			x = x.Concat(Utils.SingleEnumerable("f_apply=Apply+Filter"));
-			return string.Join('&', x);
+			return x;
 		}
 	}
 }

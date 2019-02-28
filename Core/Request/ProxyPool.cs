@@ -12,6 +12,8 @@ namespace Core.Request
 	/// </summary>
 	public class ProxyPool
 	{
+		private const int DEFAULT_LIMIT = 5000;
+
 		private readonly PriorityQueue<IPRecord> banQueue = 
 			new PriorityQueue<IPRecord>((a, b) => DateTime.Compare(a.BanExpires, b.BanExpires));
 
@@ -103,7 +105,7 @@ namespace Core.Request
 		private int LimitAvaliable(IPRecord iPRecord)
 		{
 			var minutes = (DateTime.Now - iPRecord.LimitReached).TotalMinutes;
-			return (int)Math.Min(minutes * 3, 5000); // 防止整数溢出
+			return (int)Math.Min(minutes * 3, DEFAULT_LIMIT); // 防止整数溢出
 		}
 	}
 }

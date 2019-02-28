@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Core.Request;
+using System.Linq;
 
 namespace Core
 {
@@ -82,8 +83,11 @@ namespace Core
 			{
 				throw new ArgumentOutOfRangeException(nameof(page));
 			}
-			// TODO
-			var html = await client.NewSiteRequest($"https://exhentai.org/?page={page}&" + options.ToString()).Execute();
+
+			var param = new string[] { "page=" + page };
+			var query = string.Join('&', param.Concat(options.AsParameters()));
+
+			var html = await client.NewSiteRequest($"https://exhentai.org/?" + query).Execute();
 
 			throw new NotImplementedException();
 		}
