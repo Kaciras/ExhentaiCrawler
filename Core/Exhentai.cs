@@ -117,5 +117,15 @@ namespace Core
 			var html = await client.NewSiteRequest($"https://e-hentai.org/home.php").ExecuteForContent();
 			return int.Parse(COST.Match(html).Groups[1].Value);
 		}
+
+		/// <summary>
+		/// 创建一个默认的Exhentai对象。
+		/// </summary>
+		public static Exhentai CreateDefault()
+		{
+			var client = new ExhentaiClient();
+			client.AddLocalIP();
+			return new Exhentai(client);
+		}
 	}
 }

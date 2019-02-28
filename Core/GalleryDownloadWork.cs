@@ -77,7 +77,7 @@ namespace Core
 			{
 				try
 				{
-					// 如果一次下载中断，可能出现不完整的文件，故必须测试读取。
+					// TODO:残缺文件无法检测出来？
 					Image.FromFile(file.FullName).Dispose();
 					exists.Add(file.Name);
 				}
