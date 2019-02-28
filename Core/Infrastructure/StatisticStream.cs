@@ -46,6 +46,7 @@ namespace Core.Infrastructure
 
 		public override long Seek(long offset, SeekOrigin origin) => innerStream.Seek(offset, origin);
 		public override void SetLength(long value) => innerStream.SetLength(value);
+
 		public override void Flush() => innerStream.Flush();
 		protected override void Dispose(bool disposing) => innerStream.Dispose();
 	}

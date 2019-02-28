@@ -102,7 +102,7 @@ namespace Core.Request
 			}
 			else
 			{
-				throw new ObjectDisposedException("该IP已经被移除");
+				throw new ObjectDisposedException("HttpClient");
 			}
 		}
 

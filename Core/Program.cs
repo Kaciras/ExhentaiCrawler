@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommandLine;
+using Core.Request;
 
 [assembly: InternalsVisibleTo("Test")]
 namespace Core
@@ -56,7 +57,7 @@ namespace Core
 
 		private static void DownloadGallery(DownloadOptions options)
 		{
-			var client = new PooledExhentaiClient();
+			var client = new ExhentaiClient();
 			client.AddLocalIP();
 			client.AddProxy(new WebProxy("localhost", 2080), true);
 
