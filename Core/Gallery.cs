@@ -49,7 +49,8 @@ namespace Core
 
 		public async Task<IList<TorrentResource>> GetTorrents()
 		{
-			var html = await client.RequestPage($"https://exhentai.org/gallerytorrents.php?gid={Id}&t={Token}");
+			var html = await client.NewSiteRequest($"https://exhentai.org/gallerytorrents.php?gid={Id}&t={Token}")
+				.ExecuteForContent();
 			return TorrentResource.Parse(html);
 		}
 
@@ -78,7 +79,9 @@ namespace Core
 			var list = imageListPage[page];
 			if (list == null)
 			{
-				var galleryPage = await client.RequestPage($"https://exhentai.org/g/{Id}/{Token}?p={page}");
+				var galleryPage = await client.NewSiteRequest($"https://exhentai.org/g/{Id}/{Token}?p={page}")
+					.ExecuteForContent();
+
 				list = imageListPage[page] = GalleryParser.ParseImages(galleryPage);
 			}
 

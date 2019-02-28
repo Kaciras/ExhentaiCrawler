@@ -16,16 +16,25 @@ namespace Core
 		public Uri Uri { get; }
 
 		private readonly ExhentaiClient client;
+		private readonly IPRecord bindIP;
 
-		public OriginImage(ExhentaiClient client, Uri uri)
+		public OriginImage(ExhentaiClient client, IPRecord bindIP, Uri uri)
 		{
 			this.client = client;
+			this.bindIP = bindIP;
 			Uri = uri;
 		}
 
-		public Task<Stream> GetStream()
+		public Task<Stream> GetStream(bool useBindIP = true)
 		{
-			return client.Request(new PeerImageRequest(Uri));
+			if(useBindIP)
+			{
+				return client.Request(new PeerImageRequest(Uri), bindIP);
+			}
+			else
+			{
+				return client.Request(new PeerImageRequest(Uri));
+			}
 		}
 	}
 }

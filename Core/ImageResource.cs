@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Core.Infrastructure;
 using Core.Request;
 using HtmlAgilityPack;
 
@@ -11,6 +12,7 @@ namespace Core
 	public class ImageResource
 	{
 		public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)");
+		public static readonly Regex FULL_IMG_TEXT = new Regex(@"Download original (\d+) x (\d+) ([0-9A-Z. ]+) source");
 
 		public Gallery Gallery { get; }
 
@@ -18,9 +20,10 @@ namespace Core
 		public int Page { get; }
 		public string FileName { get; }
 
-		// 图片链接
 		internal string ImageUrl { get; set; }
-		internal string FullImageUrl { get; set; }
+
+		internal Uri OriginImageUrl { get; set; }
+		internal DataSize OriginImageSize { get; set; }
 
 		private readonly ExhentaiClient client;
 
@@ -33,27 +36,27 @@ namespace Core
 			FileName = filename;
 		}
 
-		public async Task<Stream> GetImageStream()
+		public Task<Stream> GetImageStream()
 		{
-			return await (await client.Request(ImageUrl)).Content.ReadAsStreamAsync();
+			return client.Request(new PeerImageRequest(ImageUrl));
 		}
 
 		/// <summary>
-		/// 下载原始图片，此操作将消耗限额。
-		/// 如果没有原图，则返回null
+		/// 下载原始图片，如果没有原图，则返回null。
 		/// </summary>
 		public async Task<OriginImage> GetOriginal()
 		{
 			await EnsureImagePageLoaded();
 
-			if (FullImageUrl == null)
+			if (OriginImageUrl == null)
 			{
 				return null;
 			}
-			using (var redirect = await client.Request(FullImageUrl))
-			{
-				return new OriginImage(client, redirect.Headers.Location);
-			}
+			var res = await client.NewSiteRequest(OriginImageUrl)
+				.WithCost((int)Math.Ceiling(OriginImageSize.OfUnit(SizeUnit.MB) * 5)) // 0.2M 消耗一点限额，向上取整
+				.Execute();
+
+			return new OriginImage(client, res.IPRecord, res.FetchRedirectLocation());
 		}
 
 		/// <summary>
@@ -68,12 +71,19 @@ namespace Core
 			}
 			var uri = $"https://exhentai.org/s/{ImageKey}/{Gallery.Id}-{Page}";
 			var doc = new HtmlDocument();
-			doc.LoadHtml(await client.RequestPage(uri));
+			doc.LoadHtml(await client.NewSiteRequest(uri).ExecuteForContent());
 
 			ImageUrl = doc.GetElementbyId("i3").FirstChild.FirstChild.Attributes["src"].Value;
 
-			// 如果在线浏览的图片已经是原始大小则没有此链接。这个链接里与号被转义了
-			FullImageUrl = HttpUtility.HtmlDecode(doc.GetElementbyId("i7").LastChild?.Attributes["href"].Value);
+			// 如果在线浏览的图片已经是原始大小则没有此链接。注意这个链接被HTML转义了
+			var fullImg = doc.GetElementbyId("i7").LastChild;
+			if (fullImg != null)
+			{
+				OriginImageUrl = new Uri(HttpUtility.HtmlDecode(fullImg.Attributes["href"].Value));
+
+				var match = FULL_IMG_TEXT.Match(fullImg.InnerText);
+				OriginImageSize = DataSize.Parse(match.Groups[3].Value);
+			}
 		}
 	}
 }

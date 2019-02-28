@@ -34,8 +34,7 @@ namespace Core
 				{ "ipb_login_submit", "Login!" },
 			};
 
-			var html = await client.NewRequest()
-				.ForUri("https://forums.e-hentai.org/index.php?act=Login&CODE=01")
+			var html = await client.NewSiteRequest("https://forums.e-hentai.org/index.php?act=Login&CODE=01")
 				.ConfigureRequest(request => {
 					request.Method = HttpMethod.Post;
 					request.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
@@ -83,10 +82,8 @@ namespace Core
 			{
 				throw new ArgumentOutOfRangeException(nameof(page));
 			}
-
-			var html = await client.NewRequest()
-				.ForUri($"https://exhentai.org/?page={page}&" + options.ToString())
-				.Execute();
+			// TODO
+			var html = await client.NewSiteRequest($"https://exhentai.org/?page={page}&" + options.ToString()).Execute();
 
 			throw new NotImplementedException();
 		}
@@ -104,9 +101,7 @@ namespace Core
 		public async Task<Gallery> GetGallery(int id, string token)
 		{
 			// hc=1 显示全部评论
-			var html = await client.NewRequest()
-				.ForUri($"https://exhentai.org/g/{id}/{token}?hc=1")
-				.ExecuteForContent();
+			var html = await client.NewSiteRequest($"https://exhentai.org/g/{id}/{token}?hc=1").ExecuteForContent();
 
 			var gallery = new Gallery(client, id, token);
 			GalleryParser.Parse(gallery, html);
@@ -115,9 +110,7 @@ namespace Core
 
 		public async Task<int> GetCost()
 		{
-			var html = await client.NewRequest()
-				.ForUri($"https://e-hentai.org/home.php")
-				.ExecuteForContent();
+			var html = await client.NewSiteRequest($"https://e-hentai.org/home.php").ExecuteForContent();
 			return int.Parse(COST.Match(html).Groups[1].Value);
 		}
 	}

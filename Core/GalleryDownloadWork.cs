@@ -118,8 +118,26 @@ namespace Core
 				return;
 			}
 			var originImg = await image.GetOriginal();
+			Stream input;
 
-			using (var input = await (originImg == null ? image.GetImageStream(): originImg.GetStream()))
+			// 选择图片的下载方式
+			if(originImg == null)
+			{
+				input = await image.GetImageStream();
+			}
+			else
+			{
+				try
+				{
+					input = await originImg.GetStream();
+				}
+				catch (ObjectDisposedException)
+				{
+					input = await originImg.GetStream(false);
+				}
+			}
+
+			using (input)
 			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
 			{
 				var statisticStream = new StatisticStream(input);

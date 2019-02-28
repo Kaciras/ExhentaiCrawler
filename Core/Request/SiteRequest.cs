@@ -8,11 +8,16 @@ using System.Threading.Tasks;
 
 namespace Core.Request
 {
-	// 内置的 HttpRequestHeaders 做了很大的建模，这里也不想在搞一套了，所以将配置部分暴露出来
+	// 内置的 HttpRequestHeaders 做了很大的建模，并且这个类还没有公共的构造方法。
+	// 所以这里也不想在搞一套了，直接将配置部分暴露出来
 	public delegate void RequestConfigurer(HttpRequestMessage request);
 
-	public delegate T ResponseHandler<T>(HttpResponseMessage response, string body);
+	public delegate T ResponseHandler<T>(SiteResponse response);
 
+	/// <summary>
+	/// 表示想E绅士网站发送的请求，包括页面、API等，不包括静态资源的下载。
+	/// </summary>
+	/// <typeparam name="T">响应类型</typeparam>
 	public class SiteRequest<T> : ExhentaiRequest<T>
 	{
 		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
@@ -43,11 +48,13 @@ namespace Core.Request
 			{
 				if((int)response.StatusCode >= 400)
 				{
-					throw new HttpStatusException((int)response.StatusCode);
+					throw new HttpStatusException(response.StatusCode);
 				}
+
+				// 要判断是不是封禁必须得检查响应体？
 				var body = await response.Content.ReadAsStringAsync();
 				CheckResponse(response, body);
-				return responseHandler(response, body);
+				return responseHandler(new SiteResponse(iPRecord, response, body));
 			}
 		}
 
@@ -56,8 +63,8 @@ namespace Core.Request
 		/// </summary>
 		/// <param name="response">响应</param>
 		/// <param name="body">响应内容</param>
-		/// <exception cref="BanException">如果被封禁了</exception>
 		/// <exception cref="ExhentaiException">如果出现熊猫</exception>
+		/// <exception cref="BanException">如果被封禁了</exception>
 		public static void CheckResponse(HttpResponseMessage response, string body)
 		{
 			var disposition = response.Content.Headers.ContentDisposition;
