@@ -15,7 +15,7 @@ namespace Test
 		[TestMethod]
 		public async Task GetCost()
 		{
-			var client = new ExhentaiClient();
+			var client = new PooledExhentaiClient();
 			client.AddProxy(new WebProxy("localhost", 2080));
 
 			var exhentai = new Exhentai(client);
@@ -30,7 +30,7 @@ namespace Test
 		[TestMethod]
 		public async Task LoginFail()
 		{
-			var client = new ExhentaiClient();
+			var client = new PooledExhentaiClient();
 			client.AddProxy(new WebProxy("localhost", 2080));
 
 			var exhentai = new Exhentai(client);

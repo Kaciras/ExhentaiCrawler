@@ -12,11 +12,11 @@ namespace Test
 	[TestClass]
     public class ExhentaiHttpClientTest
     {
-		readonly ExhentaiClient client;
+		readonly PooledExhentaiClient client;
 
 		public ExhentaiHttpClientTest()
 		{
-			client = new ExhentaiClient();
+			client = new PooledExhentaiClient();
 			client.AddLocalIP();
 			client.Cookies.Add(new Cookie("ipb_member_id", "2723232", "/", ".exhentai.org"));
 			client.Cookies.Add(new Cookie("ipb_pass_hash", "67674c89175c751095d4c840532e6363", "/", ".exhentai.org"));
@@ -25,7 +25,7 @@ namespace Test
 		[TestMethod]
 		public async Task Panda()
 		{
-			var invaildClient = new ExhentaiClient();
+			var invaildClient = new PooledExhentaiClient();
 			invaildClient.AddLocalIP();
 			try
 			{

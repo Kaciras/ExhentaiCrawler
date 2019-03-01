@@ -55,7 +55,7 @@ namespace Core
 
 		private static void DownloadGallery(DownloadOptions options)
 		{
-			var client = new ExhentaiClient();
+			var client = new PooledExhentaiClient();
 			client.AddLocalIP();
 			client.AddProxy(new WebProxy("localhost", 2080), true);
 
@@ -73,13 +73,12 @@ namespace Core
 				Concurrent = options.Concurrent
 			};
 
-			void OnExit(object sender, ConsoleCancelEventArgs e)
+			// 使用 Ctrl + C 中断程序时取消work，以保证能做清理。
+			Console.CancelKeyPress += (sender, e) =>
 			{
-				work.Close();
+				work.Cancel();
 				e.Cancel = true;
-			}
-
-			Console.CancelKeyPress += OnExit;
+			};
 
 			RunAsyncTask(work.Run).Wait();
 		}

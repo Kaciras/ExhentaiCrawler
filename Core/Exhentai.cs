@@ -123,7 +123,7 @@ namespace Core
 		/// </summary>
 		public static Exhentai CreateDefault()
 		{
-			var client = new ExhentaiClient();
+			var client = new PooledExhentaiClient();
 			client.AddLocalIP();
 			return new Exhentai(client);
 		}

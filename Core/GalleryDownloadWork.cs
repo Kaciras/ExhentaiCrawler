@@ -132,7 +132,7 @@ namespace Core
 			downloadSize += new DataSize(new FileInfo(fileToSave).Length);
 		}
 		
-		public void Close()
+		public void Cancel()
 		{
 			cancellation.Cancel();
 		}
