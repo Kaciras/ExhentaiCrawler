@@ -80,6 +80,7 @@ namespace Core
 				e.Cancel = true;
 			};
 
+			Console.WriteLine("下载模式，在下载中途可以按　Ctrl + C 中止");
 			RunAsyncTask(work.Run).Wait();
 		}
 

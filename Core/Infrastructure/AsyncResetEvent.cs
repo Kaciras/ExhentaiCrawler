@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Core.Infrastructure
 {
+	/// <summary>
+	/// ManualResetEvent的异步版
+	/// </summary>
 	public sealed class AsyncResetEvent
 	{
 		private TaskCompletionSource<bool> source;

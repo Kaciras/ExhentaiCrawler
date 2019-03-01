@@ -88,10 +88,10 @@ namespace Core
 					await input.CopyToAsync(output, cancelToken);
 				}
 			}
-			catch (OperationCanceledException)
+			catch
 			{ 
 				File.Delete(fileToSave);
-				throw; // 如果中断了就删除文件，避免保存残缺的图片。
+				throw; // 如果出现异常就删除文件，避免保存残缺的图片。
 			}
 		}
 

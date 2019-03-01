@@ -48,6 +48,11 @@ namespace Core.Request
 
 		private void CheckNetworkInterface()
 		{
+			if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+			{
+				throw new PlatformNotSupportedException("目前仅支持Windows系统");
+			}
+
 			var interfaces = NetworkInterface.GetAllNetworkInterfaces();
 			var networkInterface = interfaces.First(ni => ni.Name == nIname);
 
