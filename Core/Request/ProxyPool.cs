@@ -12,6 +12,9 @@ namespace Core.Request
 	/// </summary>
 	internal sealed class ProxyPool
 	{
+		/// <summary>
+		/// 默认的限额上限
+		/// </summary>
 		private const int DEFAULT_LIMIT = 5000;
 
 		private readonly PriorityQueue<IPRecord> banQueue = 
@@ -28,7 +31,6 @@ namespace Core.Request
 			freeProxies.AddFirst(record);
 		}
 
-		// TODO: 没有实现GFW
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public bool TryGetAvailable(int cost, out IPRecord record)
 		{
@@ -42,25 +44,23 @@ namespace Core.Request
 					freeProxies.RemoveFirst();
 					var free = node.Value;
 
-					if (free.Removed)
+					if (!free.Removed)
 					{
-						continue;
-					}
-
-					if (free.BanExpires > DateTime.Now)
-					{
-						banQueue.Enqueue(free);
-					}
-					else if (LimitAvaliable(free) < cost)
-					{
-						// 尽管该请求的cost可能较大，且该IP对于其它请求
-						// 来说可能限额是足够的，但这里仍然要移入限额队列。
-						limitQueue.Enqueue(free);
-					}
-					else
-					{
-						record = free;
-						break;
+						if (free.BanExpires > DateTime.Now)
+						{
+							banQueue.Enqueue(free);
+						}
+						else if (LimitAvaliable(free) < cost)
+						{
+							// 尽管该请求的cost可能较大，且该IP对于其它请求
+							// 来说可能限额是足够的，但这里仍然要移入限额队列。
+							limitQueue.Enqueue(free);
+						}
+						else
+						{
+							record = free;
+							break;
+						}
 					}
 
 					node = freeProxies.First;
@@ -72,6 +72,7 @@ namespace Core.Request
 				freeProxies.AddLast(record);
 				return true;
 			}
+
 			return false;
 		}
 
