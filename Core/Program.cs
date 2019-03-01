@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -45,9 +46,6 @@ namespace Core
 			Parser.Default.ParseArguments<DownloadOptions, LoginOptions>(args)
 				.WithParsed<LoginOptions>(Login)
 				.WithParsed<DownloadOptions>(DownloadGallery);
-
-			Console.WriteLine("运行结束，按任意键继续");
-			Console.Read();
 		}
 
 		private static void Login(LoginOptions options)
@@ -74,6 +72,15 @@ namespace Core
 				StorePath = @"C:\Users\XuFan\Desktop",
 				Concurrent = options.Concurrent
 			};
+
+			void OnExit(object sender, ConsoleCancelEventArgs e)
+			{
+				work.Close();
+				e.Cancel = true;
+			}
+
+			Console.CancelKeyPress += OnExit;
+
 			RunAsyncTask(work.Run).Wait();
 		}
 

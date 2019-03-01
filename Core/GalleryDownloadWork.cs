@@ -23,6 +23,7 @@ namespace Core
 
 		private readonly Exhentai exhentai;
 		private readonly string uri;
+		private readonly CancellationTokenSource cancellation;
 
 		private Gallery gallery;
 		private string store;
@@ -31,10 +32,13 @@ namespace Core
 		private int index;
 		private DataSize downloadSize;
 
+
 		public GalleryDownloadWork(Exhentai exhentai, string uri)
 		{
 			this.exhentai = exhentai;
 			this.uri = uri;
+
+			cancellation = new CancellationTokenSource();
 		}
 
 		public async Task Run()
@@ -61,7 +65,7 @@ namespace Core
 			}
 
 			await Task.WhenAll(tasks);
-			Console.WriteLine("下载完毕，下载了" + downloadSize);
+			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
 		}
 
 		/// <summary>
@@ -77,7 +81,7 @@ namespace Core
 			{
 				try
 				{
-					// TODO:残缺文件无法检测出来？
+					// 残缺文件无法检测出来？
 					Image.FromFile(file.FullName).Dispose();
 					exists.Add(file.Name);
 				}
@@ -93,7 +97,7 @@ namespace Core
 		private async Task RunWorker()
 		{
 			var index = Interlocked.Increment(ref this.index);
-			if (index > gallery.Length)
+			if (cancellation.IsCancellationRequested || index > gallery.Length)
 			{
 				return;
 			}
@@ -117,15 +121,24 @@ namespace Core
 			{
 				return;
 			}
+			var fileToSave = Path.Combine(store, image.FileName); 
 
-			using (var input = await GetStream(image))
-			using (var output = File.OpenWrite(Path.Combine(store, image.FileName)))
+			try
 			{
-				var statisticStream = new StatisticStream(input);
-				await statisticStream.CopyToAsync(output);
+				using (var input = await GetStream(image))
+				using (var output = File.OpenWrite(fileToSave))
+				{
+					var statisticStream = new StatisticStream(input);
+					await statisticStream.CopyToAsync(output, cancellation.Token);
 
-				downloadSize += statisticStream.ReadCount;
-				Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
+					downloadSize += statisticStream.ReadCount;
+					Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
+				}
+			}
+			catch (TaskCanceledException)
+			{
+				// 如果中断了就删除文件，避免保存残缺的图片。
+				File.Delete(fileToSave);
 			}
 		}
 
@@ -155,6 +168,11 @@ namespace Core
 					return await originImage.GetStream(false);
 				}
 			}
+		}
+
+		public void Close()
+		{
+			cancellation.Cancel();
 		}
 	}
 }

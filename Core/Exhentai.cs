@@ -119,7 +119,7 @@ namespace Core
 		}
 
 		/// <summary>
-		/// 创建一个默认的Exhentai对象。
+		/// 创建一个默认的Exhentai对象，该对象使用简单的本地IP直连。
 		/// </summary>
 		public static Exhentai CreateDefault()
 		{
