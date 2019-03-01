@@ -23,7 +23,6 @@ namespace Core.Request
 		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
 		public int Cost { get; set; }
-		public bool GfwIntercepted => uri.Host == "exhentai.org";
 
 		private RequestConfigurer RrequestConfigurer { get; set; }
 

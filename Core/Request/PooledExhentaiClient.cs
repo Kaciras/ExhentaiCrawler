@@ -17,9 +17,9 @@ namespace Core.Request
 
 		private bool disposed;
 
-		public IPRecord AddProxy(IWebProxy proxy, bool GFW = false)
+		public IPRecord AddProxy(IWebProxy proxy)
 		{
-			var record = new IPRecord(proxy, GFW);
+			var record = new IPRecord(proxy);
 
 			var handler = new SocketsHttpHandler
 			{
@@ -38,10 +38,10 @@ namespace Core.Request
 			return record;
 		}
 
-		public IPRecord AddLocalIP(bool GFW = false)
-		{
-			return AddProxy(null, GFW);
-		}
+		/// <summary>
+		/// 启用本地IP
+		/// </summary>
+		public IPRecord AddLocalIP() => AddProxy(null);
 
 		public void RemoveIP(IPRecord iPRecord)
 		{

@@ -57,7 +57,7 @@ namespace Core
 		{
 			var client = new PooledExhentaiClient();
 			client.AddLocalIP();
-			client.AddProxy(new WebProxy("localhost", 2080), true);
+			client.AddProxy(new WebProxy("localhost", 2080));
 
 			var exhentai = new Exhentai(client);
 			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");

@@ -13,9 +13,10 @@ namespace Core.Request
 	/// <typeparam name="T">返回结果类型</typeparam>
 	public interface ExhentaiRequest<T>
 	{
+		/// <summary>
+		/// 该请求需要消耗的配额。
+		/// </summary>
 		int Cost { get; }
-
-		bool GfwIntercepted { get; }
 
 		/// <summary>
 		/// 在拿到可用的client后执行请求。因为懒得再套一层封装了，所以请勿在此方法里修改HttpClient。

@@ -26,7 +26,7 @@ namespace Core.Request
 		private readonly HttpClient httpClient;
 
 		private readonly AsyncResetEvent resetEvent = new AsyncResetEvent(true);
-		private readonly IPRecord localIP = new IPRecord(null, false);
+		private readonly IPRecord localIP = new IPRecord(null);
 
 		public PppoeSwitchClient(string nIname, string user, string password)
 		{

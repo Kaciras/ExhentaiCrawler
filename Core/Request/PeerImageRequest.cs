@@ -10,7 +10,6 @@ namespace Core.Request
 	public class PeerImageRequest : ExhentaiRequest<Stream>
 	{
 		public int Cost => 0;
-		public bool GfwIntercepted => false;
 
 		private readonly Uri uri;
 

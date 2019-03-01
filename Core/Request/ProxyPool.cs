@@ -10,7 +10,7 @@ namespace Core.Request
 	/// 该类使用了懒操作机制，对IP的修改（删除、封禁状态、配额达到）所造成的作用（移除和移动到队列等）需要在
 	/// 某个请求访问到该IP时才执行。
 	/// </summary>
-	public class ProxyPool
+	internal sealed class ProxyPool
 	{
 		private const int DEFAULT_LIMIT = 5000;
 

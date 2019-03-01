@@ -20,19 +20,10 @@ namespace Core.Request
 		/// </summary>
 		public DateTime LimitReached { get; internal set; } = DateTime.MinValue;
 
-		internal bool Removed { set; get; }
-
-		/// <summary>
-		/// 该IP是否处于中国特色网络环境中
-		/// </summary>
-		public bool GFW { get; }
-
 		public IWebProxy Proxy { get; }
 
-		internal IPRecord(IWebProxy proxy, bool gfw)
-		{
-			GFW = gfw;
-			Proxy = proxy;
-		}
+		internal bool Removed { set; get; }
+
+		internal IPRecord(IWebProxy proxy) => Proxy = proxy;
 	}
 }
