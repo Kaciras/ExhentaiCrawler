@@ -10,7 +10,7 @@ using HtmlAgilityPack;
 
 namespace Core
 {
-	public class ImagePage
+	public class ImageResource
 	{
 		public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)");
 		public static readonly Regex FULL_IMG_TEXT = new Regex(@"Download original (\d+) x (\d+) ([0-9A-Z. ]+) source");
@@ -30,7 +30,7 @@ namespace Core
 
 		private IPRecord bindIP;
 
-		internal ImagePage(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
+		internal ImageResource(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
 		{
 			this.client = client;
 			Gallery = gallery;

@@ -58,7 +58,7 @@ namespace Core
 		/// 获取该画册的一张图片。
 		/// </summary>
 		/// <param name="index">页码，从1开始</param>
-		public async ValueTask<ImagePage> GetImage(int index)
+		public async ValueTask<ImageResource> GetImage(int index)
 		{
 			// ValueTask的使用：
 			//	   ValueTask的创建开销比Task小，但传递开销更大，故其适合使用的场景应当满足以下条件：
@@ -86,7 +86,7 @@ namespace Core
 			}
 
 			var link = list[index % pageSize];
-			return new ImagePage(client, this, index + 1, link);
+			return new ImageResource(client, this, index + 1, link);
 		}
 	}
 }
