@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Core.Infrastructure;
@@ -9,7 +10,7 @@ using HtmlAgilityPack;
 
 namespace Core
 {
-	public class ImageResource
+	public class ImagePage
 	{
 		public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)");
 		public static readonly Regex FULL_IMG_TEXT = new Regex(@"Download original (\d+) x (\d+) ([0-9A-Z. ]+) source");
@@ -29,7 +30,7 @@ namespace Core
 
 		private IPRecord bindIP;
 
-		internal ImageResource(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
+		internal ImagePage(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
 		{
 			this.client = client;
 			Gallery = gallery;
@@ -68,6 +69,58 @@ namespace Core
 				.Execute();
 
 			return new OriginImage(client, res.IPRecord, res.FetchRedirectLocation());
+		}
+
+		/// <summary>
+		/// 自动选择质量最高的图片版本下载，并保存到文件。
+		/// </summary>
+		/// <param name="fileToSave">保存的文件名</param>
+		/// <param name="cancelToken">取消令牌</param>
+		/// <exception cref="OperationCanceledException">如果完成之前被取消</exception>
+		/// 
+		public async Task Download(string fileToSave, CancellationToken cancelToken = default)
+		{
+			try
+			{
+				using (var input = await GetStream())
+				using (var output = File.OpenWrite(fileToSave))
+				{
+					await input.CopyToAsync(output, cancelToken);
+				}
+			}
+			catch (OperationCanceledException)
+			{ 
+				File.Delete(fileToSave);
+				throw; // 如果中断了就删除文件，避免保存残缺的图片。
+			}
+		}
+
+		// 选择图片的下载方式，优先使用与页面请求是同一个的IP
+		private async Task<Stream> GetStream()
+		{
+			var originImage = await GetOriginal();
+			if (originImage != null)
+			{
+				try
+				{
+					return await originImage.GetStream();
+				}
+				catch (ObjectDisposedException)
+				{
+					return await originImage.GetStream(false);
+				}
+			}
+			else
+			{
+				try
+				{
+					return await GetImageStream();
+				}
+				catch (ObjectDisposedException)
+				{
+					return await GetImageStream(false);
+				}
+			}
 		}
 
 		/// <summary>

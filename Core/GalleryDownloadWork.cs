@@ -32,7 +32,6 @@ namespace Core
 		private int index;
 		private DataSize downloadSize;
 
-
 		public GalleryDownloadWork(Exhentai exhentai, string uri)
 		{
 			this.exhentai = exhentai;
@@ -58,6 +57,7 @@ namespace Core
 			var start = StartPage ?? 1;
 			var end = EndPage ?? gallery.Length;
 
+			// 启动下载线程
 			var tasks = new Task[Concurrent];
 			for (int i = 0; i < tasks.Length; i++)
 			{
@@ -105,6 +105,10 @@ namespace Core
 			{
 				await DownloadImage(index);
 			}
+			catch(OperationCanceledException)
+			{
+				return;
+			}
 			catch(Exception e)
 			{
 				Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
@@ -121,55 +125,13 @@ namespace Core
 			{
 				return;
 			}
-			var fileToSave = Path.Combine(store, image.FileName); 
+			var fileToSave = Path.Combine(store, image.FileName);
+			await image.Download(fileToSave, cancellation.Token);
 
-			try
-			{
-				using (var input = await GetStream(image))
-				using (var output = File.OpenWrite(fileToSave))
-				{
-					var statisticStream = new StatisticStream(input);
-					await statisticStream.CopyToAsync(output, cancellation.Token);
-
-					downloadSize += statisticStream.ReadCount;
-					Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
-				}
-			}
-			catch (TaskCanceledException)
-			{
-				// 如果中断了就删除文件，避免保存残缺的图片。
-				File.Delete(fileToSave);
-			}
+			Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
+			downloadSize += new DataSize(new FileInfo(fileToSave).Length);
 		}
-
-		// 选择图片的下载方式，优先使用与页面请求是同一个的IP
-		private async Task<Stream> GetStream(ImageResource image)
-		{
-			var originImage = await image.GetOriginal();
-			if (originImage == null)
-			{
-				try
-				{
-					return await image.GetImageStream();
-				}
-				catch (ObjectDisposedException)
-				{
-					return await image.GetImageStream(false);
-				}
-			}
-			else
-			{
-				try
-				{
-					return await originImage.GetStream();
-				}
-				catch (ObjectDisposedException)
-				{
-					return await originImage.GetStream(false);
-				}
-			}
-		}
-
+		
 		public void Close()
 		{
 			cancellation.Cancel();

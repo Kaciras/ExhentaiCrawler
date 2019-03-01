@@ -164,7 +164,7 @@ namespace Core
 			{
 				var anchor = item.FirstChild.FirstChild;
 
-				var match = ImageResource.IMAGE_PATH.Match(anchor.Attributes["href"].Value);
+				var match = ImagePage.IMAGE_PATH.Match(anchor.Attributes["href"].Value);
 				var imageKey = match.Groups["KEY"].Value;
 				var name = anchor.FirstChild.Attributes["title"].Value.Split(": ")[1];
 				result.Add(new ImageLink(imageKey, name));
