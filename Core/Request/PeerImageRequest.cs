@@ -25,21 +25,7 @@ namespace Core.Request
 
 		public async Task<Stream> Execute(IPRecord ip, HttpClient httpClient)
 		{
-			for (int i = 0; i < 2; i++)
-			{
-				try
-				{
-					//var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
-					//response.EnsureSuccessStatusCode();
-
-					return await httpClient.GetStreamAsync(uri);
-				}
-				catch (TaskCanceledException)
-				{
-					// TODO: 据测试这里必须要重试一次，原因未知
-				}
-			}
-			throw new TaskCanceledException();
+			return await httpClient.GetStreamAsync(uri);
 		}
 	}
 }
