@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Infrastructure;
@@ -10,7 +11,7 @@ namespace Core
 {
 	public sealed class GalleryDownloadWork
 	{
-		public const int DEFAULT_CONCURRENT = 1;
+		public const int DEFAULT_CONCURRENT = 2;
 
 		public int? StartPage { get; set; }
 		public int? EndPage { get; set; }
@@ -53,7 +54,7 @@ namespace Core
 			Directory.CreateDirectory(store);
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
 
-			Console.WriteLine("下载图册：" + gallery.Name);
+			Console.WriteLine("下载：" + gallery.Name);
 			var start = StartPage ?? 1;
 			var end = EndPage ?? gallery.Length;
 
@@ -125,11 +126,27 @@ namespace Core
 			{
 				return;
 			}
-			var fileToSave = Path.Combine(store, image.FileName);
-			await image.Download(fileToSave, cancellation.Token);
 
-			Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
-			downloadSize += new DataSize(new FileInfo(fileToSave).Length);
+			for (int i = 0; i < 3; i++)
+			{
+				try
+				{
+					var fileToSave = Path.Combine(store, image.FileName);
+					await image.Download(fileToSave, cancellation.Token);
+
+					Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
+					downloadSize += new DataSize(new FileInfo(fileToSave).Length);
+					break;
+				}
+				catch (HttpRequestException)
+				{
+					// 发送请求时出错，如SSL连接无法建立
+				}
+				catch (IOException)
+				{
+					// 读取请求体的时候出错。（本地文件错误怎么办？）
+				}
+			}
 		}
 		
 		public void Cancel()
