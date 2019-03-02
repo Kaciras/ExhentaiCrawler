@@ -77,7 +77,7 @@ namespace Core
 			cookies.Add(new Cookie("ipb_pass_hash", passHash, "/", ".e-hentai.org"));
 		}
 
-		public async Task<string[]> GetList(FilterOptions options, int page)
+		public async Task<GalleryListPage> GetList(FilterOptions options, int page)
 		{
 			if (page < 0)
 			{
@@ -87,9 +87,8 @@ namespace Core
 			var param = new string[] { "page=" + page };
 			var query = string.Join('&', param.Concat(options.AsParameters()));
 
-			var html = await client.NewSiteRequest($"https://exhentai.org/?" + query).Execute();
-
-			throw new NotImplementedException();
+			var response = await client.NewSiteRequest($"https://exhentai.org/?" + query).Execute();
+			return GalleryListPage.ParseHtml(response.Content);
 		}
 
 		public Task<Gallery> GetGallery(string url)

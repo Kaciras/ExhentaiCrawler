@@ -89,5 +89,21 @@ namespace Test
 			Assert.AreEqual("01_01.png", links[3].FileName);
 			Assert.AreEqual("410aa30071", links[3].Key);
 		}
+
+		[TestMethod]
+		public void ParseGalleryListPage()
+		{
+			var html = File.ReadAllText("WebArchive/Index.html");
+
+			var listPage = GalleryListPage.ParseHtml(html);
+
+			Assert.AreEqual(769_296, listPage.TotalCount);
+			Assert.AreEqual(30772, listPage.TotalPage);
+
+			var gals = listPage.Galleries;
+			Assert.AreEqual(25, gals.Count);
+			Assert.AreEqual("https://exhentai.org/g/1374376/455b8f2245/", gals[0].ToString());
+			Assert.AreEqual("https://exhentai.org/g/1373931/2c2a4f931c/", gals[24].ToString());
+		}
 	}
 }

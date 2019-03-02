@@ -24,6 +24,9 @@
     <None Update="WebArchive\GalleryTagStub.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="WebArchive\Index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="WebArchive\TorrentPageStub.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

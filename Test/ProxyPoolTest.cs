@@ -37,7 +37,7 @@ namespace Test
 		[TestMethod]
 		public void GetEmpty()
 		{
-			Assert.IsFalse(pool.TryGetAvailable(0, out var ignore));
+			Assert.IsFalse(pool.TryGetAvailable(0, out ignore));
 		}
 
 		[TestMethod]
