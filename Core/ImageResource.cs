@@ -77,7 +77,6 @@ namespace Core
 		/// <param name="fileToSave">保存的文件名</param>
 		/// <param name="cancelToken">取消令牌</param>
 		/// <exception cref="OperationCanceledException">如果完成之前被取消</exception>
-		/// 
 		public async Task Download(string fileToSave, CancellationToken cancelToken = default)
 		{
 			try

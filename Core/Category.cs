@@ -4,10 +4,13 @@ using System.Text;
 
 namespace Core
 {
+	[Flags]
 	public enum Category
 	{
-		Doujinshi, Manga, Artistcg, Gamecg, Western,
-		NonH, Imageset, Cosplay, Asianporn, Misc
+		None, // 老实说我更喜欢JAVA的EnumSet
+
+		Doujinshi = 1, Manga = 2, Artistcg = 4, Gamecg = 8, Western = 16,
+		NonH = 32, Imageset = 64, Cosplay = 128, Asianporn = 256, Misc = 512,
 	}
 
 	// non-h 得特殊处理下

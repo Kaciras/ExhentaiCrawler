@@ -1,10 +1,6 @@
 using Core;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Test
 {
@@ -14,18 +10,25 @@ namespace Test
 		[TestMethod]
 		public void Default()
 		{
-			var defaultFilterText = "f_doujinshi=1&f_manga=1&f_artistcg=1&f_gamecg=1&f_western=1" +
-				"&f_non-h=1&f_imageset=1&f_cosplay=1&f_asianporn=1&f_misc=1&f_search=&f_apply=Apply+Filter";
+			var except = "f_doujinshi=0&f_manga=0&f_artistcg=0&f_gamecg=0&f_western=0&f_non-h=0&f_imageset=0&f_cosplay=0&f_asianporn=0&f_misc=0&f_search=&f_apply=Apply+Filter";
 
 			var options = new FilterOptions();
 
-			options.ToString().Split("&").Should().BeEquivalentTo(defaultFilterText.Split("&"));
+			options.ToString().Split("&").Should().BeEquivalentTo(except.Split("&"));
 		}
 
 		[TestMethod]
-		public void FilterOptions()
+		public void Advanced()
 		{
+			var options = new FilterOptions
+			{
+				Categories = Category.Doujinshi | Category.Manga,
+				AdvancedOptions = new FilterOptions.Advance()
+			};
+			options.AdvancedOptions.ShowExpungedGalleries = true;
 
-		}	
+			var except = "f_doujinshi=1&f_manga=1&f_artistcg=0&f_gamecg=0&f_western=0&f_non-h=0&f_imageset=0&f_cosplay=0&f_asianporn=0&f_misc=0&f_search=&f_apply=Apply+Filter&advsearch=1&f_sname=on&f_stags=on&f_sh=on&f_srdd=2";
+			options.ToString().Split("&").Should().BeEquivalentTo(except.Split("&"));
+		}
 	}
 }
