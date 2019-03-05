@@ -82,6 +82,7 @@ namespace Core.Request
 		{
 			try
 			{
+				// TODO: 线程安全
 				await resetEvent.Wait();
 				return await request.Execute(localIP, httpClient);
 			}

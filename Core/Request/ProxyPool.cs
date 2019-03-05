@@ -40,12 +40,11 @@ namespace Core.Request
 		{
 			record = FindInQueue(banQueue, cost) ?? FindInQueue(limitQueue, cost) ?? FindInFree(cost);
 
-			if (record == null)
+			if (record != null)
 			{
-				return false;
+				freeProxies.AddLast(record);
 			}
-			freeProxies.AddLast(record);
-			return true;
+			return record != null;
 		}
 
 		private IPRecord FindInQueue(PriorityQueue<IPRecord> queue, int cost)

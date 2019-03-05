@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Core.Infrastructure;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
+using Core.Infrastructure;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Test
 {
@@ -61,6 +59,24 @@ namespace Test
 
 			resetEvent.Set();
 			Task.WaitAll(waitTasks);
+		}
+
+		[TestMethod]
+		public async Task Cancellation()
+		{
+			var resetEvent = new AsyncResetEvent();
+			var time = DateTime.Now;
+			var sc = new CancellationTokenSource(50);
+
+			try
+			{
+				await resetEvent.Wait(sc.Token);
+				Assert.Fail();
+			}
+			catch(TaskCanceledException)
+			{
+				(DateTime.Now - time).Milliseconds.Should().BeGreaterOrEqualTo(50);
+			}
 		}
 	}
 }

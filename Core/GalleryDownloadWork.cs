@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,22 +49,18 @@ namespace Core
 			store = StorePath ?? Environment.CurrentDirectory;
 			if(!Flatten)
 			{
-				// 以画册名创建文件夹保存，优先使用日本名
+				// 以本子名创建文件夹保存，优先使用日本名
 				store = Path.Combine(store, gallery.JapaneseName ?? gallery.Name);
 			}
 			Directory.CreateDirectory(store);
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
 
-			Console.WriteLine("下载：" + gallery.Name);
+			Console.WriteLine("本子名：" + gallery.Name);
 			var start = StartPage ?? 1;
 			var end = EndPage ?? gallery.Length;
 
 			// 启动下载线程
-			var tasks = new Task[Concurrent];
-			for (int i = 0; i < tasks.Length; i++)
-			{
-				tasks[i] = RunWorker();
-			}
+			var tasks = Enumerable.Range(0, Concurrent).Select(_ => RunWorker());
 
 			await Task.WhenAll(tasks);
 			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
