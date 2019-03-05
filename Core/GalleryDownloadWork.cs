@@ -12,7 +12,7 @@ namespace Core
 {
 	public sealed class GalleryDownloadWork
 	{
-		public const int DEFAULT_CONCURRENT = 2;
+		public const int DEFAULT_CONCURRENT = 4;
 
 		public int? StartPage { get; set; }
 		public int? EndPage { get; set; }
@@ -20,6 +20,12 @@ namespace Core
 		public bool Force { get; set; }
 		public string StorePath { get; set; }
 		public bool Flatten { get; set; } // 不自动创建文件夹
+
+		/// <summary>
+		/// 给文件名加上序号前缀，例如：XX_原名.png，XX是图片在E绅士网页上的顺序。
+		/// 该选项针对文件名顺序与实际顺序不同的情况，如第二张图叫 01.png 而第一张却叫 02.png
+		/// </summary>
+		public bool IndexPrefix { get; set; }
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
@@ -119,7 +125,15 @@ namespace Core
 		{
 			var image = await gallery.GetImage(index);
 
-			if (downloaded.Contains(image.FileName))
+			var fileName = image.FileName;
+			if (IndexPrefix)
+			{
+				var nums = (int)Math.Log10(gallery.Length) + 1;
+				var prefix = index.ToString().PadLeft(nums, '0');
+				fileName = $"{prefix}_{fileName}";
+			}
+
+			if (downloaded.Contains(fileName))
 			{
 				return;
 			}
@@ -128,11 +142,11 @@ namespace Core
 			{
 				try
 				{
-					var fileToSave = Path.Combine(store, image.FileName);
-					await image.Download(fileToSave, cancellation.Token);
+					var storePath = Path.Combine(store, fileName);
+					await image.Download(storePath, cancellation.Token);
 
-					Console.WriteLine($"第{index}张图片{image.FileName}下载完毕");
-					downloadSize += new DataSize(new FileInfo(fileToSave).Length);
+					Console.WriteLine($"第{index}张图片{fileName}下载完毕");
+					downloadSize += new DataSize(new FileInfo(storePath).Length);
 					break;
 				}
 				catch (HttpRequestException)

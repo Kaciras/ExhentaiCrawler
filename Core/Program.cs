@@ -70,7 +70,8 @@ namespace Core
 				EndPage = end,
 				Force = options.Force,
 				StorePath = @"C:\Users\XuFan\Desktop",
-				Concurrent = options.Concurrent
+				Concurrent = options.Concurrent,
+				IndexPrefix = true,
 			};
 
 			// 使用 Ctrl + C 中断程序时取消work，以保证能做清理。
