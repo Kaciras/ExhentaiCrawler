@@ -7,7 +7,7 @@ namespace Core.Infrastructure
 {
 	/// <summary>
 	/// 为请求设置一些常见的头部，使其更像浏览器。
-	/// 由于DNT头需要避开Referrer，所以需要重写SendAsync方法。
+	/// 由于DNT头需要避开Referrer，所以必须重写SendAsync方法。
 	/// </summary>
 	public class BrowserLikeHttpClient : HttpClient
 	{

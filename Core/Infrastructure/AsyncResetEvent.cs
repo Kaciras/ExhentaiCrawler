@@ -20,7 +20,7 @@ namespace Core.Infrastructure
 		 * 了CAS操作，所以它们是线程安全的，无需再加锁。
 		 */
 
-		private TaskCompletionSource<object> state;
+		private volatile TaskCompletionSource<object> state;
 
 		/// <summary>
 		/// 以指定的初始状态创建实例
@@ -52,9 +52,10 @@ namespace Core.Infrastructure
 		/// <returns>等待任务</returns>
 		public Task Wait(CancellationToken cancelToken)
 		{
-			if(state.Task.IsCompleted || !cancelToken.CanBeCanceled)
+			var currentTask = state.Task;
+			if (currentTask.IsCompleted || !cancelToken.CanBeCanceled)
 			{
-				return state.Task;
+				return currentTask;
 			}
 			if(cancelToken.IsCancellationRequested)
 			{
@@ -64,7 +65,7 @@ namespace Core.Infrastructure
 			var cancelSource = new TaskCompletionSource<object>();
 			cancelToken.Register(() => cancelSource.TrySetCanceled());
 
-			return WaitAnyAsync(state.Task, cancelSource.Task);
+			return WaitAnyAsync(currentTask, cancelSource.Task);
 		}
 
 		/// <summary>

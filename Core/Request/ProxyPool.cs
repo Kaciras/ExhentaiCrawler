@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Core.Infrastructure;
 
 namespace Core.Request
 {
 	/// <summary>
-	/// 管理IP地址，处理与E绅士网站限制策略有关的问题。
+	/// 管理IP地址，处理与E绅士网站限制策略（IP封禁，限额）有关的问题。
 	/// </summary>
 	internal sealed class ProxyPool
 	{
@@ -35,6 +34,12 @@ namespace Core.Request
 			freeProxies.AddFirst(record);
 		}
 
+		/// <summary>
+		/// 尝试获取空闲且具有足够限额的IP。
+		/// </summary>
+		/// <param name="cost">需要的限额</param>
+		/// <param name="record">输出IP</param>
+		/// <returns>如果成功拿到</returns>
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public bool TryGetAvailable(int cost, out IPRecord record)
 		{
@@ -63,7 +68,7 @@ namespace Core.Request
 				}
 				else
 				{
-					break; // 最近一个都没不可用，后面的一定也不行
+					break; // 优先队列开头的都不可用，后面的一定也不行
 				}
 			}
 			return null;

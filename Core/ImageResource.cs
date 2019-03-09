@@ -54,7 +54,7 @@ namespace Core
 		}
 
 		/// <summary>
-		/// 下载原始图片，如果没有原图，则返回null。
+		/// 获取原始图片信息，如果没有原图，则返回null。
 		/// </summary>
 		public async Task<OriginImage> GetOriginal()
 		{
@@ -72,7 +72,7 @@ namespace Core
 		}
 
 		/// <summary>
-		/// 自动选择质量最高的图片版本下载，并保存到文件。
+		/// 自动选择质量最高的图片版本下载，并保存为指定的文件。
 		/// </summary>
 		/// <param name="fileToSave">保存的文件名</param>
 		/// <param name="cancelToken">取消令牌</param>
