@@ -145,7 +145,9 @@ namespace Core
 					var storePath = Path.Combine(store, fileName);
 					await image.Download(storePath, cancellation.Token);
 
-					Console.WriteLine($"第{index}张图片{fileName}下载完毕");
+					var time = DateTime.Now.ToLongTimeString();
+					Console.WriteLine($"[{time}]第{index}张图片{fileName}下载完毕");
+
 					downloadSize += new DataSize(new FileInfo(storePath).Length);
 					break;
 				}
@@ -157,6 +159,7 @@ namespace Core
 				{
 					// 读取请求体的时候出错。（本地文件错误怎么办？）
 				}
+				Console.WriteLine($"{fileName}下载失败，正在重试");
 			}
 		}
 		
