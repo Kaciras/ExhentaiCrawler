@@ -27,6 +27,8 @@ namespace Core.Request
 				CookieContainer = Cookies,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 				Proxy = record.Proxy,
+				ConnectTimeout = TimeSpan.FromSeconds(4),
+				ResponseDrainTimeout = TimeSpan.FromSeconds(4),
 			};
 
 			clientMap[record] = new BrowserLikeHttpClient(handler)

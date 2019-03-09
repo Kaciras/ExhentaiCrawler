@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace Core.Infrastructure
 {
+	/// <summary>
+	/// 基于令牌桶算法的速率限制器实现
+	/// </summary>
 	public class RateLimiter
 	{
 		private readonly int maxPermits;

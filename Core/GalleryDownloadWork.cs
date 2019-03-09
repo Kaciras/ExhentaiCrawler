@@ -146,7 +146,7 @@ namespace Core
 					await image.Download(storePath, cancellation.Token);
 
 					var time = DateTime.Now.ToLongTimeString();
-					Console.WriteLine($"[{time}]第{index}张图片{fileName}下载完毕");
+					Console.WriteLine($"[{time}] 第{index}张图片{fileName}下载完毕");
 
 					downloadSize += new DataSize(new FileInfo(storePath).Length);
 					break;

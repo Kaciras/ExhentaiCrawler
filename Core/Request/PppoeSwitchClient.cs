@@ -42,6 +42,8 @@ namespace Core.Request
 				AllowAutoRedirect = false,
 				CookieContainer = Cookies,
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+				ConnectTimeout = TimeSpan.FromSeconds(4),
+				ResponseDrainTimeout = TimeSpan.FromSeconds(4),
 			};
 			httpClient = new BrowserLikeHttpClient(handler);
 		}
