@@ -61,6 +61,10 @@ namespace Core.Request
 				{
 					return queue.Dequeue();
 				}
+				else
+				{
+					break; // 最近一个都没不可用，后面的一定也不行
+				}
 			}
 			return null;
 		}
