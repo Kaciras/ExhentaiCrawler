@@ -100,32 +100,31 @@ namespace Core
 
 		private async Task RunWorker()
 		{
-			var index = Interlocked.Increment(ref this.index);
-			if (cancellation.IsCancellationRequested || index > gallery.Length)
+			while (Interlocked.Increment(ref index) <= gallery.Length)
 			{
-				return;
+				try
+				{
+					await DownloadImage(index);
+				}
+				catch (OperationCanceledException)
+				{
+					return; // 主动取消
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
+					Console.WriteLine(e.StackTrace);
+				}
 			}
-			try
-			{
-				await DownloadImage(index);
-			}
-			catch(OperationCanceledException)
-			{
-				return;
-			}
-			catch(Exception e)
-			{
-				Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
-				Console.WriteLine(e.StackTrace);
-			}
-			await RunWorker();
 		}
 
 		private async Task DownloadImage(int index)
 		{
-			var image = await gallery.GetImage(index);
+			cancellation.Token.ThrowIfCancellationRequested();
 
+			var image = await gallery.GetImage(index);
 			var fileName = image.FileName;
+
 			if (IndexPrefix)
 			{
 				var nums = (int)Math.Log10(gallery.Length) + 1;

@@ -79,6 +79,7 @@ namespace Core
 		/// <exception cref="OperationCanceledException">如果完成之前被取消</exception>
 		public async Task Download(string fileToSave, CancellationToken cancelToken = default)
 		{
+			cancelToken.ThrowIfCancellationRequested();
 			try
 			{
 				using (var input = await GetStream())
@@ -88,7 +89,7 @@ namespace Core
 				}
 			}
 			catch
-			{ 
+			{
 				File.Delete(fileToSave);
 				throw; // 如果出现异常就删除文件，避免保存残缺的图片。
 			}
