@@ -9,7 +9,11 @@ namespace Core.Infrastructure
 	public class RateLimiter
 	{
 		private readonly int maxPermits;
-		private readonly double stableInterval;
+
+		/// <summary>
+		/// 每毫秒加入几个令牌（令牌/毫秒）
+		/// </summary>
+		private readonly double rate;
 
 		private int stored;
 		private DateTime lastAcquire;
@@ -22,7 +26,7 @@ namespace Core.Infrastructure
 		public RateLimiter(int permits, TimeSpan timeSpan)
 		{
 			stored = maxPermits = permits;
-			stableInterval = timeSpan.TotalMilliseconds / maxPermits;
+			rate = maxPermits / timeSpan.TotalMilliseconds;
 			lastAcquire = DateTime.Now;
 		}
 
@@ -61,7 +65,7 @@ namespace Core.Infrastructure
 			//     当前令牌 = 剩余令牌 + (当前时间 - 上次时间) * 每令牌所需时间，注意不能超出上限
 			// 为了方便计算将其转换成int，向下取整是正确的
 			var now = DateTime.Now;
-			var actual = (int)((now - lastAcquire).TotalMilliseconds * stableInterval);
+			var actual = (int)((now - lastAcquire).TotalMilliseconds * rate);
 			actual = Math.Min(stored + actual, maxPermits);
 
 			if (permits <= actual)
@@ -71,8 +75,8 @@ namespace Core.Infrastructure
 				return 0;
 			}
 
-			// 返回需要等待的时间 = (所需令牌数 - 当前令牌数) * 每令牌所需时间
-			return (permits - actual) * stableInterval;
+			// 返回需要等待的时间 = (所需令牌数（令牌） - 当前令牌数（令牌）) / 每毫秒生成令牌数（令牌/毫秒）
+			return (permits - actual) / rate;
 		}
 	}
 }

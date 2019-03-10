@@ -54,6 +54,7 @@ namespace Core
 			return TorrentResource.Parse(html);
 		}
 
+		// TODO: 并发？
 		/// <summary>
 		/// 获取该画册的一张图片。
 		/// </summary>
@@ -79,7 +80,8 @@ namespace Core
 			var list = imageListPage[page];
 			if (list == null)
 			{
-				var galleryPage = await client.NewSiteRequest($"https://exhentai.org/g/{Id}/{Token}?p={page}")
+				var galleryPage = await client
+					.NewSiteRequest($"https://exhentai.org/g/{Id}/{Token}?p={page}")
 					.ExecuteForContent();
 
 				list = imageListPage[page] = GalleryParser.ParseImages(galleryPage);
