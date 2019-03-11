@@ -17,7 +17,7 @@ namespace Core.Infrastructure
 		private const string ACCEPT_LANGUAGE = "zh,zh-CN;q=0.7,en;q=0.3";
 
 		// 参考 https://ehwiki.org/wiki/API#Basics 最下面的 Load limiting，每5秒最多5个请求
-		private readonly RateLimiter rateLimiter = new RateLimiter(5, TimeSpan.FromSeconds(5));
+		private readonly RateLimiter rateLimiter = RateLimiter.FromDuration(5, TimeSpan.FromSeconds(5));
 
 		public BrowserLikeHttpClient(HttpMessageHandler handler) : base(handler, true)
 		{
