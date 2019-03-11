@@ -29,9 +29,9 @@ namespace Test
 
 			limiter.Acquire(9);
 
-			// 10毫秒不足以回复足够的令牌，如果令牌计算错误导致过多，则该测试将失败
+			// 10毫秒不足以回复足够的令牌，如果令牌计算错误导致填充过多，则该测试将失败
 			Thread.Sleep(10);
-			limiter.Acquire(9).Should().Be(800);
+			limiter.Acquire(9).Should().BeApproximately(800, 0.1);
 		}
 
 		[TestMethod]
@@ -51,7 +51,7 @@ namespace Test
 
 			// 可能会有点误差，但不应该差的太大
 			var wait = limiter.Acquire(55);
-			wait.Should().BeInRange(49.9, 51);
+			wait.Should().BeApproximately(50, 0.1);
 
 			Thread.Sleep(TimeSpan.FromMilliseconds(wait));
 			limiter.Acquire(55).Should().BeLessOrEqualTo(0);

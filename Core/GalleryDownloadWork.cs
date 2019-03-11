@@ -38,6 +38,8 @@ namespace Core
 		private ISet<string> downloaded;
 
 		private int index;
+		private int endIndex;
+
 		private DataSize downloadSize;
 
 		public GalleryDownloadWork(Exhentai exhentai, string uri)
@@ -51,24 +53,23 @@ namespace Core
 		public async Task Run()
 		{
 			gallery = await exhentai.GetGallery(uri);
+			var saveName = gallery.JapaneseName ?? gallery.Name;
+			Console.WriteLine("本子名：" + saveName);
 
 			store = StorePath ?? Environment.CurrentDirectory;
 			if(!Flatten)
 			{
 				// 以本子名创建文件夹保存，优先使用日本名
-				store = Path.Combine(store, gallery.JapaneseName ?? gallery.Name);
+				store = Path.Combine(store, saveName);
 			}
 			Directory.CreateDirectory(store);
+
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
+			index = StartPage ?? 1;
+			endIndex = EndPage ?? gallery.Length;
 
-			Console.WriteLine("本子名：" + gallery.Name);
-			var start = StartPage ?? 1;
-			var end = EndPage ?? gallery.Length;
-
-			// 启动下载线程
-			var tasks = Enumerable.Range(0, Concurrent).Select(_ => RunWorker());
-
-			await Task.WhenAll(tasks);
+			// 启动下载线程并等待
+			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));
 			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
 		}
 
@@ -78,29 +79,36 @@ namespace Core
 		/// <returns>文件名集合</returns>
 		private ISet<string> ScanDownloaded()
 		{
-			var dirInfo = new DirectoryInfo(store);
-			var exists = new HashSet<string>();
+			return new DirectoryInfo(store)
+				.EnumerateFiles()
+				.Where(CheckImageFile)
+				.Select(file => file.Name)
+				.ToHashSet();
+		}
 
-			foreach (var file in dirInfo.EnumerateFiles())
+		/// <summary>
+		/// 检查图片文件有没有损坏，无法检测出残缺的图片？
+		/// </summary>
+		/// <param name="file">文件对象</param>
+		/// <returns>如果图片正常返回true</returns>
+		private static bool CheckImageFile(FileInfo file)
+		{
+			try
 			{
-				try
-				{
-					// 残缺文件无法检测出来？
-					Image.FromFile(file.FullName).Dispose();
-					exists.Add(file.Name);
-				}
-				catch
-				{
-					// 读取失败抛OOM异常什么鬼啦？？？
-					Console.WriteLine($"无法解析已存在的图片文件：{file.Name}");
-				}
+				Image.FromFile(file.FullName).Dispose();
+				return true;
 			}
-			return exists;
+			catch
+			{
+				// 读取失败抛OOM异常什么鬼啦？？？
+				Console.WriteLine($"无法解析已存在的图片文件：{file.Name}");
+				return false;
+			}
 		}
 
 		private async Task RunWorker()
 		{
-			while (Interlocked.Increment(ref index) <= gallery.Length)
+			while (Interlocked.Increment(ref index) <= endIndex)
 			{
 				try
 				{
