@@ -18,6 +18,8 @@ namespace Core.Request
 		/*
 		 * 该类使用了懒执行机制，对IP的修改（删除、封禁状态、配额达到）所造成的作用（移除和移动到队列等）需要在
 		 * 某个请求获取IP时才处理，这样无需单独分配线程去管理IP状态。
+		 * 
+		 * TODO: 目前使用轮流策略，会使低速IP更多地被使用，需要改进
 		 */
 
 		private readonly LinkedList<IPRecord> freeProxies = new LinkedList<IPRecord>();

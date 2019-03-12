@@ -13,6 +13,7 @@ namespace Test
 			Assert.ThrowsException<FormatException>(() => DataSize.Parse("ABCDEFG"));
 			Assert.ThrowsException<FormatException>(() => DataSize.Parse("1.2.3 KB"));
 			Assert.ThrowsException<FormatException>(() => DataSize.Parse("45 QB"));
+			Assert.ThrowsException<FormatException>(() => DataSize.Parse(string.Empty));
 		}
 
 		[TestMethod]

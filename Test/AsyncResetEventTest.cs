@@ -61,6 +61,7 @@ namespace Test
 			Task.WaitAll(waitTasks);
 		}
 
+		[Timeout(100)]
 		[TestMethod]
 		public async Task Cancellation()
 		{

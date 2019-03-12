@@ -41,6 +41,7 @@ namespace Test
 			limiter.Acquire(1).Should().Be(double.PositiveInfinity);
 		}
 
+
 		[TestMethod]
 		public void AcquireSuccess()
 		{
@@ -50,9 +51,15 @@ namespace Test
 
 			limiter.Acquire(10).Should().Be(0);
 			limiter.Acquire(20).Should().Be(0);
-			limiter.Acquire(10).Should().Be(0);
+
+			// 1秒后恢复了10个令牌，获取操作将成功
+			clock.Configure().Now.Returns(BASE_TIME + TimeSpan.FromSeconds(1));
+			limiter.Acquire(30).Should().Be(0);
 		}
 
+		/// <summary>
+		/// 过去的时间不足以回复足够的令牌，如果令牌计算错误导致填充过多，则该测试将失败
+		/// </summary>
 		[TestMethod]
 		public void AcquireFailed()
 		{
@@ -62,25 +69,9 @@ namespace Test
 
 			limiter.Acquire(15);
 
-			// 1秒不足以回复足够的令牌，如果令牌计算错误导致填充过多，则该测试将失败
-			clock.Now.Returns(BASE_TIME + TimeSpan.FromSeconds(1));
+			// 1秒后有10个令牌，还缺5个，需要再等一秒
+			clock.Configure().Now.Returns(BASE_TIME + TimeSpan.FromSeconds(1));
 			limiter.Acquire(15).Should().Be(1000);
-		}
-
-		[TestMethod]
-		public void SuccessAfterWait()
-		{
-			var clock = Substitute.For<Clock>();
-			clock.Now.Returns(BASE_TIME);
-			var limiter = new RateLimiter(100, 1, clock);
-
-			limiter.Acquire(50);
-
-			var wait = limiter.Acquire(55);
-			wait.Should().BeApproximately(5000, 0.1);
-
-			clock.Configure().Now.Returns(BASE_TIME + TimeSpan.FromMilliseconds(wait));
-			limiter.Acquire(55).Should().Be(0);
 		}
 
 		[TestMethod]
