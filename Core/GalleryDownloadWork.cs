@@ -53,13 +53,14 @@ namespace Core
 		public async Task Run()
 		{
 			gallery = await exhentai.GetGallery(uri);
+
+			// 以本子名创建文件夹保存，优先使用日本名
 			var saveName = gallery.JapaneseName ?? gallery.Name;
 			Console.WriteLine("本子名：" + saveName);
 
 			store = StorePath ?? Environment.CurrentDirectory;
 			if(!Flatten)
 			{
-				// 以本子名创建文件夹保存，优先使用日本名
 				store = Path.Combine(store, saveName);
 			}
 			Directory.CreateDirectory(store);
