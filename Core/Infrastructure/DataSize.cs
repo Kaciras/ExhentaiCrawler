@@ -43,7 +43,6 @@ namespace Core.Infrastructure
 		/// 转换如 xx.xx MB 这样的字符串为大小。
 		/// </summary>
 		/// <param name="string">表示大小的字符串</param>
-		/// <param name="targetUnit">返回数值的单位，null表示字节</param>
 		/// <returns>大小数值</returns>
 		/// <exception cref="FormatException">如果无法解析输入的字符串</exception>
 		public static DataSize Parse(string @string)

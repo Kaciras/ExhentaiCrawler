@@ -97,5 +97,7 @@ namespace Core.Request
 		}
 
 		public Task<T> Request<T>(ExhentaiRequest<T> request, IPRecord iPRecord) => Request(request);
+
+		public void Dispose() => httpClient.Dispose();
 	}
 }

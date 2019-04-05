@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Request
 {
-	public interface ExhentaiClient
+	public interface ExhentaiClient : IDisposable
 	{
 		CookieContainer Cookies { get; }
 
