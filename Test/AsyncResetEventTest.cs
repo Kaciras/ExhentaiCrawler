@@ -67,7 +67,7 @@ namespace Test
 		{
 			var resetEvent = new AsyncResetEvent();
 			var time = DateTime.Now;
-			var sc = new CancellationTokenSource(50);
+			var sc = new CancellationTokenSource(30);
 
 			try
 			{
@@ -76,7 +76,7 @@ namespace Test
 			}
 			catch(TaskCanceledException)
 			{
-				(DateTime.Now - time).Milliseconds.Should().BeGreaterOrEqualTo(50);
+				(DateTime.Now - time).Milliseconds.Should().BeGreaterOrEqualTo(30);
 			}
 		}
 	}
