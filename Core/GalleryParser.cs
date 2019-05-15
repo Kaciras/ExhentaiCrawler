@@ -55,7 +55,7 @@ namespace Core
 		/// </summary>
 		static void ParseAttrGroup(Gallery gallery, HtmlDocument doc)
 		{
-			var categoryName = doc.GetElementbyId("gdc").FirstChild.FirstChild.Attributes["alt"].Value;
+			var categoryName = doc.GetElementbyId("gdc").FirstChild.FirstChild.InnerText;
 			gallery.Category = CategoryHelper.Parse(categoryName);
 			gallery.Uploader = doc.GetElementbyId("gdn").FirstChild.InnerText;
 
