@@ -14,7 +14,7 @@ namespace Core
 	{
 		public const int DEFAULT_CONCURRENT = 4;
 
-		public int? StartPage { get; set; }
+        public int? StartPage { get; set; }
 		public int? EndPage { get; set; }
 
 		public bool Force { get; set; }
@@ -29,7 +29,7 @@ namespace Core
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
-		private readonly Exhentai exhentai;
+        private readonly Exhentai exhentai;
 		private readonly string uri;
 		private readonly CancellationTokenSource cancellation;
 
@@ -66,7 +66,7 @@ namespace Core
 			Directory.CreateDirectory(store);
 
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
-			index = StartPage ?? 1;
+			index = StartPage ?? 0;
 			endIndex = EndPage ?? gallery.Length;
 
 			// 启动下载线程并等待
@@ -109,7 +109,8 @@ namespace Core
 
 		private async Task RunWorker()
 		{
-			while (Interlocked.Increment(ref index) <= endIndex)
+            // Interlocked.Increment 返回增加后的值，所以是从1开始
+            while (Interlocked.Increment(ref index) <= endIndex)
 			{
 				try
 				{
