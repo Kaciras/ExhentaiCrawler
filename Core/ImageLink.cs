@@ -34,7 +34,7 @@ namespace Core
 			}
 			else
 			{
-				result = null;
+				result = default;
 			}
 			return result != null;
 		}

@@ -26,7 +26,7 @@ namespace Core
 	[Verb("download", HelpText = "下载图册")]
 	internal sealed class DownloadOptions
 	{
-		[Value(0, Required =true, HelpText ="图册网址，格式为")]
+		[Value(0, Required =true, HelpText ="本子的网址或图片网址")]
 		public string Uri { get; set; }
 
 		[Value(1, Default = "-", HelpText = "页码范围，格式：X-Y，表示从X到Y页，XY其中之一可以省略，分别表示第一页和最后一页。也可以是一个整数，表示下载指定页")]

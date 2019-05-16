@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Core.Request;
-using System.Linq;
 
 namespace Core
 {
@@ -13,7 +13,7 @@ namespace Core
 	{
 		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
 
-        private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
+		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 		public static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
 		private readonly ExhentaiClient client;
@@ -36,7 +36,8 @@ namespace Core
 			};
 
 			var html = await client.NewSiteRequest("https://forums.e-hentai.org/index.php?act=Login&CODE=01")
-				.ConfigureRequest(request => {
+				.ConfigureRequest(request =>
+				{
 					request.Method = HttpMethod.Post;
 					request.Headers.Referrer = new Uri("https://e-hentai.org/bounce_login.php?b=d&bt=1-1");
 					request.Content = new FormUrlEncodedContent(form);
