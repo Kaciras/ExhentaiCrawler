@@ -7,10 +7,10 @@ namespace Core
 	[Flags]
 	public enum Category
 	{
-		None, // 老实说我更喜欢JAVA的EnumSet
+		All = 0, 
 
-		Doujinshi = 1, Manga = 2, Artistcg = 4, Gamecg = 8, Western = 16,
-		NonH = 32, Imageset = 64, Cosplay = 128, Asianporn = 256, Misc = 512,
+		Doujinshi = 2, Manga = 4, Artistcg = 8, Gamecg = 16, Western = 512,
+		NonH = 256, Imageset = 32, Cosplay = 64, Asianporn = 128, Misc = 1,
 	}
 
 	// non-h 得特殊处理下

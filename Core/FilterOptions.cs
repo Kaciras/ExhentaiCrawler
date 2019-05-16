@@ -18,7 +18,7 @@ namespace Core
 	public sealed class FilterOptions
 	{
 		/// <summary>
-		/// 分类过滤，全选跟全空一样都指所有分类
+		/// 需要包含在结果中的分类，默认是全部
 		/// </summary>
 		public Category Categories { get; set; }
 
@@ -32,17 +32,17 @@ namespace Core
 
 		public IEnumerable<string> AsParameters()
 		{
-			var @params = new List<string>(22);
+			var @params = new List<string>(13);
 
-			var allCategory = Enum.GetValues(typeof(Category)).Cast<Category>().Skip(1);
-			foreach (var category in allCategory)
+			if (Categories != Category.All)
 			{
-				var v = (category & Categories) == 0 ? 0 : 1;
-				@params.Add($"f_{category.GetString()}={v}");
+				@params.Add($"f_cats={(int)Categories ^ 1023}");
 			}
 
-			@params.Add("f_search=" + SreachText ?? "");
-			@params.Add("f_apply=Apply+Filter");
+			if (SreachText != null)
+			{
+				@params.Add("f_search=" + SreachText);
+			}
 
 			if (AdvancedOptions != null)
 			{
