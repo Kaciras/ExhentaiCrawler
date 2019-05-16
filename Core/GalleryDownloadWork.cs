@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Infrastructure;
@@ -52,10 +53,17 @@ namespace Core
 
 		public async Task Run()
 		{
-			gallery = await exhentai.GetGallery(uri);
+            if (ImageLink.TryParse(new Uri(uri), out var link))
+            {
+                gallery = await exhentai.GetImage(link).GetGallery();
+            }
+            else
+            {
+                gallery = await exhentai.GetGallery(uri);
+            }
 
-			// 以本子名创建文件夹保存，优先使用日本名
-			var saveName = gallery.JapaneseName ?? gallery.Name;
+            // 以本子名创建文件夹保存，优先使用日本名
+            var saveName = gallery.Info.JapaneseName ?? gallery.Info.Name;
 			Console.WriteLine("本子名：" + saveName);
 
 			store = StorePath ?? Environment.CurrentDirectory;
@@ -67,7 +75,7 @@ namespace Core
 
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
 			index = StartPage ?? 0;
-			endIndex = EndPage ?? gallery.Length;
+			endIndex = EndPage ?? gallery.Info.Length;
 
 			// 启动下载线程并等待
 			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));
@@ -137,7 +145,7 @@ namespace Core
 
 			if (IndexPrefix)
 			{
-				var nums = (int)Math.Log10(gallery.Length) + 1;
+				var nums = (int)Math.Log10(gallery.Info.Length) + 1;
 				var prefix = index.ToString().PadLeft(nums, '0');
 				fileName = $"{prefix}_{fileName}";
 			}

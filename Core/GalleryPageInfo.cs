@@ -1,63 +1,85 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Web;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
 using Core.Infrastructure;
+using HtmlAgilityPack;
 
 namespace Core
 {
-	internal static class GalleryParser
+	public sealed class GalleryPageInfo
 	{
 		// 种子直接正则了，注意以>开头，保证与文本中的符号(&gt;)区分开
-		readonly static Regex TORRENT = new Regex(@">Torrent Download \( (\d+) \)");
+		private static readonly Regex TORRENT = new Regex(@">Torrent Download \( (\d+) \)");
 
-		public static Gallery Parse(Gallery gallery, string html)
+		public string Name { get; set; }
+		public string JapaneseName { get; set; }
+
+		public Category Category { get; set; }
+		public string Uploader { get; set; }
+
+		public DateTime Posted { get; set; }
+		public Uri Parent { get; set; }
+		public bool Visible { get; set; }
+		public Language Language { get; set; }
+		public bool IsTranslated { get; set; }
+		public DataSize FileSize { get; set; }
+		public int Length { get; set; }
+		public int Favorited { get; set; }
+
+		public Rating Rating { get; set; }
+
+		public TagCollection Tags { get; set; }
+
+		public int TorrnetCount { get; set; }
+		public int CommentCount { get; set; }
+
+		public IList<ImageThumbnail> Thumbnails { get; set; }
+
+		public static GalleryPageInfo Parse(string html)
 		{
+			var info = new GalleryPageInfo();
 			var doc = new HtmlDocument();
 			doc.LoadHtml(html);
 
-			ParseTitleGroup(gallery, doc);
-			ParseAttrGroup(gallery, doc);
-			gallery.Tags = ParseTags(doc);
+			info.ParseTitleGroup(doc);
+			info.ParseAttrGroup(doc);
+			info.Tags = ParseTags(doc);
 
 			// 计算图片列表一共几页，第一页已经包含在这次的响应里了
-			var firstList = ParseImages(doc);
-			var pages = 1 + (gallery.Length - 1) / firstList.Count;
-			gallery.imageListPage = new IList<ImageLink>[pages];
-			gallery.imageListPage[0] = firstList;
+			info.Thumbnails = ParseThumbnails(doc);
 
-			gallery.TorrnetCount = int.Parse(TORRENT.Match(html).Groups[1].Value);
-			gallery.CommentCount = doc.GetElementbyId("cdiv").ChildNodes.Count / 2;
-
-			return gallery;
+			info.TorrnetCount = int.Parse(TORRENT.Match(html).Groups[1].Value);
+			info.CommentCount = doc.GetElementbyId("cdiv").ChildNodes.Count / 2;
+			return info;
 		}
 
-		internal static void ParseTitleGroup(Gallery gallery, HtmlDocument doc)
+		internal void ParseTitleGroup(HtmlDocument doc)
 		{
 			var name = doc.GetElementbyId("gn").InnerText;
 			if (name != null)
 			{
-				gallery.Name = HttpUtility.HtmlDecode(name);
+				Name = HttpUtility.HtmlDecode(name);
 			}
 
 			var jpname = doc.GetElementbyId("gj")?.InnerText;
 			if (jpname.Length > 0)
 			{
-				gallery.JapaneseName = HttpUtility.HtmlDecode(jpname);
+				JapaneseName = HttpUtility.HtmlDecode(jpname);
 			}
 		}
 
 		/// <summary>
 		/// 解析在封面和标签中间的那一列属性列表
 		/// </summary>
-		static void ParseAttrGroup(Gallery gallery, HtmlDocument doc)
+		private void ParseAttrGroup(HtmlDocument doc)
 		{
 			var categoryName = doc.GetElementbyId("gdc").FirstChild.FirstChild.InnerText;
-			gallery.Category = CategoryHelper.Parse(categoryName);
-			gallery.Uploader = doc.GetElementbyId("gdn").FirstChild.InnerText;
+			Category = CategoryHelper.Parse(categoryName);
+			Uploader = doc.GetElementbyId("gdn").FirstChild.InnerText;
 
 			// 中间的表格元素，包含上传时间、文件大小等。
 			// 需要注意的是表格不完整，<tbody>是依靠浏览器自动补全的
@@ -65,36 +87,36 @@ namespace Core
 
 			// 第1项Posted: 2018-02-20 19:52
 			var posted = tableRows[0].LastChild.InnerText;
-			gallery.Posted = DateTime.ParseExact(posted, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+			Posted = DateTime.ParseExact(posted, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
 
 			// 第2项Parent: 1167472 是个连接
 			var parent = tableRows[1].LastChild.FirstChild;
 			if (parent.NodeType != HtmlNodeType.Text)
 			{
-				gallery.Parent = new Uri(parent.Attributes["href"].Value);
+				Parent = new Uri(parent.Attributes["href"].Value);
 			}
 
 			// 第3项Visible:	Yes[No]
-			gallery.Visible = tableRows[2].LastChild.InnerText == "Yes";
+			Visible = tableRows[2].LastChild.InnerText == "Yes";
 
 			// 第4项Language: Chinese &nbsp;(TR)?
 			var lang = tableRows[3].LastChild.FirstChild;
-			gallery.Language = Enum.Parse<Language>(lang.InnerText.Split(" ")[0]);
-			gallery.IsTranslated = lang.NextSibling != null;
+			Language = Enum.Parse<Language>(lang.InnerText.Split(" ")[0]);
+			IsTranslated = lang.NextSibling != null;
 
 			// 第5项File Size: 39.64 [MKG]B，没见到比KB还小的单位
-			gallery.FileSize = DataSize.Parse(tableRows[4].LastChild.InnerText);
-			
+			FileSize = DataSize.Parse(tableRows[4].LastChild.InnerText);
+
 			// 第6项Length: 152 pages
-			gallery.Length = int.Parse(tableRows[5].LastChild.InnerText.Split(" ")[0]);
+			Length = int.Parse(tableRows[5].LastChild.InnerText.Split(" ")[0]);
 
 			// 第7项Favorited: 2406 times
-			gallery.Favorited = int.Parse(tableRows[6].LastChild.InnerText.Split(" ")[0]);
+			Favorited = int.Parse(tableRows[6].LastChild.InnerText.Split(" ")[0]);
 
 			// 最下面的星星
 			var ratingCount = int.Parse(doc.GetElementbyId("rating_count").InnerText);
 			var ratingAvg = double.Parse(doc.GetElementbyId("rating_label").InnerText.Split(" ")[1]);
-			gallery.Rating = new Rating(ratingCount, ratingAvg);
+			Rating = new Rating(ratingCount, ratingAvg);
 		}
 
 		internal static TagCollection ParseTags(HtmlDocument doc)
@@ -147,27 +169,25 @@ namespace Core
 			}
 		}
 
-		internal static IList<ImageLink> ParseImages(string html)
+		public static IList<ImageThumbnail> ParseThumbnails(string html)
 		{
 			var doc = new HtmlDocument();
 			doc.LoadHtml(html);
-			return ParseImages(doc);
+			return ParseThumbnails(doc);
 		}
 
-		internal static IList<ImageLink> ParseImages(HtmlDocument doc)
+		internal static IList<ImageThumbnail> ParseThumbnails(HtmlDocument doc)
 		{
 			var nodes = doc.GetElementbyId("gdt").ChildNodes;
 			nodes.RemoveAt(nodes.Count - 1); // 去掉最后空白的div
 
-			var result = new List<ImageLink>();
+			var result = new List<ImageThumbnail>();
 			foreach (var item in nodes)
 			{
 				var anchor = item.FirstChild.FirstChild;
-
-				var match = ImageResource.IMAGE_PATH.Match(anchor.Attributes["href"].Value);
-				var imageKey = match.Groups["KEY"].Value;
+				var link = ImageLink.Parse(new Uri(anchor.Attributes["href"].Value));
 				var name = anchor.FirstChild.Attributes["title"].Value.Split(": ")[1];
-				result.Add(new ImageLink(imageKey, name));
+				result.Add(new ImageThumbnail(link, name));
 			}
 			return result;
 		}

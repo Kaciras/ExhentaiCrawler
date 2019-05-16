@@ -11,10 +11,10 @@ namespace Core
 {
 	public class Exhentai
 	{
-		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/";
+		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
 
-		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
-		private static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
+        private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
+		public static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
 		private readonly ExhentaiClient client;
 
@@ -101,14 +101,15 @@ namespace Core
 			return GetGallery(int.Parse(match.Groups[1].Value), match.Groups[2].Value);
 		}
 
-		public async Task<Gallery> GetGallery(int id, string token)
+		public Task<Gallery> GetGallery(int id, string token)
 		{
-			// hc=1 显示全部评论
-			var html = await client.NewSiteRequest($"https://exhentai.org/g/{id}/{token}?hc=1").ExecuteForContent();
+			return Gallery.From(client, id, token);
+		}
 
-			var gallery = new Gallery(client, id, token);
-			GalleryParser.Parse(gallery, html);
-			return gallery;
+		// TODO: 没检查URI的正确性，检查与外头判断是否重了?
+		public ImageResource GetImage(ImageLink link)
+		{
+			return new ImageResource(client, link);
 		}
 
 		public async Task<int> GetCost()

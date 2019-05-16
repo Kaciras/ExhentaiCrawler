@@ -12,13 +12,10 @@ namespace Core
 {
 	public class ImageResource
 	{
-		public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)");
 		public static readonly Regex FULL_IMG_TEXT = new Regex(@"Download original (\d+) x (\d+) ([0-9A-Z. ]+) source");
 
-		public Gallery Gallery { get; }
+		public ImageLink Link { get; }
 
-		public string ImageKey { get; }
-		public int Page { get; }
 		public string FileName { get; }
 
 		internal string ImageUrl { get; set; }
@@ -29,19 +26,34 @@ namespace Core
 		private readonly ExhentaiClient client;
 
 		private IPRecord bindIP;
+        private Gallery bindGallery;
 
-		internal ImageResource(ExhentaiClient client, Gallery gallery, int page, ImageLink link)
+		internal ImageResource(ExhentaiClient client, Gallery gallery, ImageThumbnail thumbnail)
 		{
 			this.client = client;
-			Gallery = gallery;
-			Page = page;
-			ImageKey = link.Key;
-			FileName = link.FileName;
+            Link = thumbnail.Link;
+			FileName = thumbnail.FileName;
+            bindGallery = gallery;
 		}
 
-		public async Task<Stream> GetImageStream(bool useBindIP = true)
+        internal ImageResource(ExhentaiClient client, ImageLink link)
+        {
+            this.client = client;
+            Link = link;
+        }
+
+		public async ValueTask<Gallery> GetGallery()
 		{
-			await EnsureImagePageLoaded();
+			if (bindGallery == null)
+			{
+				await EnsurePageLoaded();
+			}
+			return bindGallery;
+		}
+
+        public async Task<Stream> GetImageStream(bool useBindIP = true)
+		{
+			await EnsurePageLoaded();
 
 			if (useBindIP)
 			{
@@ -58,7 +70,7 @@ namespace Core
 		/// </summary>
 		public async Task<OriginImage> GetOriginal()
 		{
-			await EnsureImagePageLoaded();
+			await EnsurePageLoaded();
 
 			if (OriginImageUrl == null)
 			{
@@ -126,14 +138,14 @@ namespace Core
 		/// <summary>
 		/// 访问图片页面将消耗1点配额，所以使用了懒加载，尽量推迟访问图片页。
 		/// </summary>
-		private async Task EnsureImagePageLoaded()
+		private async Task EnsurePageLoaded()
 		{
 			// 该方法虽然也是同步返回的情况多，但编译器能自动使用Task.CompletedTask避免分配，故没必要用ValueTask
 			if (ImageUrl != null)
 			{
 				return; // 已经加载过了
 			}
-			var uri = $"https://exhentai.org/s/{ImageKey}/{Gallery.Id}-{Page}";
+			var uri = $"https://exhentai.org/s/{Link.Key}/{Link.GalleryId}-{Link.Page}";
 			var resp = await client.NewSiteRequest(uri).Execute();
 			bindIP = resp.IPRecord;
 
@@ -150,6 +162,13 @@ namespace Core
 
 				var match = FULL_IMG_TEXT.Match(fullImg.InnerText);
 				OriginImageSize = DataSize.Parse(match.Groups[3].Value);
+			}
+
+			if (bindGallery == null)
+			{
+				var galHref = doc.GetElementbyId("i5").FirstChild.FirstChild.Attributes["href"].Value;
+				var token = Exhentai.GALLERY.Match(galHref).Groups[2].Value;
+				bindGallery = await Gallery.From(client, Link.GalleryId, token);
 			}
 		}
 	}

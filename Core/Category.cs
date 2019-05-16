@@ -20,14 +20,14 @@ namespace Core
 		{
 			if (category == Category.NonH)
 			{
-				return "non-h";
+				return "Non-H";
 			}
 			return Enum.GetName(typeof(Category), category).ToLower();
 		}
 
 		public static Category Parse(string text)
 		{
-			if(text == "non-h")
+			if(text == "Non-H")
 			{
 				return Category.NonH;
 			}
