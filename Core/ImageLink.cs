@@ -1,28 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Core
 {
-    public sealed class ImageLink
-    {
-        public static readonly Regex IMAGE_PATH = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?");
+	public sealed class ImageLink
+	{
+		public static readonly Regex PATH_RE = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?");
 
-        public string Key { get; }
-        public int GalleryId { get; }
-        public int Page { get; }
+		public string Key { get; }
+		public int GalleryId { get; }
+		public int Page { get; }
 
-        public ImageLink(string key, int galleryId, int page)
-        {
-            Key = key;
-            GalleryId = galleryId;
-            Page = page;
-        }
+		public ImageLink(string key, int galleryId, int page)
+		{
+			Key = key;
+			GalleryId = galleryId;
+			Page = page;
+		}
+
+		public override string ToString()
+		{
+			return $"https://exhentai.org/s/{Key}/{GalleryId}-{Page}";
+		}
 
 		public static bool TryParse(Uri uri, out ImageLink result)
 		{
-			var match = IMAGE_PATH.Match(uri.AbsolutePath);
+			var match = PATH_RE.Match(uri.AbsolutePath);
 			if (match.Success)
 			{
 				var page = int.Parse(match.Groups["PAGE"].Value);
@@ -36,13 +39,13 @@ namespace Core
 			return result != null;
 		}
 
-        public static ImageLink Parse(Uri uri)
-        {
-            if (TryParse(uri, out var result))
-            {
-                return result;
-            }
-            throw new UriFormatException();
-        }
-    }
+		public static ImageLink Parse(Uri uri)
+		{
+			if (TryParse(uri, out var result))
+			{
+				return result;
+			}
+			throw new UriFormatException();
+		}
+	}
 }

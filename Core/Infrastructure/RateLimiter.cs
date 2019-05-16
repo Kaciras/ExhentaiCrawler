@@ -9,7 +9,6 @@ namespace Core.Infrastructure
 	public sealed class RateLimiter
 	{
 		private readonly Clock clock;
-
 		private readonly double maxPermits;
 
 		/// <summary>
@@ -29,7 +28,7 @@ namespace Core.Infrastructure
 
 		internal RateLimiter(double maxPermits, double rate, Clock clock)
 		{
-			if(maxPermits < 0)
+			if (maxPermits < 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(maxPermits), maxPermits, "桶容量不能为负数");
 			}

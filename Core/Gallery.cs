@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Core.Infrastructure;
 using Core.Request;
 
 namespace Core
@@ -70,8 +69,7 @@ namespace Core
 				list = imageListPage[page] = GalleryPageInfo.ParseThumbnails(galleryPage);
 			}
 
-			var link = list[index % pageSize];
-			return new ImageResource(client, this, link);
+			return new ImageResource(client, list[index % pageSize], this);
 		}
 
 		public static async Task<Gallery> From(ExhentaiClient client, int id, string token)

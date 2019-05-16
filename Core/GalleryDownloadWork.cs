@@ -4,7 +4,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Infrastructure;
@@ -15,7 +14,7 @@ namespace Core
 	{
 		public const int DEFAULT_CONCURRENT = 4;
 
-        public int? StartPage { get; set; }
+		public int? StartPage { get; set; }
 		public int? EndPage { get; set; }
 
 		public bool Force { get; set; }
@@ -30,7 +29,7 @@ namespace Core
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
-        private readonly Exhentai exhentai;
+		private readonly Exhentai exhentai;
 		private readonly string uri;
 		private readonly CancellationTokenSource cancellation;
 
@@ -53,21 +52,21 @@ namespace Core
 
 		public async Task Run()
 		{
-            if (ImageLink.TryParse(new Uri(uri), out var link))
-            {
-                gallery = await exhentai.GetImage(link).GetGallery();
-            }
-            else
-            {
-                gallery = await exhentai.GetGallery(uri);
-            }
+			if (ImageLink.TryParse(new Uri(uri), out var link))
+			{
+				gallery = await exhentai.GetImage(link).GetGallery();
+			}
+			else
+			{
+				gallery = await exhentai.GetGallery(uri);
+			}
 
-            // 以本子名创建文件夹保存，优先使用日本名
-            var saveName = gallery.Info.JapaneseName ?? gallery.Info.Name;
+			// 以本子名创建文件夹保存，优先使用日本名
+			var saveName = gallery.Info.JapaneseName ?? gallery.Info.Name;
 			Console.WriteLine("本子名：" + saveName);
 
 			store = StorePath ?? Environment.CurrentDirectory;
-			if(!Flatten)
+			if (!Flatten)
 			{
 				store = Path.Combine(store, saveName);
 			}
@@ -117,8 +116,8 @@ namespace Core
 
 		private async Task RunWorker()
 		{
-            // Interlocked.Increment 返回增加后的值，所以是从1开始
-            while (Interlocked.Increment(ref index) <= endIndex)
+			// Interlocked.Increment 返回增加后的值，所以是从1开始
+			while (Interlocked.Increment(ref index) <= endIndex)
 			{
 				try
 				{
@@ -179,10 +178,7 @@ namespace Core
 				Console.WriteLine($"{fileName}下载失败，正在重试");
 			}
 		}
-		
-		public void Cancel()
-		{
-			cancellation.Cancel();
-		}
+
+		public void Cancel() => cancellation.Cancel();
 	}
 }

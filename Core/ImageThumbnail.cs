@@ -10,7 +10,7 @@
 
 		public ImageThumbnail(ImageLink link, string fileName)
 		{
-            Link = link;
+			Link = link;
 			FileName = fileName;
 		}
 	}

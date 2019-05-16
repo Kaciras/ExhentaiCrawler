@@ -26,21 +26,21 @@ namespace Core
 		private readonly ExhentaiClient client;
 
 		private IPRecord bindIP;
-        private Gallery bindGallery;
+		private Gallery bindGallery;
 
-		internal ImageResource(ExhentaiClient client, Gallery gallery, ImageThumbnail thumbnail)
+		internal ImageResource(ExhentaiClient client, ImageThumbnail thumbnail, Gallery gallery)
 		{
 			this.client = client;
-            Link = thumbnail.Link;
+			Link = thumbnail.Link;
 			FileName = thumbnail.FileName;
-            bindGallery = gallery;
+			bindGallery = gallery;
 		}
 
-        internal ImageResource(ExhentaiClient client, ImageLink link)
-        {
-            this.client = client;
-            Link = link;
-        }
+		internal ImageResource(ExhentaiClient client, ImageLink link)
+		{
+			this.client = client;
+			Link = link;
+		}
 
 		public async ValueTask<Gallery> GetGallery()
 		{
@@ -51,7 +51,7 @@ namespace Core
 			return bindGallery;
 		}
 
-        public async Task<Stream> GetImageStream(bool useBindIP = true)
+		public async Task<Stream> GetImageStream(bool useBindIP = true)
 		{
 			await EnsurePageLoaded();
 
@@ -145,8 +145,7 @@ namespace Core
 			{
 				return; // 已经加载过了
 			}
-			var uri = $"https://exhentai.org/s/{Link.Key}/{Link.GalleryId}-{Link.Page}";
-			var resp = await client.NewSiteRequest(uri).Execute();
+			var resp = await client.NewSiteRequest(Link.ToString()).Execute();
 			bindIP = resp.IPRecord;
 
 			var doc = new HtmlDocument();
