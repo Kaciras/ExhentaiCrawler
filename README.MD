@@ -1,0 +1,16 @@
+# ExHantai 本子下载器
+
+ExhantaiCrawler 是 Exhantai.org 网站的爬虫，可以获取本子信息以及下载本子图片。
+
+虽然已有很多同类的项目存在，但还是自己写一个用得舒服，顺便练练多年没用过的C#。
+
+# 用法
+
+根据本子的地址下载图片：
+```
+ExhentaiCrawler download https://exhentai.org/g/<GID>/<Token>
+```
+
+# E站末日
+
+Exhantai.org 在 2019-7-26 日因荷兰法律而关站，该项目因此暂停开发。
