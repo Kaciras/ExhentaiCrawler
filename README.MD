@@ -11,6 +11,7 @@ ExhantaiCrawler 是 Exhantai.org 网站的爬虫，可以获取本子信息以及下载本子图片。
 ExhentaiCrawler download https://exhentai.org/g/<GID>/<Token>
 ```
 
-# E站末日
+# 关站风波
 
 Exhantai.org 在 2019-7-26 日因荷兰法律而关站，该项目因此暂停开发。
+但是没过几天就接受了不明人士的赞助，又好了，但是这个项目到底有无必要继续开发还是个问题。
