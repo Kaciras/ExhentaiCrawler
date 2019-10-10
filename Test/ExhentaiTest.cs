@@ -12,6 +12,7 @@ namespace Test
 	[TestClass]
 	public class ExhentaiTest
 	{
+		[Ignore("暂时没有HTTP代理")]
 		[TestMethod]
 		public async Task GetCost()
 		{
@@ -27,6 +28,7 @@ namespace Test
 			Assert.IsTrue(cost <= 5000);
 		}
 
+		[Ignore("暂时没有HTTP代理")]
 		[TestMethod]
 		public async Task LoginFail()
 		{
