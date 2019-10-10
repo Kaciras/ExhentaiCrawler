@@ -130,7 +130,7 @@ namespace Core
 			{
 				// 表格第一列是标签的命名空间
 				var name = row.FirstChild.InnerText;
-				name = char.ToUpper(name[0]) + name.Substring(1, name.Length - 2);
+				name = char.ToUpper(name[0]) + name[1..^1];
 
 				var property = typeof(TagCollection).GetProperty(name)
 					?? throw new MissingMemberException($"发现程序中未定义的标签类型：{name}");
@@ -156,17 +156,13 @@ namespace Core
 		/// <returns>可信度枚举</returns>
 		private static TagCredibility ParseTagCredibility(string @class)
 		{
-			switch (@class)
+			return @class switch
 			{
-				case "gt":
-					return TagCredibility.Confidence;
-				case "gtl":
-					return TagCredibility.Unconfidence;
-				case "gtw":
-					return TagCredibility.Incorrect;
-				default:
-					throw new NotSupportedException("Unrecognized tag class: " + @class);
-			}
+				"gt" => TagCredibility.Confidence,
+				"gtl" => TagCredibility.Unconfidence,
+				"gtw" => TagCredibility.Incorrect,
+				_ => throw new NotSupportedException("Unrecognized tag class: " + @class),
+			};
 		}
 
 		public static IList<ImageThumbnail> ParseThumbnails(string html)

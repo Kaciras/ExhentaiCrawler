@@ -11,11 +11,6 @@ namespace Test
 	{
 		private readonly ProxyPool pool = new ProxyPool();
 
-		/// <summary>
-		/// 用于忽略 TryGetAvailable 的 out 参数
-		/// </summary>
-		private IPRecord ignore;
-
 		[TestMethod]
 		public void Get()
 		{
@@ -37,7 +32,7 @@ namespace Test
 		[TestMethod]
 		public void GetEmpty()
 		{
-			Assert.IsFalse(pool.TryGetAvailable(0, out ignore));
+			Assert.IsFalse(pool.TryGetAvailable(0, out _));
 		}
 
 		[TestMethod]
@@ -47,7 +42,7 @@ namespace Test
 			pool.Add(ip);
 			ip.Removed = true;
 
-			Assert.IsFalse(pool.TryGetAvailable(0, out ignore));
+			Assert.IsFalse(pool.TryGetAvailable(0, out _));
 		}
 
 		[TestMethod]
@@ -59,11 +54,11 @@ namespace Test
 			ip.BanExpires = DateTime.Now + TimeSpan.FromMilliseconds(30);
 
 			// 要查询两次，第一次移动到封禁队列，第二次测试从封禁队列查询
-			Assert.IsFalse(pool.TryGetAvailable(0, out ignore));
-			Assert.IsFalse(pool.TryGetAvailable(0, out ignore));
+			Assert.IsFalse(pool.TryGetAvailable(0, out _));
+			Assert.IsFalse(pool.TryGetAvailable(0, out _));
 
 			Thread.Sleep(50);
-			Assert.IsTrue(pool.TryGetAvailable(0, out ignore));
+			Assert.IsTrue(pool.TryGetAvailable(0, out _));
 		}
 
 		[TestMethod]
@@ -75,10 +70,10 @@ namespace Test
 			ip.LimitReached = DateTime.Now - TimeSpan.FromMinutes(2);
 
 			// 与上面一样需要查询两次
-			Assert.IsFalse(pool.TryGetAvailable(100, out ignore));
-			Assert.IsFalse(pool.TryGetAvailable(100, out ignore));
+			Assert.IsFalse(pool.TryGetAvailable(100, out _));
+			Assert.IsFalse(pool.TryGetAvailable(100, out _));
 
-			Assert.IsTrue(pool.TryGetAvailable(5, out ignore));
+			Assert.IsTrue(pool.TryGetAvailable(5, out _));
 		}
 	}
 }

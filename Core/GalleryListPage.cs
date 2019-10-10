@@ -24,7 +24,7 @@ namespace Core
 
 			// <p class="ip" style="margin-top:5px">Showing 1-25 of 769,296</p>
 			var ip = body.SelectSingleNode("p").InnerText.Split(' ');
-			result.TotalCount = int.Parse(ip[ip.Length - 1].Replace(",", ""));
+			result.TotalCount = int.Parse(ip[^1].Replace(",", ""));
 
 			// 画册列表，第一行是表头
 			var rows = body.SelectNodes("table[2]/tr");

@@ -25,7 +25,7 @@ namespace Test
 		[TestMethod]
 		public async Task Panda()
 		{
-			var invaildClient = new PooledExhentaiClient();
+			using var invaildClient = new PooledExhentaiClient();
 			invaildClient.AddLocalIP();
 			try
 			{

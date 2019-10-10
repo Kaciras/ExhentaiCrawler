@@ -68,9 +68,10 @@ namespace Core
 
 					switch (value)
 					{
-						case bool boolValue:
-							if (boolValue)
-								collection.Add(name + "=on");
+						case true:
+							collection.Add(name + "=on");
+							break;
+						case false:
 							break;
 						default:
 							collection.Add($"{name}={value}");

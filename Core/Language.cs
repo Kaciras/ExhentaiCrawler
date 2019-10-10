@@ -9,8 +9,22 @@ namespace Core
 	/// </summary>
 	public enum Language
 	{
-		Japanese, English, Chinese, Dutch, French, German, Hungarian,
-		Italian, Korean, Polish, Portuguese, Russian, Spanish, Thai, Vietnamese,
-		NA, Other
+		Japanese,
+		English,
+		Chinese,
+		Dutch,
+		French,
+		German,
+		Hungarian,
+		Italian,
+		Korean,
+		Polish,
+		Portuguese,
+		Russian,
+		Spanish,
+		Thai,
+		Vietnamese,
+		NA,
+		Other
 	}
 }

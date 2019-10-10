@@ -94,11 +94,9 @@ namespace Core
 			cancelToken.ThrowIfCancellationRequested();
 			try
 			{
-				using (var input = await GetStream())
-				using (var output = File.OpenWrite(fileToSave))
-				{
-					await input.CopyToAsync(output, cancelToken);
-				}
+				using var input = await GetStream();
+				using var output = File.OpenWrite(fileToSave);
+				await input.CopyToAsync(output, cancelToken);
 			}
 			catch
 			{
@@ -143,7 +141,7 @@ namespace Core
 			// 该方法虽然也是同步返回的情况多，但编译器能自动使用Task.CompletedTask避免分配，故没必要用ValueTask
 			if (ImageUrl != null)
 			{
-				return; // 已经加载过了
+				return;
 			}
 			var resp = await client.NewSiteRequest(Link.ToString()).Execute();
 			bindIP = resp.IPRecord;

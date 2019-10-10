@@ -14,9 +14,7 @@ namespace Core
 	{
 		public const int DEFAULT_CONCURRENT = 4;
 
-		public int? StartPage { get; set; }
-		public int? EndPage { get; set; }
-
+		public Range Pages { get; set; }
 		public bool Force { get; set; }
 		public string StorePath { get; set; }
 		public bool Flatten { get; set; } // 不自动创建文件夹
@@ -73,8 +71,9 @@ namespace Core
 			Directory.CreateDirectory(store);
 
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
-			index = StartPage ?? 0;
-			endIndex = EndPage ?? gallery.Info.Length;
+
+			(index, endIndex) = Pages.GetOffsetAndLength(gallery.Info.Length);
+			endIndex += index;
 
 			// 启动下载线程并等待
 			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));

@@ -74,8 +74,6 @@ namespace Core
 
 		public static async Task<Gallery> From(ExhentaiClient client, int id, string token)
 		{
-			var gallery = new Gallery(client, id, token);
-
 			// hc=1 显示全部评论
 			var html = await client
 				.NewSiteRequest($"https://exhentai.org/g/{id}/{token}?hc=1")
@@ -88,9 +86,11 @@ namespace Core
 			var imageListPage = new IList<ImageThumbnail>[pages];
 			imageListPage[0] = info.Thumbnails;
 
-			gallery.Info = info;
-			gallery.imageListPage = imageListPage;
-			return gallery;
+			return new Gallery(client, id, token)
+			{
+				Info = info,
+				imageListPage = imageListPage
+			};
 		}
 	}
 }

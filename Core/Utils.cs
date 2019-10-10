@@ -24,8 +24,8 @@ namespace Core
 		///		- : 全部范围
 		/// </summary>
 		/// <param name="string">范围字符串</param>
-		/// <returns>范围(起始，结束)</returns>
-		public static (int?, int?) ParseRange(string @string)
+		/// <returns>范围</returns>
+		public static Range ParseRange(string @string)
 		{
 			if (string.IsNullOrEmpty(@string))
 			{
@@ -37,11 +37,11 @@ namespace Core
 			{
 				var start = ParseNullableInt(match.Groups[1].Value);
 				var end = ParseNullableInt(match.Groups[2].Value);
-				return (start, end);
+				return (start ?? 0)..(end ?? ^0);
 			}
 			else if (int.TryParse(@string, out var index))
 			{
-				return (index, index);
+				return index..index;
 			}
 			else
 			{
