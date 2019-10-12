@@ -13,11 +13,17 @@ namespace Core
 	public sealed class GalleryDownloadWork
 	{
 		public const int DEFAULT_CONCURRENT = 4;
+		public const int RETRY_TIMES = 3;
 
 		public Range Pages { get; set; }
-		public bool Force { get; set; }
+
 		public string StorePath { get; set; }
-		public bool Flatten { get; set; } // 不自动创建文件夹
+
+		/// <summary>不自动创建文件夹</summary>
+		public bool Flatten { get; set; }
+
+		/// <summary>强制下载全部图片，即使已经存在</summary>
+		public bool Force { get; set; }	
 
 		/// <summary>
 		/// 给文件名加上序号前缀，例如：XX_原名.png，XX是图片在E绅士网页上的顺序。
@@ -44,7 +50,6 @@ namespace Core
 		{
 			this.exhentai = exhentai;
 			this.uri = uri;
-
 			cancellation = new CancellationTokenSource();
 		}
 
@@ -153,7 +158,7 @@ namespace Core
 				return;
 			}
 
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < RETRY_TIMES; i++)
 			{
 				try
 				{
@@ -174,7 +179,7 @@ namespace Core
 				{
 					// 读取请求体的时候出错。（本地文件错误怎么办？）
 				}
-				Console.WriteLine($"{fileName}下载失败，正在重试");
+				Console.WriteLine($"{fileName}下载失败，重试 - {i}");
 			}
 		}
 

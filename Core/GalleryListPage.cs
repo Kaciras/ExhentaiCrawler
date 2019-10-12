@@ -13,7 +13,7 @@ namespace Core
 
 		// 可以直接计算
 		public int TotalPage => 1 + (TotalCount - 1) / Galleries.Count;
-
+		
 		public static GalleryListPage ParseHtml(string html)
 		{
 			var result = new GalleryListPage();
