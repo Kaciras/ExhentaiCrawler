@@ -2,10 +2,6 @@
   "profiles": {
     "Core": {
       "commandName": "Project"
-    },
-    "CmdHelp": {
-      "commandName": "Project",
-      "commandLineArgs": "download https://exhentai.org/g/1370776/a8a54bdbe4/"
     }
   }
 }

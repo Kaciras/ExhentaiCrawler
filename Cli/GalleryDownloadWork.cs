@@ -6,9 +6,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Core;
 using Core.Infrastructure;
 
-namespace Core
+namespace Cli
 {
 	public sealed class GalleryDownloadWork
 	{
