@@ -47,8 +47,10 @@ namespace Core.Request
 
 		public Task<T> Execute<T>(ResponseHandler<T> handler)
 		{
-			var request = new SiteRequest<T>(uri, handler);
-			request.Cost = cost;
+			var request = new SiteRequest<T>(uri, handler)
+			{
+				Cost = cost
+			};
 			return client.Request(request);
 		}
 

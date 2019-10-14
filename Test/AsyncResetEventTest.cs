@@ -67,11 +67,11 @@ namespace Test
 		{
 			var resetEvent = new AsyncResetEvent();
 			var time = DateTime.Now;
-			var sc = new CancellationTokenSource(30);
+			using var cancellation = new CancellationTokenSource(30);
 
 			try
 			{
-				await resetEvent.Wait(sc.Token);
+				await resetEvent.Wait(cancellation.Token);
 				Assert.Fail();
 			}
 			catch(TaskCanceledException)

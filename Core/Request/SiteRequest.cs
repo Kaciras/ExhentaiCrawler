@@ -43,18 +43,16 @@ namespace Core.Request
 			var request = new HttpRequestMessage(HttpMethod.Get, uri);
 			RrequestConfigurer?.Invoke(request);
 
-			using (var response = await client.SendAsync(request, HEADERS_READ))
+			using var response = await client.SendAsync(request, HEADERS_READ);
+			if ((int)response.StatusCode >= 400)
 			{
-				if((int)response.StatusCode >= 400)
-				{
-					throw new HttpStatusException(response.StatusCode);
-				}
-
-				// 要判断是不是封禁必须得检查响应体？
-				var body = await response.Content.ReadAsStringAsync();
-				CheckResponse(response, body);
-				return responseHandler(new SiteResponse(iPRecord, response, body));
+				throw new HttpStatusException(response.StatusCode);
 			}
+
+			// 要判断是不是封禁必须得检查响应体？
+			var body = await response.Content.ReadAsStringAsync();
+			CheckResponse(response, body);
+			return responseHandler(new SiteResponse(iPRecord, response, body));
 		}
 
 		/// <summary>
