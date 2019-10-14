@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using EnumsNET;
 
 namespace Core
 {
@@ -34,7 +35,7 @@ namespace Core
 		{
 			var @params = new List<string>(13);
 
-			if (Categories != Category.All)
+			if (Categories.HasAnyFlags())
 			{
 				@params.Add($"f_cats={(int)Categories ^ 1023}");
 			}

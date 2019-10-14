@@ -9,8 +9,6 @@ namespace Core
 	[Flags]
 	public enum Category
 	{
-		All = 0,
-
 		Doujinshi = 2, Manga = 4, Artistcg = 8, Gamecg = 16, Western = 512,
 		NonH = 256, Imageset = 32, Cosplay = 64, Asianporn = 128, Misc = 1,
 	}
