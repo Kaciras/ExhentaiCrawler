@@ -13,10 +13,7 @@ namespace Core
 {
 	public class Exhentai
 	{
-		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
-
 		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
-		public static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
 		private readonly ExhentaiClient client;
 
@@ -94,20 +91,9 @@ namespace Core
 			return GalleryListPage.ParseHtml(response.Content);
 		}
 
-		public Task<Gallery> GetGallery(string url)
-		{
-			var match = GALLERY.Match(url);
-			if (!match.Success)
-			{
-				throw new ArgumentException(@"画册的URL格式不对，应当符合 " + GALLERY_RE_TEXT);
-			}
-			return GetGallery(int.Parse(match.Groups[1].Value), match.Groups[2].Value);
-		}
+		public Task<Gallery> GetGallery(string url) => Gallery.From(client, url);
 
-		public Task<Gallery> GetGallery(int id, string token)
-		{
-			return Gallery.From(client, id, token);
-		}
+		public Task<Gallery> GetGallery(int id, string token) => Gallery.From(client, id, token);
 
 		// TODO: 没检查URI的正确性，检查与外头判断是否重了?
 		public ImageResource GetImage(ImageLink link)

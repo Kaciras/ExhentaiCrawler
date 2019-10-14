@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Core.Request;
 
@@ -7,6 +8,10 @@ namespace Core
 {
 	public sealed class Gallery
 	{
+		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
+
+		public static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
+
 		public int Id { get; }
 		public string Token { get; }
 
@@ -72,7 +77,30 @@ namespace Core
 			return new ImageResource(client, list[index % pageSize], this);
 		}
 
-		public static async Task<Gallery> From(ExhentaiClient client, int id, string token)
+		/// <summary>
+		/// 获取该本子的上一个版本（即parent链接），如果没有上个版本则返回null。
+		/// </summary>
+		/// <returns>上一个版本</returns>
+		public Task<Gallery> GetParent()
+		{
+			if (Info.Parent == null)
+			{
+				return Task.FromResult<Gallery>(null);
+			}
+			return From(client, Info.Parent.ToString());
+		}
+
+		internal static Task<Gallery> From(ExhentaiClient client, string uri)
+		{
+			var match = GALLERY.Match(uri);
+			if (!match.Success)
+			{
+				throw new ArgumentException(@"画册的URL格式不对，应当符合 " + GALLERY_RE_TEXT);
+			}
+			return From(client, int.Parse(match.Groups[1].Value), match.Groups[2].Value);
+		}
+
+		internal static async Task<Gallery> From(ExhentaiClient client, int id, string token)
 		{
 			// hc=1 显示全部评论
 			var html = await client

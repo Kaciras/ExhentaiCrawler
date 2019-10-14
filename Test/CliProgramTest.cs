@@ -14,11 +14,11 @@ namespace Test
 		[TestMethod]
 		public void ParseRange()
 		{
-			Assert.AreEqual(50..50, Program.ParseRange("50"));
-			Assert.AreEqual(Range.StartAt(99), Program.ParseRange("99-"));
-			Assert.AreEqual(Range.EndAt(99), Program.ParseRange("-99"));
-			Assert.AreEqual(64..128, Program.ParseRange("64-128"));
-			Assert.AreEqual(Range.All, Program.ParseRange("-"));
+			Assert.AreEqual(50..50, DownloadMode.ParseRange("50"));
+			Assert.AreEqual(Range.StartAt(99), DownloadMode.ParseRange("99-"));
+			Assert.AreEqual(Range.EndAt(99), DownloadMode.ParseRange("-99"));
+			Assert.AreEqual(64..128, DownloadMode.ParseRange("64-128"));
+			Assert.AreEqual(Range.All, DownloadMode.ParseRange("-"));
 		}
 	}
 }

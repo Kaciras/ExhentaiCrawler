@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Core;
 using Core.Infrastructure;
+using Newtonsoft.Json;
 
 namespace Cli
 {
@@ -20,11 +21,8 @@ namespace Cli
 
 		public string StorePath { get; set; }
 
-		/// <summary>不自动创建文件夹</summary>
-		public bool Flatten { get; set; }
-
 		/// <summary>强制下载全部图片，即使已经存在</summary>
-		public bool Force { get; set; }	
+		public bool Force { get; set; }
 
 		/// <summary>
 		/// 给文件名加上序号前缀，例如：XX_原名.png，XX是图片在E绅士网页上的顺序。
@@ -34,11 +32,9 @@ namespace Cli
 
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
-		private readonly Exhentai exhentai;
-		private readonly string uri;
+		private readonly Gallery gallery;
 		private readonly CancellationTokenSource cancellation;
 
-		private Gallery gallery;
 		private string store;
 		private ISet<string> downloaded;
 
@@ -47,33 +43,15 @@ namespace Cli
 
 		private DataSize downloadSize;
 
-		public GalleryDownloadWork(Exhentai exhentai, string uri)
+		public GalleryDownloadWork(Gallery gallery)
 		{
-			this.exhentai = exhentai;
-			this.uri = uri;
+			this.gallery = gallery;
 			cancellation = new CancellationTokenSource();
 		}
 
-		public async Task Run()
+		public async Task StartDownload()
 		{
-			if (ImageLink.TryParse(new Uri(uri), out var link))
-			{
-				gallery = await exhentai.GetImage(link).GetGallery();
-			}
-			else
-			{
-				gallery = await exhentai.GetGallery(uri);
-			}
-
-			// 以本子名创建文件夹保存，优先使用日本名
-			var saveName = gallery.Info.JapaneseName ?? gallery.Info.Name;
-			Console.WriteLine("本子名：" + saveName);
-
-			store = StorePath ?? Environment.CurrentDirectory;
-			if (!Flatten)
-			{
-				store = Path.Combine(store, saveName);
-			}
+			store = await GetStoreDirectory();
 			Directory.CreateDirectory(store);
 
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
@@ -84,6 +62,66 @@ namespace Cli
 			// 启动下载线程并等待
 			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));
 			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
+		}
+
+		private async Task<string> GetStoreDirectory()
+		{
+			var store = StorePath ?? Environment.CurrentDirectory;
+
+			// 保存到的目录名，以本子名创建文件夹保存，优先使用日本名。
+			var name = gallery.Info.JapaneseName ?? gallery.Info.Name;
+			Console.WriteLine("本子名：" + name);
+			var directory = Path.Join(store, name);
+
+			var versionFile = Path.Join(store, "versions.json");
+
+			var s = new JsonSerializer();
+			DownloadRecord record;
+
+			try
+			{
+				using var reader = new JsonTextReader(new StreamReader(versionFile));
+				record = s.Deserialize<DownloadRecord>(reader);
+			}
+			catch (FileNotFoundException)
+			{
+				record = new DownloadRecord()
+				{
+					IdMap = new Dictionary<int, string>(),
+					Versions = new Dictionary<int, int>()
+				};
+			}
+
+			var trace = new List<int>();
+			var saveId = -1;
+
+			for (var v = gallery; v != null; v = await v.GetParent())
+			{
+				if (record.Versions.TryGetValue(v.Id, out saveId))
+				{
+					break;
+				}
+				trace.Add(v.Id);
+			}
+
+			// 如果已经下载过了，就更新目录名为最新的本子名，没下载过就创建新的记录
+			if (saveId >= 0)
+			{
+				var old = record.IdMap[saveId];
+				record.IdMap[saveId] = directory;
+				Directory.Move(Path.Join(store, old), directory);
+			}
+			else
+			{
+				saveId = record.IdMap.Count;
+			}
+
+			// 把新的版本加入到记录并保存
+			trace.ForEach(gid => record.Versions[gid] = saveId);
+			using var writer = new JsonTextWriter(new StreamWriter(versionFile));
+			s.Serialize(writer, record);
+
+			return directory;
 		}
 
 		/// <summary>
@@ -140,6 +178,10 @@ namespace Cli
 			}
 		}
 
+		/// <summary>
+		/// 下载本子里第index张图片，该方法将同时被多个线程调用。
+		/// </summary>
+		/// <param name="index">图片序号</param>
 		private async Task DownloadImage(int index)
 		{
 			cancellation.Token.ThrowIfCancellationRequested();
