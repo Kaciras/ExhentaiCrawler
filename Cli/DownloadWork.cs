@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Cli
 {
-	public sealed class GalleryDownloadWork
+	public sealed class DownloadWork
 	{
 		public const int DEFAULT_CONCURRENT = 4;
 		public const int RETRY_TIMES = 3;
@@ -43,7 +43,7 @@ namespace Cli
 
 		private DataSize downloadSize;
 
-		public GalleryDownloadWork(Gallery gallery)
+		public DownloadWork(Gallery gallery)
 		{
 			this.gallery = gallery;
 			cancellation = new CancellationTokenSource();
