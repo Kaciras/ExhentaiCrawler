@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Cli;
-using Core;
-using Core.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Test

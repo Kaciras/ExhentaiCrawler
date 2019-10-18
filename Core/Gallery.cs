@@ -10,7 +10,7 @@ namespace Core
 	{
 		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
 
-		public static readonly Regex GALLERY = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
+		public static readonly Regex URL_RE = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
 
 		public int Id { get; }
 		public string Token { get; }
@@ -92,7 +92,7 @@ namespace Core
 
 		internal static Task<Gallery> From(ExhentaiClient client, string uri)
 		{
-			var match = GALLERY.Match(uri);
+			var match = URL_RE.Match(uri);
 			if (!match.Success)
 			{
 				throw new ArgumentException(@"画册的URL格式不对，应当符合 " + GALLERY_RE_TEXT);

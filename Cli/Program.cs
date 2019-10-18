@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommandLine;
-using Core;
-using Core.Request;
 
 [assembly: InternalsVisibleTo("Test")]
 namespace Cli
@@ -23,7 +19,6 @@ namespace Cli
 		[Option('c', "cookie", HelpText = "Cookie模式，分别设置UserName和Password为 ipb_member_id 和 ipb_pass_hash")]
 		public bool CookieMode { get; set; }
 	}
-	
 
 	internal static class Program
 	{
@@ -31,7 +26,7 @@ namespace Cli
 		{
 			Parser.Default.ParseArguments<DownloadMode, LoginOptions>(args)
 				.WithParsed<LoginOptions>(Login)
-				.WithParsed<DownloadMode>(mode => mode.Start());
+				.WithParsed<DownloadMode>(DownloadGallery);
 		}
 
 		private static void Login(LoginOptions options)
@@ -41,7 +36,7 @@ namespace Cli
 
 		private static void DownloadGallery(DownloadMode mode)
 		{
-			mode.Start().Wait();
+			RunAsyncTask(mode.Start).Wait();
 		}
 
 		private static async Task RunAsyncTask(Func<Task> asyncAction)

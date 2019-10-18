@@ -164,7 +164,7 @@ namespace Core
 			if (bindGallery == null)
 			{
 				var galHref = doc.GetElementbyId("i5").FirstChild.FirstChild.Attributes["href"].Value;
-				var token = Exhentai.GALLERY.Match(galHref).Groups[2].Value;
+				var token = Gallery.URL_RE.Match(galHref).Groups[2].Value;
 				bindGallery = await Gallery.From(client, Link.GalleryId, token);
 			}
 		}

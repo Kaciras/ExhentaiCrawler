@@ -51,7 +51,7 @@ namespace Cli
 			{
 				Pages = ParseRange(Pages),
 				Force = Force,
-				StorePath = @"C:\Users\XuFan\Desktop",
+				StorePath = @"E:\漫画",
 				Concurrent = Concurrent,
 			};
 

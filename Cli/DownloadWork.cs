@@ -24,12 +24,6 @@ namespace Cli
 		/// <summary>强制下载全部图片，即使已经存在</summary>
 		public bool Force { get; set; }
 
-		/// <summary>
-		/// 给文件名加上序号前缀，例如：XX_原名.png，XX是图片在E绅士网页上的顺序。
-		/// 该选项针对文件名顺序与实际顺序不同的情况，如第二张图叫 01.png 而第一张却叫 02.png
-		/// </summary>
-		public bool IndexPrefix { get; set; }
-
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
 		private readonly Gallery gallery;
@@ -51,11 +45,22 @@ namespace Cli
 
 		public async Task StartDownload()
 		{
-			store = await GetStoreDirectory();
-			Directory.CreateDirectory(store);
+			var directory = DirectoryNameOf(gallery);
+			store = Path.Join(StorePath, directory);
+			Console.WriteLine("本子名：" + directory);
+
+			var old = await GetExistsVersion();
+			if (old != null)
+			{
+				UpdateStoreDirectory(old);
+			}
+			else
+			{
+				Directory.CreateDirectory(store);
+			}
+
 
 			downloaded = Force ? new SortedSet<string>() : ScanDownloaded();
-
 			(index, endIndex) = Pages.GetOffsetAndLength(gallery.Info.Length);
 			endIndex += index;
 
@@ -64,64 +69,41 @@ namespace Cli
 			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
 		}
 
-		private async Task<string> GetStoreDirectory()
+		private string DirectoryNameOf(Gallery gallery)
 		{
-			var store = StorePath ?? Environment.CurrentDirectory;
+			var info = gallery.Info;
+			return $"{gallery.Id} - {info.JapaneseName ?? info.Name}";
+		}
 
-			// 保存到的目录名，以本子名创建文件夹保存，优先使用日本名。
-			var name = gallery.Info.JapaneseName ?? gallery.Info.Name;
-			Console.WriteLine("本子名：" + name);
-			var directory = Path.Join(store, name);
-
-			var versionFile = Path.Join(store, "versions.json");
-
-			var s = new JsonSerializer();
-			DownloadRecord record;
-
-			try
-			{
-				using var reader = new JsonTextReader(new StreamReader(versionFile));
-				record = s.Deserialize<DownloadRecord>(reader);
-			}
-			catch (FileNotFoundException)
-			{
-				record = new DownloadRecord()
-				{
-					IdMap = new Dictionary<int, string>(),
-					Versions = new Dictionary<int, int>()
-				};
-			}
-
-			var trace = new List<int>();
-			var saveId = -1;
-
+		private async Task<Gallery> GetExistsVersion()
+		{
 			for (var v = gallery; v != null; v = await v.GetParent())
 			{
-				if (record.Versions.TryGetValue(v.Id, out saveId))
+				var name = DirectoryNameOf(gallery);
+				if (Directory.Exists(Path.Join(StorePath, name)))
 				{
-					break;
+					return gallery;
 				}
-				trace.Add(v.Id);
 			}
+			return null;
+		}
 
-			// 如果已经下载过了，就更新目录名为最新的本子名，没下载过就创建新的记录
-			if (saveId >= 0)
+		private void UpdateStoreDirectory(Gallery oldGallery)
+		{
+			var oldName = DirectoryNameOf(oldGallery);
+			var name = DirectoryNameOf(gallery);
+			Directory.Move(Path.Join(StorePath, oldName), Path.Join(StorePath, name));
+
+			var oldNumberLength = (int)Math.Log10(oldGallery.Info.Length);
+			var numberLength = (int)Math.Log10(gallery.Info.Length);
+			if (numberLength != oldNumberLength)
 			{
-				var old = record.IdMap[saveId];
-				record.IdMap[saveId] = directory;
-				Directory.Move(Path.Join(store, old), directory);
-			}
-			else
-			{
-				saveId = record.IdMap.Count;
+				new DirectoryInfo(store)
+					.EnumerateFiles()
+					.ForEach((file, i) => file.MoveTo(i.ToString().PadLeft(numberLength, '0')));
 			}
 
-			// 把新的版本加入到记录并保存
-			trace.ForEach(gid => record.Versions[gid] = saveId);
-			using var writer = new JsonTextWriter(new StreamWriter(versionFile));
-			s.Serialize(writer, record);
-
-			return directory;
+			Console.WriteLine($"已将旧版目录合并：{oldName}");
 		}
 
 		/// <summary>
@@ -142,17 +124,17 @@ namespace Cli
 		/// </summary>
 		/// <param name="file">文件对象</param>
 		/// <returns>如果图片正常返回true</returns>
-		private static bool CheckImageFile(FileInfo file)
+		public static bool CheckImageFile(FileInfo file)
 		{
 			try
 			{
 				Image.FromFile(file.FullName).Dispose();
 				return true;
 			}
-			catch
+			catch(OutOfMemoryException)
 			{
 				// 读取失败抛OOM异常什么鬼啦？？？
-				Console.WriteLine($"无法解析已存在的图片文件：{file.Name}");
+				Console.WriteLine($"无法解析的图片文件：{file.Name}");
 				return false;
 			}
 		}
@@ -187,14 +169,11 @@ namespace Cli
 			cancellation.Token.ThrowIfCancellationRequested();
 
 			var image = await gallery.GetImage(index);
-			var fileName = image.FileName;
 
-			if (IndexPrefix)
-			{
-				var nums = (int)Math.Log10(gallery.Info.Length) + 1;
-				var prefix = index.ToString().PadLeft(nums, '0');
-				fileName = $"{prefix}_{fileName}";
-			}
+			// 使用序号并填充对齐作为文件名，保证文件顺序跟本子里的顺序一致。
+			// 至于图片的原名就没什么用了。
+			var nums = (int)Math.Log10(gallery.Info.Length) + 1;
+			var fileName = index.ToString().PadLeft(nums, '0');
 
 			if (downloaded.Contains(fileName))
 			{
