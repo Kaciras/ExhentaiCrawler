@@ -21,6 +21,7 @@ namespace Core
 		public Category Category { get; set; }
 		public string Uploader { get; set; }
 
+		// 中间的一堆属性
 		public DateTime Posted { get; set; }
 		public Uri Parent { get; set; }
 		public bool Visible { get; set; }
@@ -29,13 +30,16 @@ namespace Core
 		public DataSize FileSize { get; set; }
 		public int Length { get; set; }
 		public int Favorited { get; set; }
-
 		public Rating Rating { get; set; }
 
 		public TagCollection Tags { get; set; }
 
 		public int TorrnetCount { get; set; }
 		public int CommentCount { get; set; }
+
+		// 如果有新版，则在简介栏和图片栏中间会出现链接列表，包含了新版的链接，新的靠后。
+		// 【注意】列表里并非一定包括最新版，如果要获取最新的需要遍历，直到没有新版链接为止。
+		public IList<string> NewVersions { get; set; }
 
 		public IList<ImageThumbnail> Thumbnails { get; set; }
 
@@ -51,6 +55,7 @@ namespace Core
 
 			// 计算图片列表一共几页，第一页已经包含在这次的响应里了
 			info.Thumbnails = ParseThumbnails(doc);
+			info.NewVersions = ParseNewVersions(doc);
 
 			info.TorrnetCount = int.Parse(TORRENT.Match(html).Groups[1].Value);
 			info.CommentCount = doc.GetElementbyId("cdiv").ChildNodes.Count / 2;
@@ -96,7 +101,7 @@ namespace Core
 				Parent = new Uri(parent.Attributes["href"].Value);
 			}
 
-			// 第3项Visible:	Yes[No]
+			// 第3项 Visible: Yes[No]
 			Visible = tableRows[2].LastChild.InnerText == "Yes";
 
 			// 第4项Language: Chinese &nbsp;(TR)?
@@ -147,6 +152,16 @@ namespace Core
 			}
 
 			return tags;
+		}
+
+		internal static IList<string> ParseNewVersions(HtmlDocument doc)
+		{
+			var listNode = doc.GetElementbyId("gnd");
+			if (listNode == null)
+			{
+				return Array.Empty<string>();
+			}
+			return listNode.SelectNodes("a").Select(node => node.Attributes["href"].Value).ToList();
 		}
 
 		/// <summary>

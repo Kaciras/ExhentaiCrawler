@@ -17,6 +17,8 @@ namespace Core
 
 		public GalleryPageInfo Info { get; private set; }
 
+		public string Uri => "https://exhentai.org/g/{id}/{token}";
+
 		private readonly ExhentaiClient client;
 
 		/// <summary>
@@ -88,6 +90,23 @@ namespace Core
 				return Task.FromResult<Gallery>(null);
 			}
 			return From(client, Info.Parent.ToString());
+		}
+
+		/// <summary>
+		/// 获取该本子的最新版本，如果当前版本就是最新的则返回此对象。
+		/// </summary>
+		/// <returns>该本子的最新版本</returns>
+		public async Task<Gallery> GetLatestVersion()
+		{
+			var latestVersion = this;
+			var list = Info.NewVersions;
+
+			while (list.Count > 0)
+			{
+				latestVersion = await From(client, list[^1]);
+				list = latestVersion.Info.NewVersions;
+			}
+			return latestVersion;
 		}
 
 		internal static Task<Gallery> From(ExhentaiClient client, string uri)

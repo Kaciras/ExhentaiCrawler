@@ -1,5 +1,6 @@
 ﻿using Core;
 using Core.Infrastructure;
+using FluentAssertions;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -100,6 +101,18 @@ namespace Test
 			Assert.AreEqual(25, gals.Count);
 			Assert.AreEqual("https://exhentai.org/g/1374376/455b8f2245/", gals[0].ToString());
 			Assert.AreEqual("https://exhentai.org/g/1373931/2c2a4f931c/", gals[24].ToString());
+		}
+
+		[TestMethod]
+		public void ParseNewVersions()
+		{
+			var doc = new HtmlDocument();
+			doc.Load("WebArchive/NewVersionTestPage.html");
+
+			var list = GalleryPageInfo.ParseNewVersions(doc);
+			list.Should().HaveCount(4);
+			list[0].Should().Be("https://exhentai.org/g/1489813/0446282389/");
+			list[^1].Should().Be("https://exhentai.org/g/1502818/b0f0b40e2e/");
 		}
 	}
 }
