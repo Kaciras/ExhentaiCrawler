@@ -1,4 +1,5 @@
 ﻿using System;
+using EnumsNET;
 
 namespace Core
 {
@@ -9,29 +10,27 @@ namespace Core
 	[Flags]
 	public enum Category
 	{
-		Doujinshi = 2, Manga = 4, Artistcg = 8, Gamecg = 16, Western = 512,
+		Doujinshi = 2, Manga = 4, ArtistCG = 8, GameCG = 16, Western = 512,
 		NonH = 256, Imageset = 32, Cosplay = 64, Asianporn = 128, Misc = 1,
 	}
 
-	// non-h 得特殊处理下
+	// 跟分类按钮显示的文本一致
 	public static class CategoryHelper
 	{
-		public static string GetString(this Category category)
+		public static string GetString(this Category category) => category switch
 		{
-			if (category == Category.NonH)
-			{
-				return "Non-H";
-			}
-			return Enum.GetName(typeof(Category), category).ToLower();
-		}
+			Category.NonH => "Non-H",
+			Category.ArtistCG => "Artist CG",
+			Category.GameCG => "Game CG",
+			_ => Enum.GetName(typeof(Category), category),
+		};
 
-		public static Category Parse(string text)
+		public static Category Parse(string text) => text switch
 		{
-			if (text == "Non-H")
-			{
-				return Category.NonH;
-			}
-			return Enum.Parse<Category>(char.ToUpper(text[0]) + text.Substring(1));
-		}
+			"Non-H" => Category.NonH,
+			"Artist CG" => Category.ArtistCG,
+			"Game CG" => Category.GameCG,
+			_ => Enum.Parse<Category>(char.ToUpper(text[0]) + text.Substring(1)),
+		};
 	}
 }

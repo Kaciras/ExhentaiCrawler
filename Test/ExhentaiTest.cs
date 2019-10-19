@@ -12,12 +12,11 @@ namespace Test
 	[TestClass]
 	public class ExhentaiTest
 	{
-		[Ignore("暂时没有HTTP代理")]
 		[TestMethod]
 		public async Task GetCost()
 		{
 			var client = new PooledExhentaiClient();
-			client.AddProxy(new WebProxy("localhost", 2080));
+			client.AddProxy(new WebProxy("localhost", 2081));
 
 			var exhentai = new Exhentai(client);
 			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
@@ -28,12 +27,11 @@ namespace Test
 			Assert.IsTrue(cost <= 5000);
 		}
 
-		[Ignore("暂时没有HTTP代理")]
 		[TestMethod]
 		public async Task LoginFail()
 		{
 			var client = new PooledExhentaiClient();
-			client.AddProxy(new WebProxy("localhost", 2080));
+			client.AddProxy(new WebProxy("localhost", 2081));
 
 			var exhentai = new Exhentai(client);
 			try

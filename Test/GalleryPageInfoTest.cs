@@ -87,6 +87,7 @@ namespace Test
 			Assert.AreEqual("410aa30071", thumbnails[3].Link.Key);
 		}
 
+		[Ignore("暂时用不到")]
 		[TestMethod]
 		public void ParseGalleryListPage()
 		{
