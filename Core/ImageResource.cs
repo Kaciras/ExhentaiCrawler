@@ -10,7 +10,7 @@ using HtmlAgilityPack;
 
 namespace Core
 {
-	public class ImageResource
+	public sealed class ImageResource
 	{
 		public static readonly Regex FULL_IMG_TEXT = new Regex(@"Download original (\d+) x (\d+) ([0-9A-Z. ]+) source");
 
@@ -28,9 +28,10 @@ namespace Core
 		private IPRecord bindIP;
 		private Gallery bindGallery;
 
-		internal ImageResource(ExhentaiClient client, ImageThumbnail thumbnail, Gallery gallery)
+		internal ImageResource(ExhentaiClient client,ImageThumbnail thumbnail, Gallery gallery)
 		{
 			this.client = client;
+
 			Link = thumbnail.Link;
 			FileName = thumbnail.FileName;
 			bindGallery = gallery;

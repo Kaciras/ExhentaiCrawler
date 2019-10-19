@@ -25,15 +25,14 @@ namespace Core.Request
 			{
 				AllowAutoRedirect = false, // 对未登录的判定和Peer记录要求不自动跳转
 				CookieContainer = Cookies,
-				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 				Proxy = record.Proxy,
-				ConnectTimeout = TimeSpan.FromSeconds(4),
-				ResponseDrainTimeout = TimeSpan.FromSeconds(4),
+				ConnectTimeout = TimeSpan.FromSeconds(10),
+				ResponseDrainTimeout = TimeSpan.FromSeconds(10),
 			};
 
 			clientMap[record] = new BrowserLikeHttpClient(handler)
 			{
-				Timeout = TimeSpan.FromSeconds(4),
+				Timeout = TimeSpan.FromSeconds(10),
 			};
 
 			proxyPool.Add(record);

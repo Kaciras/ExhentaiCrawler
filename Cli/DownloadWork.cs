@@ -34,7 +34,7 @@ namespace Cli
 		private int index;
 		private int endIndex;
 
-		private DataSize downloadSize;
+		private long downloadSize;
 
 		public DownloadWork(Gallery gallery)
 		{
@@ -57,7 +57,7 @@ namespace Cli
 			}
 
 			// 如果下载过旧版，就把旧版的图片都迁移过来
-			var old = await GetExistsVersion();
+			var old = await GetOldVersion();
 			if (old != null)
 			{
 				old.MigrateTo(store);
@@ -68,19 +68,23 @@ namespace Cli
 				store.Create();
 			}
 
-			(index, endIndex) = Pages.GetOffsetAndLength(gallery.Info.Length);
+			var total = gallery.Info.Length;
+			(index, endIndex) = Pages.GetOffsetAndLength(total);
 			endIndex += index;
+			Console.WriteLine($"共{total}张图片，下载范围{index}-{endIndex}");
 
 			// 启动下载线程并等待
 			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));
-			Console.WriteLine("下载任务结束，共下载了" + downloadSize);
+			Console.WriteLine("下载任务结束，共下载了" + new DataSize(downloadSize));
 		}
 
-		private async Task<LocalGalleryStore> GetExistsVersion()
+		private async Task<LocalGalleryStore> GetOldVersion()
 		{
-			for (var v = gallery; v != null; v = await v.GetParent())
+			for (var v = await gallery.GetParent();
+				v != null;
+				v = await v.GetParent())
 			{
-				var store = new LocalGalleryStore(StorePath, gallery);
+				var store = new LocalGalleryStore(StorePath, v);
 				if (store.Exists()) return store;
 			}
 			return null;
@@ -93,16 +97,19 @@ namespace Cli
 			{
 				try
 				{
-					await DownloadImage(index);
+					var size = await DownloadImage(index);
+					Interlocked.Add(ref downloadSize, size);
 				}
 				catch (OperationCanceledException)
 				{
-					return; // 主动取消
+					Console.WriteLine("用户取消了下载");
+					return;
 				}
-				catch (Exception e)
+				catch (DownloadException e)
 				{
-					Console.WriteLine($"第{index}张图片下载失败：{e.Message}");
-					Console.WriteLine(e.StackTrace);
+					var cause = e.InnerException;
+					Console.WriteLine($"第{index}张图片下载失败：{cause.Message}");
+					Console.WriteLine(cause.StackTrace);
 				}
 			}
 		}
@@ -111,40 +118,53 @@ namespace Cli
 		/// 下载本子里第index张图片，该方法将同时被多个线程调用。
 		/// </summary>
 		/// <param name="index">图片序号</param>
-		private async Task DownloadImage(int index)
+		private async Task<long> DownloadImage(int index)
 		{
 			cancellation.Token.ThrowIfCancellationRequested();
 
-			var file = store.GetImageFile(index);
+			var image = await gallery.GetImage(index);
+			var file = store.GetImageFile(image);
 
-			if (Force && CheckImageFile(file))
+			// 如果已经下载过了就跳过
+			if (!Force && file.Exists && CheckImageFile(file))
 			{
-				return;
+				return file.Length;
 			}
 
-			for (int retry = 0; retry < RETRY_LIMIT; retry++)
+			// 只记录最后一次重试的异常
+			Exception lastException = null;
+
+			for (var retry = 0; retry < RETRY_LIMIT; retry++)
 			{
 				try
 				{
-					var image = await gallery.GetImage(index);
 					await image.Download(file.FullName, cancellation.Token);
 
 					var time = DateTime.Now.ToLongTimeString();
 					Console.WriteLine($"[{time}] 第{index}张图片下载完毕");
 
-					downloadSize += new DataSize(file.Length);
-					break;
+					return new FileInfo(file.FullName).Length;
 				}
-				catch (HttpRequestException)
+				catch (HttpRequestException e)
 				{
 					// 发送请求时出错，如SSL连接无法建立
+					lastException = e;
 				}
-				catch (IOException)
+				catch (IOException e)
 				{
 					// 读取请求体的时候出错。（本地文件错误怎么办？）
+					lastException = e;
 				}
-				Console.WriteLine($"第{index}张图下载失败，重试 - {retry}");
+				catch (OperationCanceledException e) 
+				when (!cancellation.IsCancellationRequested)
+				{
+					// 超时也不抛个TimeoutException，而是取消……
+					lastException = e;
+				}
+				Console.WriteLine($"重试下载第{index}张图({retry})");
 			}
+
+			throw new DownloadException(lastException);
 		}
 
 		public void Cancel() => cancellation.Cancel();
