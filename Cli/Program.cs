@@ -24,19 +24,8 @@ namespace Cli
 	{
 		private static void Main(string[] args)
 		{
-			Parser.Default.ParseArguments<DownloadMode, LoginOptions>(args)
-				.WithParsed<LoginOptions>(Login)
-				.WithParsed<DownloadMode>(DownloadGallery);
-		}
-
-		private static void Login(LoginOptions options)
-		{
-
-		}
-
-		private static void DownloadGallery(DownloadMode mode)
-		{
-			RunAsyncTask(mode.Start).Wait();
+			Parser.Default.ParseArguments<DownloadMode, InspectCookieMode>(args)
+				.WithParsed<RunMode>(mode => RunAsyncTask(mode.Start).Wait());
 		}
 
 		private static async Task RunAsyncTask(Func<Task> asyncAction)

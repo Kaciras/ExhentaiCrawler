@@ -2,7 +2,7 @@
   "profiles": {
     "Cli": {
       "commandName": "Project",
-      "commandLineArgs": "download https://exhentai.org/g/1490729/58a308347f/"
+      "commandLineArgs": "inspect"
     }
   }
 }

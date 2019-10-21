@@ -10,8 +10,8 @@ using Core.Request;
 
 namespace Cli
 {
-	[Verb("download", HelpText = "下载本子")]
-	public sealed class DownloadMode
+	[Verb("download", HelpText = "下载本子，格式：download <url>")]
+	public sealed class DownloadMode : RunMode
 	{
 		[Value(0, Required = true, HelpText = "本子的网址或图片网址")]
 		public string Uri { get; set; }
