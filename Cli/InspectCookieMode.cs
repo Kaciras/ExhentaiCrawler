@@ -33,5 +33,15 @@ namespace Cli
 				Console.WriteLine("ipb_pass_hash=" + chrome.PassHash);
 			}
 		}
+
+		public void TempSetConfig()
+		{
+			var config = new ExhentaiConfig
+			{
+				Proxies = new ProxyEntry[] { new ProxyEntry("localhost", 2081) },
+				Cookies = new AuthCookies("2723232", "67674c89175c751095d4c840532e6363")
+			};
+			config.Save();
+		}
 	}
 }

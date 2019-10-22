@@ -17,7 +17,7 @@ namespace Cli
 		public const int DEFAULT_CONCURRENT = 4;
 		public const int RETRY_LIMIT = 3;
 
-		public Range Pages { get; set; }
+		public Range Range { get; set; }
 
 		public string StorePath { get; set; }
 
@@ -69,7 +69,7 @@ namespace Cli
 			}
 
 			var total = gallery.Info.Length;
-			(index, endIndex) = Pages.GetOffsetAndLength(total);
+			(index, endIndex) = Range.GetOffsetAndLength(total);
 			endIndex += index;
 			Console.WriteLine($"共{total}张图片，下载范围{index}-{endIndex}");
 

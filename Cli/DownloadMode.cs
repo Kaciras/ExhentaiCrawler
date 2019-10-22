@@ -29,18 +29,12 @@ namespace Cli
 
 		public async Task Start()
 		{
-			var client = new PooledExhentaiClient();
-			client.AddLocalIP();
-			client.AddProxy(new WebProxy("localhost", 2081));
-
-			var exhentai = new Exhentai(client);
-			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
-
+			var exhentai = ExhentaiConfig.Load().GetExhentai();
 			var gallery = await exhentai.GetGallery(Uri);
 
 			var work = new DownloadWork(gallery)
 			{
-				Pages = ParseRange(Pages),
+				Range = ParseRange(Pages),
 				Force = Force,
 				StorePath = @"E:\漫画",
 				Concurrent = Concurrent,

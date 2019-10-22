@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using Core;
 using Core.Request;
+using Newtonsoft.Json;
 
 namespace Cli
 {
-	public class ClientConfig
+	public class ExhentaiConfig
 	{
-		public bool EnableDirectConnection { get; set; }
-		public IList<ProxyEntry> Proxies = Array.Empty<ProxyEntry>();
+		const string FILE_NAME = "config.json";
+
+		public bool EnableDirectConnection { get; set; } = true;
+
+		public IList<ProxyEntry> Proxies { get; set; } = Array.Empty<ProxyEntry>();
 
 		public AuthCookies Cookies { get; set; }
 
@@ -35,6 +40,25 @@ namespace Cli
 
 			return exhentai;
 		}
+
+		public void Save()
+		{
+			using var writer = new JsonTextWriter(new StreamWriter(FILE_NAME));
+			JsonSerializer.Create().Serialize(writer, this);
+		}
+
+		public static ExhentaiConfig Load()
+		{
+			try
+			{
+				using var reader = new JsonTextReader(new StreamReader(FILE_NAME));
+				return JsonSerializer.Create().Deserialize<ExhentaiConfig>(reader);
+			}
+			catch(IOException)
+			{
+				return new ExhentaiConfig();
+			}
+		}
 	}
 
 	public sealed class AuthCookies
@@ -55,5 +79,13 @@ namespace Cli
 	{
 		public string Host { get; set; }
 		public int Port { get; set; }
+
+		public ProxyEntry() { }
+
+		public ProxyEntry(string host, int port)
+		{
+			Host = host;
+			Port = port;
+		}
 	}
 }
