@@ -5,8 +5,7 @@ namespace Core.Infrastructure
 {
 	public enum SizeUnit
 	{
-		Bytes,
-		KB, MB, GB, TB, PB, EB
+		Bytes, KB, MB, GB, TB, PB, EB
 	}
 
 	public readonly struct DataSize
@@ -103,9 +102,9 @@ namespace Core.Infrastructure
 			return new DataSize(left.Bytes - right.Bytes);
 		}
 
-		/// <summary>
-		/// 字节转大小
-		/// </summary>
+		// =============================== 类型转换 ===============================
+
 		public static implicit operator DataSize(int bytes) => new DataSize(bytes);
+		public static implicit operator DataSize(long bytes) => new DataSize(bytes);
 	}
 }
