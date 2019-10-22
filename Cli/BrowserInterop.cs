@@ -4,96 +4,100 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
-using System.Security.Cryptography;
 
 namespace Cli
 {
 	public static class BrowserInterop
 	{
-		public static async Task<AuthCookies> InspectFirefox()
+		static readonly Regex PROFILE_SECTION = new Regex(@"^\[\w+\]$");
+
+		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
+		{
+			var hasId = dict.TryGetValue("ipb_member_id", out var id);
+			var hasPass = dict.TryGetValue("ipb_pass_hash", out var pass);
+			return (hasId && hasPass) ? new AuthCookies(id, pass) : null;
+		}
+
+		static async Task<Dictionary<K, V>> CreatDict<K, V>(IAsyncEnumerable<KeyValuePair<K, V>> iter)
+		{
+			var result = new Dictionary<K, V>();
+			await foreach (var kv in iter)
+			{
+				((ICollection<KeyValuePair<K, V>>)result).Add(kv);
+			}
+			return result;
+		}
+
+		public static IEnumerable<(string, string)> EnumaerateFirefoxProfiles()
 		{
 			var appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 			var profileIni = $@"{appDataRoaming}\Mozilla\Firefox\profiles.ini";
 			using var reader = new StreamReader(new FileStream(profileIni, FileMode.Open));
 
+			string name = null;
+			string path = null;
+
 			while (!reader.EndOfStream)
 			{
-				var line = await reader.ReadLineAsync();
-				var kv = line.Split('=', 2);
+				var line = reader.ReadLine();
 
-				if (kv.Length == 2 && kv[0] == "Path")
+				if (PROFILE_SECTION.IsMatch(line) && name != null)
 				{
-					var cookies = await SelectCookies(kv[1] + @"\cookies.sqlite", "e-hentai.org");
+					yield return (name, path);
+					name = null;
+				}
 
-					if (cookies.TryGetValue("ipb_member_id", out var id) && 
-						cookies.TryGetValue("ipb_pass_hash", out var pass))
+				var kv = line.Split('=', 2);
+				if (kv.Length == 2)
+				{
+					switch (kv[0])
 					{
-						return new AuthCookies(id, pass);
+						case "Name":
+							name = kv[1];
+							break;
+						case "Path":
+							path = kv[1];
+							break;
 					}
 				}
 			}
 
-			return null;
+			if (name != null)
+			{
+				yield return (name, path);
+			}
 		}
 
-		static async Task<IDictionary<string, string>> SelectCookies(string file, string domain)
+		public static async Task<AuthCookies> InspectFirefox(string profile)
 		{
-			using var db = new SqliteConnection("Filename=" + file);
-			await db.OpenAsync();
-
-			var command = new SqliteCommand("SELECT name,value FROM moz_cookies WHERE baseDomain=@domain", db);
-			command.Parameters.AddWithValue("@domain", domain);
-
-			using var reader = await command.ExecuteReaderAsync();
-			var cookies = new Dictionary<string, string>();
-
-			while (await reader.ReadAsync())
+			try
 			{
-				cookies[reader.GetString(0)] = reader.GetString(1);
+				await using var reader = new FirefoxCookieReader(profile);
+				await reader.Open();
+				var cookies = await CreatDict(reader.ReadCookies("e-hentai.org"));
+				return GetAuthCookies(cookies);
 			}
-
-			return cookies;
+			catch (SqliteException)
+			{
+				return null; // 文件不存在 ERROR CODE = 14
+			}
 		}
 
 		public static async Task<AuthCookies> InspectChrome()
 		{
-			var appDataLocal = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			var file = appDataLocal + @"\Google\Chrome\User Data\Default\Cookies";
-
-			var cookies = new Dictionary<string, string>(ReadCookies(file, "e-hentai.org"));
-
-			if (cookies.TryGetValue("ipb_member_id", out var id) &&
-				cookies.TryGetValue("ipb_pass_hash", out var pass))
+			try
 			{
-				return new AuthCookies(id, pass);
+				await using var reader = new ChromeCookieReader();
+				await reader.Open();
+				var cookies = await CreatDict(reader.ReadCookies("e-hentai.org"));
+				return GetAuthCookies(cookies);
 			}
-
-			return null;
-		}
-
-		public static IEnumerable<KeyValuePair<string, string>> ReadCookies(string file, string domain)
-		{
-			if (!File.Exists(file))
+			catch (SqliteException)
 			{
-				throw new FileNotFoundException("Cant find cookie store", file);
-			}
-			using var conn = new SqliteConnection("Filename=" + file);
-			conn.Open();
-
-			using var command = conn.CreateCommand();
-			command.CommandText = "SELECT name,encrypted_value FROM cookies WHERE host_key = @domain";
-			command.Parameters.AddWithValue("domain", domain);
-
-			using var reader = command.ExecuteReader();
-			while (reader.Read())
-			{
-				var encryptedData = (byte[])reader[1];
-				var decodedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
-				var plainText = Encoding.UTF8.GetString(decodedData);
-
-				yield return KeyValuePair.Create(reader.GetString(0), plainText);
+				return null;
 			}
 		}
-	}
+	};
 }

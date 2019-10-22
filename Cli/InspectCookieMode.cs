@@ -14,20 +14,23 @@ namespace Cli
 
 		public async Task Start()
 		{
-			var firefox = await BrowserInterop.InspectFirefox();
-			if (firefox != null)
+			foreach (var item in BrowserInterop.EnumaerateFirefoxProfiles())
 			{
-				Console.WriteLine("Firefox：");
-				Console.WriteLine("ipb_member_id=" + firefox.MemberId);
-				Console.WriteLine("ipb_pass_hash=" + firefox.PassHash);
+				var auth = await BrowserInterop.InspectFirefox(item.Item2);
+				if (auth != null)
+				{
+					Console.WriteLine($"Firefox - {item.Item1}");
+					Console.WriteLine("ipb_member_id=" + auth.MemberId);
+					Console.WriteLine("ipb_pass_hash=" + auth.PassHash);
+				}
 			}
-
+			
 			var chrome = await BrowserInterop.InspectChrome();
 			if (chrome != null)
 			{
 				Console.WriteLine("Chrome：");
-				Console.WriteLine("ipb_member_id=" + firefox.MemberId);
-				Console.WriteLine("ipb_pass_hash=" + firefox.PassHash);
+				Console.WriteLine("ipb_member_id=" + chrome.MemberId);
+				Console.WriteLine("ipb_pass_hash=" + chrome.PassHash);
 			}
 		}
 	}
