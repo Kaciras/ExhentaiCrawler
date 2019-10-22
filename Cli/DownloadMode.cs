@@ -13,7 +13,7 @@ namespace Cli
 	[Verb("download", HelpText = "下载本子，格式：download <url>")]
 	public sealed class DownloadMode : RunMode
 	{
-		[Value(0, Required = true, HelpText = "本子的网址或图片网址")]
+		[Value(0, Required = true, HelpText = "本子的网址")]
 		public string Uri { get; set; }
 
 		[Value(1, Default = "-", HelpText = "页码范围，格式：X-Y，表示从X到Y页，XY其中之一可以省略，分别表示第一页和最后一页。也可以是一个整数，表示下载指定页")]
@@ -22,7 +22,7 @@ namespace Cli
 		[Option('f', "force", HelpText = "强制重新下载，即使在目录中已下载了部分图片")]
 		public bool Force { get; set; }
 
-		[Option('c', "concurrent", Default = DownloadWork.DEFAULT_CONCURRENT, HelpText = "并发下载数")]
+		[Option('c', "concurrent", HelpText = "并发下载数")]
 		public int Concurrent { get; set; }
 
 		// ================================= 以上是选项 =================================
@@ -36,16 +36,7 @@ namespace Cli
 			var exhentai = new Exhentai(client);
 			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
 
-			Gallery gallery;
-
-			if (ImageLink.TryParse(new Uri(Uri), out var link))
-			{
-				gallery = await exhentai.GetImage(link).GetGallery();
-			}
-			else
-			{
-				gallery = await exhentai.GetGallery(Uri);
-			}
+			var gallery = await exhentai.GetGallery(Uri);
 
 			var work = new DownloadWork(gallery)
 			{

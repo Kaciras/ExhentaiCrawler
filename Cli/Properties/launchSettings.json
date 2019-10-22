@@ -3,6 +3,10 @@
     "Cli": {
       "commandName": "Project",
       "commandLineArgs": "inspect"
+    },
+    "Cli-Download": {
+      "commandName": "Project",
+      "commandLineArgs": "download https://exhentai.org/g/1401507/0cea6b669a/"
     }
   }
 }
