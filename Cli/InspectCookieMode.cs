@@ -14,6 +14,8 @@ namespace Cli
 
 		public async Task Start()
 		{
+			TempSetConfig();
+
 			foreach (var item in BrowserInterop.EnumaerateFirefoxProfiles())
 			{
 				var auth = await BrowserInterop.InspectFirefox(item.Item2);

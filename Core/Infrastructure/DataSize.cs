@@ -34,9 +34,14 @@ namespace Core.Infrastructure
 		/// <returns>数值</returns>
 		public double OfUnit(SizeUnit unit) => ToDimension((double)unit);
 
-		private double ToDimension(double dimension)
+		/// <summary>
+		/// 计算该大小量除以 1024^index 的值。
+		/// </summary>
+		/// <param name="index">指数</param>
+		/// <returns>商</returns>
+		private double ToDimension(double index)
 		{
-			return Bytes / Math.Pow(1024, dimension);
+			return Bytes / Math.Pow(1024, index);
 		}
 
 		/// <summary>
@@ -76,9 +81,15 @@ namespace Core.Infrastructure
 
 		public override string ToString()
 		{
-			var dim = Bytes == 0 ? 0 : (int)Math.Log(Bytes, 1024);
-			var unit = dim == 0 ? "" : SIZE_UNITS[dim - 1].ToString();
-			var number = Math.Round(ToDimension(dim), 2);
+			var bytesAbs = Math.Abs(Bytes);
+			if (bytesAbs < 1024)
+			{
+				return Bytes.ToString() + " B";
+			}
+			var i = (int)Math.Log(bytesAbs, 1024) - 1;
+			var unit = SIZE_UNITS[i].ToString();
+
+			var number = Math.Round(ToDimension(i), 2);
 			return $"{number} {unit}B";
 		}
 

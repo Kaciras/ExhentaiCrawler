@@ -7,56 +7,51 @@ namespace Test
 	[TestClass]
 	public sealed class DataSizeTest
 	{
-		[TestMethod]
-		public void ParseInvaildString()
+		[DataTestMethod]
+		[DataRow("abcdefg")]
+		[DataRow("")]
+		[DataRow("1.2.3 KB")]
+		[DataRow("45 QB")]
+		public void ParseInvaildString(string value)
 		{
-			Assert.ThrowsException<FormatException>(() => DataSize.Parse("ABCDEFG"));
-			Assert.ThrowsException<FormatException>(() => DataSize.Parse("1.2.3 KB"));
-			Assert.ThrowsException<FormatException>(() => DataSize.Parse("45 QB"));
-			Assert.ThrowsException<FormatException>(() => DataSize.Parse(string.Empty));
+			Assert.ThrowsException<FormatException>(() => DataSize.Parse(value));
 		}
 
-		[TestMethod]
-		public void ParseDataSize()
+		[DataTestMethod]
+		[DataRow(5L << 20, "5MiB")]
+		[DataRow(5L << 20, "5MB")]
+		[DataRow(5L << 20, "5mb")]
+		[DataRow(5L << 20, "5M")]
+		[DataRow(5L << 20, "+5MB")]
+		[DataRow(5L << 20, " 5MB ")]
+		[DataRow(1L << 60, "1 EB")]
+		[DataRow(0, "0 EB")]
+		[DataRow(-(5L << 20), "-5MB")]
+		public void ParseDataSize(long bytes, string value)
 		{
-			Assert.AreEqual(new DataSize(0), DataSize.Parse("0 EB"));
-
-			Assert.AreEqual(new DataSize(1L << 60), DataSize.Parse("1 EB"));
-
-			var fiveMB = new DataSize(5 << 20);
-			Assert.AreEqual(fiveMB, DataSize.Parse("5MB"));
-			Assert.AreEqual(fiveMB, DataSize.Parse("5mb"));
-			Assert.AreEqual(fiveMB, DataSize.Parse("5MiB"));
-			Assert.AreEqual(fiveMB, DataSize.Parse("5M"));
-			Assert.AreEqual(fiveMB, DataSize.Parse("+5MB"));
-			Assert.AreEqual(fiveMB, DataSize.Parse(" 5MB "));
-
-			Assert.AreEqual(new DataSize(-(5 << 20)), DataSize.Parse("-5MB"));
+			Assert.AreEqual(new DataSize(bytes), DataSize.Parse(value));
 		}
 
-		[TestMethod]
-		public void ConvertDataSize()
+		[DataTestMethod]
+		[DataRow(666, 666, SizeUnit.Bytes)]
+		[DataRow(1, 1024, SizeUnit.KB)]
+		[DataRow(0.25, 262144, SizeUnit.MB)]
+		[DataRow(0, 0, SizeUnit.TB)]
+		[DataRow(-1, -1048576, SizeUnit.MB)]
+		public void ConvertDataSize(double num, long bytes, SizeUnit unit)
 		{
-			Assert.AreEqual(500, new DataSize(500).OfUnit(SizeUnit.Bytes));
-
-			Assert.AreEqual(1.0, new DataSize(1024).OfUnit(SizeUnit.KB));
-
-			Assert.AreEqual(0, new DataSize(0).OfUnit(SizeUnit.TB));
-
-			Assert.AreEqual(-1, new DataSize(-1048576).OfUnit(SizeUnit.MB));
+			Assert.AreEqual(num, new DataSize(bytes).OfUnit(unit));
 		}
 
-		[TestMethod]
-		public void TestToString()
+		[DataTestMethod]
+		[DataRow("20.19 TB", 22199139764797L)]
+		[DataRow("500 B", 500)]
+		[DataRow("500 KB", 500 << 10)]
+		[DataRow("0 B", 0)]
+		[DataRow("-12.25 MB", -12840960)]
+		public void TestToString(string text, long bytes)
 		{
-			Assert.AreEqual("0 B", new DataSize().ToString());
-			Assert.AreEqual("500 B", new DataSize(500).ToString());
-
-			Assert.AreEqual("20.19 TB", new DataSize(20.19, SizeUnit.TB).ToString());
-
-			Assert.AreEqual("500 KB", new DataSize(500 << 10).ToString());
-
-			Assert.AreEqual("12.25 MB", new DataSize((12 << 20) + (252 << 10)).ToString());
+			Assert.AreEqual(text, new DataSize(bytes).ToString());
 		}
 	}
 }
