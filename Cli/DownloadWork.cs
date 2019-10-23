@@ -17,57 +17,37 @@ namespace Cli
 		public const int DEFAULT_CONCURRENT = 4;
 		public const int RETRY_LIMIT = 3;
 
-		public Range Range { get; set; }
+		/// <summary>
+		/// 下载的页面范围，默认全部页面都下载
+		/// </summary>
+		public Range Range { get; set; } = Range.All;
 
-		public string StorePath { get; set; }
-
-		/// <summary>强制下载全部图片，即使已经存在</summary>
+		/// <summary>
+		/// 强制下载全部图片，即使已经存在
+		/// </summary>
 		public bool Force { get; set; }
 
+		/// <summary>
+		/// 下载线程数，注意并不是线程越多就一定越快
+		/// </summary>
 		public int Concurrent { get; set; } = DEFAULT_CONCURRENT;
 
 		private readonly Gallery gallery;
-		private readonly CancellationTokenSource cancellation;
+		private readonly LocalGalleryStore store;
+		private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
 
-		private LocalGalleryStore store;
-
+		private long downloadSize;
 		private int index;
 		private int endIndex;
 
-		private long downloadSize;
-
-		public DownloadWork(Gallery gallery)
+		public DownloadWork(Gallery gallery, LocalGalleryStore store)
 		{
 			this.gallery = gallery;
-			cancellation = new CancellationTokenSource();
+			this.store = store;
 		}
 
 		public async Task StartDownload()
 		{
-			store = new LocalGalleryStore(StorePath, gallery);
-
-			var name = gallery.Info.JapaneseName ?? gallery.Info.Name;
-			Console.WriteLine("本子名：" + name);
-
-			// 如果有新版就提示一下，但还是继续下载当前版本
-			var newest = await gallery.GetLatestVersion();
-			if (newest != gallery)
-			{
-				Console.WriteLine($"该本子有新版本：{newest.Uri}");
-			}
-
-			// 如果下载过旧版，就把旧版的图片都迁移过来
-			var old = await GetOldVersion();
-			if (old != null)
-			{
-				old.MigrateTo(store);
-				Console.WriteLine($"已将旧版目录[{old.Name}]合并");
-			}
-			else
-			{
-				store.Create();
-			}
-
 			var total = gallery.Info.Length;
 			(index, endIndex) = Range.GetOffsetAndLength(total);
 			endIndex += index;
@@ -76,18 +56,6 @@ namespace Cli
 			// 启动下载线程并等待
 			await Task.WhenAll(Enumerable.Range(0, Concurrent).Select(_ => RunWorker()));
 			Console.WriteLine("下载任务结束，共下载了" + new DataSize(downloadSize));
-		}
-
-		private async Task<LocalGalleryStore> GetOldVersion()
-		{
-			for (var v = await gallery.GetParent();
-				v != null;
-				v = await v.GetParent())
-			{
-				var store = new LocalGalleryStore(StorePath, v);
-				if (store.Exists()) return store;
-			}
-			return null;
 		}
 
 		private async Task RunWorker()
@@ -155,7 +123,7 @@ namespace Cli
 					// 读取请求体的时候出错。（本地文件错误怎么办？）
 					lastException = e;
 				}
-				catch (OperationCanceledException e) 
+				catch (OperationCanceledException e)
 				when (!cancellation.IsCancellationRequested)
 				{
 					// 超时也不抛个TimeoutException，而是取消……
@@ -170,7 +138,7 @@ namespace Cli
 		public void Cancel() => cancellation.Cancel();
 
 		/// <summary>
-		/// 检查图片文件有没有损坏，无法检测出残缺的图片？
+		/// 检查图片文件有没有损坏，TODO:无法检测出残缺的图片？
 		/// </summary>
 		/// <param name="file">文件对象</param>
 		/// <returns>如果图片正常返回true</returns>

@@ -27,16 +27,41 @@ namespace Cli
 
 		// ================================= 以上是选项 =================================
 
+		const string STORE_PATH = @"E:\漫画";
+
 		public async Task Start()
 		{
 			var exhentai = ExhentaiConfig.Load().GetExhentai();
 			var gallery = await exhentai.GetGallery(Uri);
 
-			var work = new DownloadWork(gallery)
+			var name = gallery.Info.JapaneseName ?? gallery.Info.Name;
+			Console.WriteLine("本子名：" + name);
+
+			var store = new LocalGalleryStore(STORE_PATH, gallery);
+
+			// 如果有新版就提示一下，但还是继续下载当前版本
+			var newest = await gallery.GetLatestVersion();
+			if (newest != gallery)
+			{
+				Console.WriteLine($"该本子有新版本：{newest.Uri}");
+			}
+
+			// 如果下载过旧版，就把旧版的图片都迁移过来
+			var old = await GetOldVersion(gallery);
+			if (old != null)
+			{
+				old.MigrateTo(store);
+				Console.WriteLine($"已将旧版目录[{old.Name}]合并");
+			}
+			else
+			{
+				store.Create();
+			}
+
+			var work = new DownloadWork(gallery, store)
 			{
 				Range = ParseRange(Pages),
 				Force = Force,
-				StorePath = @"E:\漫画",
 				Concurrent = Concurrent,
 			};
 
@@ -49,6 +74,18 @@ namespace Cli
 
 			Console.WriteLine("下载模式，在下载中途可以按　Ctrl + C 中止");
 			await work.StartDownload();
+		}
+
+		static async Task<LocalGalleryStore> GetOldVersion(Gallery gallery)
+		{
+			for (var v = await gallery.GetParent();
+				v != null;
+				v = await v.GetParent())
+			{
+				var store = new LocalGalleryStore(STORE_PATH, v);
+				if (store.Exists()) return store;
+			}
+			return null;
 		}
 
 		/// <summary>
