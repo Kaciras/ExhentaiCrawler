@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 using Core.Infrastructure;
 
@@ -8,7 +6,7 @@ namespace Benchmark
 {
 	[ClrJob, CoreJob(baseline: true)]
 	[RankColumn]
-	public class RateLimiterBenchmark
+	public class RateLimiterPerf
 	{
 		private RateLimiter limiter;
 
