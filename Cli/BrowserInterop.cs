@@ -11,7 +11,7 @@ namespace Cli
 {
 	public static class BrowserInterop
 	{
-		static readonly Regex PROFILE_SECTION = new Regex(@"^\[\w+\]$");
+		static readonly Regex SECTION = new Regex(@"^\[\w+\]$");
 
 		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
 		{
@@ -30,43 +30,60 @@ namespace Cli
 			return result;
 		}
 
-		public static IEnumerable<(string, string)> EnumaerateFirefoxProfiles()
+		/// <summary>
+		/// 搜索Firefox的配置，返回一个以（配置名，路径）为元素的课枚举对象。
+		/// 
+		/// 所有的配置记录在：[用户目录]\AppData\Roaming\Mozilla\Firefox\profiles.ini
+		/// 其中 [Profile*] 的段表示一个配置，*为从0开始的整数。
+		/// </summary>
+		/// <returns>全部的配置</returns>
+		public static IList<(string, string)> EnumaerateFirefoxProfiles()
 		{
 			var appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-			var profileIni = $@"{appDataRoaming}\Mozilla\Firefox\profiles.ini";
-			using var reader = new StreamReader(new FileStream(profileIni, FileMode.Open));
+			var profileIni = Path.Join(appDataRoaming, @"Mozilla\Firefox\profiles.ini");
 
-			string name = null;
-			string path = null;
-
-			while (!reader.EndOfStream)
+			// 此方法不能使用yield，因为会导致Reader提前关闭，并且yield不能再try-catch块里。
+			try
 			{
-				var line = reader.ReadLine();
+				using var reader = new StreamReader(profileIni);
+				var list = new List<(string, string)>();
 
-				if (PROFILE_SECTION.IsMatch(line) && name != null)
-				{
-					yield return (name, path);
-					name = null;
-				}
+				string line;
+				string name = null;
+				string path = null;
 
-				var kv = line.Split('=', 2);
-				if (kv.Length == 2)
+				while ((line = reader.ReadLine()) != null)
 				{
-					switch (kv[0])
+					if (SECTION.IsMatch(line) && name != null)
 					{
-						case "Name":
-							name = kv[1];
-							break;
-						case "Path":
-							path = kv[1];
-							break;
+						list.Add((name, path));
+						name = null;
+					}
+
+					var kv = line.Split('=', 2);
+					if (kv.Length == 2)
+					{
+						switch (kv[0])
+						{
+							case "Name":
+								name = kv[1];
+								break;
+							case "Path":
+								path = kv[1];
+								break;
+						}
 					}
 				}
-			}
 
-			if (name != null)
+				if (name != null)
+				{
+					list.Add((name, path));
+				}
+				return list;
+			}
+			catch (FileNotFoundException)
 			{
-				yield return (name, path);
+				return Array.Empty<(string, string)>();
 			}
 		}
 
@@ -76,7 +93,7 @@ namespace Cli
 			{
 				await using var reader = new FirefoxCookieReader(profile);
 				await reader.Open();
-				var cookies = await CreatDict(reader.ReadCookies("e-hentai.org"));
+				var cookies = await CreatDict(reader.Read("e-hentai.org"));
 				return GetAuthCookies(cookies);
 			}
 			catch (SqliteException)
@@ -91,7 +108,7 @@ namespace Cli
 			{
 				await using var reader = new ChromeCookieReader();
 				await reader.Open();
-				var cookies = await CreatDict(reader.ReadCookies("e-hentai.org"));
+				var cookies = await CreatDict(reader.Read("e-hentai.org"));
 				return GetAuthCookies(cookies);
 			}
 			catch (SqliteException)

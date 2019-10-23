@@ -14,7 +14,21 @@ namespace Cli
 
 		public async Task Start()
 		{
-			TempSetConfig();
+			//var cookies = new AuthCookies("2723232", "67674c89175c751095d4c840532e6363");
+			var cookies = await SelectCookies();
+
+			var config = new ExhentaiConfig
+			{
+				Cookies = cookies,
+				Proxies = new ProxyEntry[] { new ProxyEntry("localhost", 2081) },
+			};
+			config.Save();
+			Console.WriteLine("保存配置文件");
+		}
+
+		private static async Task<AuthCookies> SelectCookies()
+		{
+			var candidate = new List<AuthCookies>();
 
 			foreach (var item in BrowserInterop.EnumaerateFirefoxProfiles())
 			{
@@ -24,26 +38,20 @@ namespace Cli
 					Console.WriteLine($"Firefox - {item.Item1}");
 					Console.WriteLine("ipb_member_id=" + auth.MemberId);
 					Console.WriteLine("ipb_pass_hash=" + auth.PassHash);
+					candidate.Add(auth);
 				}
 			}
-			
+
 			var chrome = await BrowserInterop.InspectChrome();
 			if (chrome != null)
 			{
 				Console.WriteLine("Chrome：");
 				Console.WriteLine("ipb_member_id=" + chrome.MemberId);
 				Console.WriteLine("ipb_pass_hash=" + chrome.PassHash);
+				candidate.Add(chrome);
 			}
-		}
 
-		public void TempSetConfig()
-		{
-			var config = new ExhentaiConfig
-			{
-				Proxies = new ProxyEntry[] { new ProxyEntry("localhost", 2081) },
-				Cookies = new AuthCookies("2723232", "67674c89175c751095d4c840532e6363")
-			};
-			config.Save();
+			return candidate.Count > 0 ? candidate[0] : null;
 		}
 	}
 }
