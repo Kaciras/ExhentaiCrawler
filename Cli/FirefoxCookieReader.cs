@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Common;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
 namespace Cli
 {
+	/// <summary>
+	/// 读取Firefox浏览器的Cookies文件的类。
+	/// 
+	/// Firefox的Cookie存储在配置目录下的cookies.sqlite文件中，使用Sqlite数据库格式。
+	/// </summary>
 	public class FirefoxCookieReader : BrowserCookieReader
 	{
 		readonly DbConnection db;
@@ -16,12 +19,13 @@ namespace Cli
 		{
 			db = new SqliteConnection($@"Filename={profile}\cookies.sqlite;Mode=ReadOnly");
 
+			// 有一个 baseDomain + originAttributes 的索引，故要以baseDomain为条件查询
 			command = db.CreateCommand();
 			command.CommandText = "SELECT name,value FROM moz_cookies WHERE baseDomain=@domain";
 			command.Parameters.Add(new SqliteParameter("@domain", SqliteType.Text));
 		}
 		
-		public async IAsyncEnumerable<KeyValuePair<string, string>> ReadCookies(string domain)
+		public async IAsyncEnumerable<KeyValuePair<string, string>> Read(string domain)
 		{
 			command.Parameters["@domain"].Value = domain;
 
@@ -34,6 +38,6 @@ namespace Cli
 
 		public Task Open() => db.OpenAsync();
 
-		public async ValueTask DisposeAsync() => await db.CloseAsync();
+		public ValueTask DisposeAsync() => db.DisposeAsync();
 	}
 }
