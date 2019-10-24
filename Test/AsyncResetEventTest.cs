@@ -61,13 +61,13 @@ namespace Test
 			Task.WaitAll(waitTasks);
 		}
 
-		[Timeout(100)]
+		[Timeout(200)]
 		[TestMethod]
 		public async Task Cancellation()
 		{
 			var resetEvent = new AsyncResetEvent();
 			var time = DateTime.Now;
-			using var cancellation = new CancellationTokenSource(30);
+			var cancellation = new CancellationTokenSource(30);
 
 			try
 			{

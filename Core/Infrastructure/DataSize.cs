@@ -85,8 +85,8 @@ namespace Core.Infrastructure
 			{
 				return Bytes.ToString() + " B";
 			}
-			var i = (int)Math.Log(bytesAbs, 1024) - 1;
-			var unit = SIZE_UNITS[i].ToString();
+			var i = (int)Math.Log(bytesAbs, 1024);
+			var unit = SIZE_UNITS[i-1].ToString();
 
 			var number = Math.Round(ToDimension(i), 2);
 			return $"{number} {unit}B";
