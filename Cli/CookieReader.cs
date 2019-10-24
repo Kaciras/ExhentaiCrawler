@@ -7,7 +7,7 @@ namespace Cli
 	/// <summary>
 	/// 读取浏览器Cookie存储的类
 	/// </summary>
-	public interface BrowserCookieReader : IAsyncDisposable
+	public interface CookieReader : IAsyncDisposable
 	{
 		/// <summary>
 		/// 读取之前别忘了先调用这个方法哦

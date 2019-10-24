@@ -7,7 +7,7 @@ namespace Benchmark
 	{
 		private static void Main()
 		{
-			BenchmarkRunner.Run<RateLimiterPerf>();
+			BenchmarkRunner.Run<ParseRangePerf>();
 		}
 	}
 }

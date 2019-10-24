@@ -12,7 +12,7 @@ namespace Cli
 	/// <summary>
 	/// 读取Chrome浏览器当前用户的Cookies文件的类。
 	/// </summary>
-	public class ChromeCookieReader : BrowserCookieReader
+	public class ChromeCookieReader : CookieReader
 	{
 		readonly DbConnection db;
 		readonly DbCommand command;

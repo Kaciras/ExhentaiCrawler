@@ -10,7 +10,7 @@ namespace Cli
 	/// 
 	/// Firefox的Cookie存储在配置目录下的cookies.sqlite文件中，使用Sqlite数据库格式。
 	/// </summary>
-	public class FirefoxCookieReader : BrowserCookieReader
+	public class FirefoxCookieReader : CookieReader
 	{
 		readonly DbConnection db;
 		readonly DbCommand command;

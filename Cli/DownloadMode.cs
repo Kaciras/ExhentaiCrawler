@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommandLine;
 using Core;
-using Core.Request;
 
 namespace Cli
 {
@@ -27,7 +23,7 @@ namespace Cli
 
 		// ================================= 以上是选项 =================================
 
-		const string STORE_PATH = @"E:\漫画";
+		const string STORE_PATH = @"E:/漫画";
 
 		public async Task Start()
 		{
@@ -46,16 +42,16 @@ namespace Cli
 				Console.WriteLine($"该本子有新版本：{newest.Uri}");
 			}
 
-			// 如果下载过旧版，就把旧版的图片都迁移过来
+			// 如果下载过旧版，就把旧版的图片都迁移过来，没有旧版就创建目录
 			var old = await GetOldVersion(gallery);
-			if (old != null)
+			if (old == null)
 			{
-				old.MigrateTo(store);
-				Console.WriteLine($"已将旧版目录[{old.Name}]合并");
+				store.Create();
 			}
 			else
 			{
-				store.Create();
+				old.MigrateTo(store);
+				Console.WriteLine($"已将旧版目录[{old.Name}]合并");
 			}
 
 			var work = new DownloadWork(gallery, store)
@@ -105,12 +101,18 @@ namespace Cli
 				throw new ArgumentException("范围字符串不能为null或空串");
 			}
 
+			Index GetIndex(Capture capture, Index @default)
+			{
+				var value = @string.AsSpan(capture.Index, capture.Length);
+				return value.IsEmpty ? @default : int.Parse(value);
+			}
+
 			var match = Regex.Match(@string, @"^(\d*)-(\d*)$");
 			if (match.Success)
 			{
-				var start = ParseNullableInt(match.Groups[1].Value);
-				var end = ParseNullableInt(match.Groups[2].Value);
-				return (start ?? 0)..(end ?? ^0);
+				var start = GetIndex(match.Groups[1], 0);
+				var end = GetIndex(match.Groups[2], ^0);
+				return start..end;
 			}
 			else if (int.TryParse(@string, out var index))
 			{
@@ -120,11 +122,6 @@ namespace Cli
 			{
 				throw new ArgumentException("页码范围参数错误：" + @string);
 			}
-		}
-
-		private static int? ParseNullableInt(string @string)
-		{
-			return string.IsNullOrEmpty(@string) ? null : (int?)int.Parse(@string);
 		}
 	}
 }
