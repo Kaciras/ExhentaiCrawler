@@ -13,7 +13,7 @@ namespace Core.Request
 {
 	/// <summary>
 	/// 当本地IP达到限额或被封禁时，就重新拨号切换IP.
-	/// 这是当年搞爬虫缺少代理才想出的一招，仅适用于每次重新拨号后IP会改变的网络。
+	/// 这是当年搞爬虫缺代理时想出的一招，仅适用于每次重新拨号后IP会改变的网络。
 	/// </summary>
 	public class PppoeSwitchClient : ExhentaiClient
 	{
@@ -28,6 +28,12 @@ namespace Core.Request
 		private readonly AsyncResetEvent resetEvent = new AsyncResetEvent(true);
 		private readonly IPRecord localIP = new IPRecord(null);
 
+		/// <summary>
+		/// 使用指定的选项创建 PppoeSwitchClient 的实例。
+		/// </summary>
+		/// <param name="nIname">连接名（网卡名）</param>
+		/// <param name="user">PPPOE用户名</param>
+		/// <param name="password">PPPOE密码</param>
 		public PppoeSwitchClient(string nIname, string user, string password)
 		{
 			CheckNetworkInterface();

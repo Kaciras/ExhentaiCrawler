@@ -169,17 +169,14 @@ namespace Core
 		/// </summary>
 		/// <param name="class">CSS类名</param>
 		/// <returns>可信度枚举</returns>
-		private static TagCredibility ParseTagCredibility(string @class)
+		private static TagCredibility ParseTagCredibility(string @class) => @class switch
 		{
-			return @class switch
-			{
-				"gt" => TagCredibility.Confidence,
-				"gtl" => TagCredibility.Unconfidence,
-				"gtw" => TagCredibility.Incorrect,
-				_ => throw new NotSupportedException("Unrecognized tag class: " + @class),
-			};
-		}
-
+			"gt" => TagCredibility.Confidence,
+			"gtl" => TagCredibility.Unconfidence,
+			"gtw" => TagCredibility.Incorrect,
+			_ => throw new NotSupportedException("Unrecognized tag class: " + @class),
+		};
+		
 		public static IList<ImageThumbnail> ParseThumbnails(string html)
 		{
 			var doc = new HtmlDocument();

@@ -65,18 +65,20 @@ namespace Core.Request
 		public static void CheckResponse(HttpResponseMessage response, string body)
 		{
 			var disposition = response.Content.Headers.ContentDisposition;
+
 			if (disposition?.FileName == "\"sadpanda.jpg\"")
 			{
 				throw new ExhentaiException("该请求需要登录");
 			}
-			if (response.StatusCode == HttpStatusCode.Found && response.Headers.Location.Host == "forums.e-hentai.org")
+			if (response.StatusCode == HttpStatusCode.Found &&
+				response.Headers.Location?.Host == "forums.e-hentai.org")
 			{
 				throw new ExhentaiException("该请求需要登录");
 			}
 
 			if (body.Length > 3000)
 			{
-				return; // 封禁响应内容短，直接判断长度即可否定
+				return; // 封禁响应内容短，直接判断长度即可
 			}
 			var match = BAN.Match(body);
 			if (match.Success)

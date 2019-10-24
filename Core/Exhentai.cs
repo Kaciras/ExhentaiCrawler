@@ -13,6 +13,9 @@ namespace Core
 {
 	public class Exhentai
 	{
+		public const string COOKIE_MEMBER_ID = "ipb_member_id";
+		public const string COOKIE_PASS_HASH = "ipb_pass_hash";
+
 		private static readonly Regex COST = new Regex(@"You are currently at <strong>(\d+)</strong> towards");
 
 		private readonly ExhentaiClient client;
@@ -56,8 +59,8 @@ namespace Core
 			}
 
 			var collection = client.Cookies.GetCookies(new Uri(".e-hentai.org"));
-			CopyCookie(collection, "ipb_member_id");
-			CopyCookie(collection, "ipb_pass_hash");
+			CopyCookie(collection, COOKIE_MEMBER_ID);
+			CopyCookie(collection, COOKIE_PASS_HASH);
 		}
 
 		/// <summary>
@@ -70,11 +73,11 @@ namespace Core
 		{
 			var cookies = client.Cookies;
 
-			cookies.Add(new Cookie("ipb_member_id", memberId, "/", ".exhentai.org"));
-			cookies.Add(new Cookie("ipb_pass_hash", passHash, "/", ".exhentai.org"));
+			cookies.Add(new Cookie(COOKIE_MEMBER_ID, memberId, "/", ".exhentai.org"));
+			cookies.Add(new Cookie(COOKIE_PASS_HASH, passHash, "/", ".exhentai.org"));
 
-			cookies.Add(new Cookie("ipb_member_id", memberId, "/", ".e-hentai.org"));
-			cookies.Add(new Cookie("ipb_pass_hash", passHash, "/", ".e-hentai.org"));
+			cookies.Add(new Cookie(COOKIE_MEMBER_ID, memberId, "/", ".e-hentai.org"));
+			cookies.Add(new Cookie(COOKIE_PASS_HASH, passHash, "/", ".e-hentai.org"));
 		}
 
 		public async Task<GalleryListPage> GetList(FilterOptions options, int page)

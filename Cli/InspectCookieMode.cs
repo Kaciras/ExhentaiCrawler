@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
+using Core;
 
 namespace Cli
 {
@@ -36,8 +37,8 @@ namespace Cli
 				if (auth != null)
 				{
 					Console.WriteLine($"Firefox - {item.Item1}");
-					Console.WriteLine("ipb_member_id=" + auth.MemberId);
-					Console.WriteLine("ipb_pass_hash=" + auth.PassHash);
+					Console.WriteLine($"{Exhentai.COOKIE_MEMBER_ID}={auth.MemberId}");
+					Console.WriteLine($"{Exhentai.COOKIE_PASS_HASH}={auth.PassHash}");
 					candidate.Add(auth);
 				}
 			}
@@ -46,8 +47,8 @@ namespace Cli
 			if (chrome != null)
 			{
 				Console.WriteLine("Chrome：");
-				Console.WriteLine("ipb_member_id=" + chrome.MemberId);
-				Console.WriteLine("ipb_pass_hash=" + chrome.PassHash);
+				Console.WriteLine($"{Exhentai.COOKIE_MEMBER_ID}={chrome.MemberId}");
+				Console.WriteLine($"{Exhentai.COOKIE_PASS_HASH}={chrome.PassHash}");
 				candidate.Add(chrome);
 			}
 

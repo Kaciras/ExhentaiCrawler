@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
+using Core;
 
 namespace Cli
 {
@@ -15,8 +16,8 @@ namespace Cli
 
 		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
 		{
-			var hasId = dict.TryGetValue("ipb_member_id", out var id);
-			var hasPass = dict.TryGetValue("ipb_pass_hash", out var pass);
+			var hasId = dict.TryGetValue(Exhentai.COOKIE_MEMBER_ID, out var id);
+			var hasPass = dict.TryGetValue(Exhentai.COOKIE_PASS_HASH, out var pass);
 			return (hasId && hasPass) ? new AuthCookies(id, pass) : null;
 		}
 
