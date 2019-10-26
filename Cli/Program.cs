@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CommandLine;
 
 [assembly: InternalsVisibleTo("Test")]
+[assembly: InternalsVisibleTo("Benchmark")]
 namespace Cli
 {
 	[Verb("login", HelpText = "设置并保存登录信息，以便以后使用")]

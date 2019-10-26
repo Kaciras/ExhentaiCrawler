@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using Microsoft.Data.Sqlite;
 using Core;
+using Microsoft.Data.Sqlite;
+using SpecialFolder = System.Environment.SpecialFolder;
 
 namespace Cli
 {
 	public static class BrowserInterop
 	{
-		static readonly Regex SECTION = new Regex(@"^\[\w+\]$");
 
 		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
 		{
@@ -31,6 +29,41 @@ namespace Cli
 			return result;
 		}
 
+		// 这个方法抽出来为了对比性能
+		internal static IList<(string, string)> ParseProfiles(string text)
+		{
+			var list = new List<(string, string)>();
+			string name = null;
+			string path = null;
+
+			var reader = new QuickIniTokenizer(text);
+			while (reader.Read())
+			{
+				if (reader.TokenType == IniToken.Section && name != null)
+				{
+					list.Add((name, path));
+					name = path = null;
+				}
+				else if (reader.TokenType == IniToken.Key)
+				{
+					// 【注意】不能使用 == 来比较Span的内容
+					if (reader.CurrentValue.SequenceEqual("Name"))
+					{
+						name = new string(reader.GetValue());
+					}
+					else if (reader.CurrentValue.SequenceEqual("Path"))
+					{
+						path = new string(reader.GetValue());
+					}
+				}
+			}
+			if (name != null)
+			{
+				list.Add((name, path));
+			}
+			return list;
+		}
+
 		/// <summary>
 		/// 搜索Firefox的配置，返回一个以（配置名，路径）为元素的课枚举对象。
 		/// 
@@ -38,49 +71,13 @@ namespace Cli
 		/// 其中 [Profile*] 的段表示一个配置，*为从0开始的整数。
 		/// </summary>
 		/// <returns>全部的配置</returns>
-		public static IList<(string, string)> EnumaerateFirefoxProfiles()
+		public static IList<(string, string)> GetFirefoxProfiles()
 		{
-			var appDataRoaming = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-			var profileIni = Path.Join(appDataRoaming, @"Mozilla\Firefox\profiles.ini");
-
-			// 此方法不能使用yield，因为会导致Reader提前关闭，并且yield不能再try-catch块里。
 			try
 			{
-				using var reader = new StreamReader(profileIni);
-				var list = new List<(string, string)>();
-
-				string line;
-				string name = null;
-				string path = null;
-
-				while ((line = reader.ReadLine()) != null)
-				{
-					if (SECTION.IsMatch(line) && name != null)
-					{
-						list.Add((name, path));
-						name = null;
-					}
-
-					var kv = line.Split('=', 2);
-					if (kv.Length == 2)
-					{
-						switch (kv[0])
-						{
-							case "Name":
-								name = kv[1];
-								break;
-							case "Path":
-								path = kv[1];
-								break;
-						}
-					}
-				}
-
-				if (name != null)
-				{
-					list.Add((name, path));
-				}
-				return list;
+				var roaming = Environment.GetFolderPath(SpecialFolder.ApplicationData);
+				var file = Path.Join(roaming, @"Mozilla\Firefox\profiles.ini");
+				return ParseProfiles(File.ReadAllText(file));
 			}
 			catch (FileNotFoundException)
 			{

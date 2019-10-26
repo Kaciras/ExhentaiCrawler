@@ -31,7 +31,7 @@ namespace Cli
 		{
 			var candidate = new List<AuthCookies>();
 
-			foreach (var item in BrowserInterop.EnumaerateFirefoxProfiles())
+			foreach (var item in BrowserInterop.GetFirefoxProfiles())
 			{
 				var auth = await BrowserInterop.InspectFirefox(item.Item2);
 				if (auth != null)

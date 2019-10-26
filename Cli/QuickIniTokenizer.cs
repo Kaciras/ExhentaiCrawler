@@ -5,24 +5,33 @@ namespace Cli
 {
 	public enum IniToken
 	{
+		// 用作特殊标记，比如在没有读取前的状态
 		None,
+
+		// 不支持行内注释，井号和分号是注释开头
 		Comment,
+
+		// 以方括号开头和结尾的
 		Section,
+
+		// 支持开关型选项（即没有值的），等号和空格都是值分隔符
 		Key,
+
+		// 值不包含前面的空白字符，但包括后面的
 		Value,
 	}
 
-	// 不支持行内注释，等号和空格都是分隔符
-	public ref struct SimpleIniTokenizer
+	public ref struct QuickIniTokenizer
 	{
 		public IniToken TokenType { get; private set; }
+
 		public ReadOnlySpan<char> CurrentValue { get; private set; }
 
 		private readonly ReadOnlySpan<char> buffer;
 
 		private int consumed;
 
-		public SimpleIniTokenizer(ReadOnlySpan<char> buffer)
+		public QuickIniTokenizer(ReadOnlySpan<char> buffer)
 		{
 			this.buffer = buffer;
 			consumed = 0;
@@ -32,7 +41,7 @@ namespace Cli
 
 		public bool Read()
 		{
-			if(consumed >= buffer.Length)
+			if (consumed >= buffer.Length)
 			{
 				return false;
 			}
@@ -166,5 +175,22 @@ namespace Cli
 			consumed += j;
 			CurrentValue = local.Slice(0, j);
 		}
+
+		// ======================== 以下是一些便捷方法 ========================
+
+		public ReadOnlySpan<char> Get(IniToken token)
+		{
+			if (!Read())
+			{
+				throw new Exception("早就读完了");
+			}
+			if (TokenType != token)
+			{
+				throw new Exception($"Token不一致，预期{token}，实际{TokenType}");
+			}
+			return CurrentValue;
+		}
+
+		public ReadOnlySpan<char> GetValue() => Get(IniToken.Value);
 	}
 }

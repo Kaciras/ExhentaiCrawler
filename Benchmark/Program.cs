@@ -7,7 +7,7 @@ namespace Benchmark
 	{
 		private static void Main()
 		{
-			BenchmarkRunner.Run<ParseRangePerf>();
+			BenchmarkRunner.Run<FirefixProfileParsingPerf>();
 		}
 	}
 }
