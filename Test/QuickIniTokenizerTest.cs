@@ -15,10 +15,10 @@ namespace Test
 		}
 
 		[TestMethod]
-		public void MyTestMethod()
+		public void ReadTokens()
 		{
 			var buffer = File.ReadAllText(@"WebArchive/IniTokenizerTest.ini");
-			var instance = new QuickIniTokenizer(buffer);
+			var instance = new QuickIniTokenizer(buffer, true);
 
 			AssertToken(ref instance, IniToken.Comment, " 用于测试 QuickIniTokenizer 的样例文件");
 			AssertToken(ref instance, IniToken.Comment, " This file is a simple for test QuickIniTokenizer");
@@ -36,6 +36,47 @@ namespace Test
 			AssertToken(ref instance, IniToken.Key, "Enable-Fast-preasing");
 
 			Assert.IsFalse(instance.Read());
+		}
+
+		[TestMethod]
+		public void Relay()
+		{
+			var instance = new QuickIniTokenizer("[Sec");
+			Assert.IsFalse(instance.Read());
+			Assert.AreEqual(0, instance.Consumed);
+		}
+
+		[TestMethod]
+		public void Relay2()
+		{
+			var instance = new QuickIniTokenizer("A  =  123");
+			instance.Read();
+
+			Assert.IsFalse(instance.Read());
+			Assert.AreEqual(3, instance.Consumed);
+
+		}
+
+		[TestMethod]
+		public void Relay3()
+		{
+			var instance = new QuickIniTokenizer("A  =  123", true);
+			instance.Read();
+
+			AssertToken(ref instance, IniToken.Value, "123");
+		}
+
+		[TestMethod]
+		public void Relay4()
+		{
+			var instance = new QuickIniTokenizer("A  =  123");
+			instance.Read();
+
+			var nextBlock = "A  =  123"[instance.Consumed..^0] + "456";
+			instance = new QuickIniTokenizer(nextBlock, true, instance.GetState());
+
+			AssertToken(ref instance, IniToken.Value, "123456");
+
 		}
 	}
 }

@@ -27,36 +27,40 @@ namespace Cli
 
 		public ReadOnlySpan<char> CurrentValue { get; private set; }
 
+		public int Consumed { get; private set; }
+
 		private readonly ReadOnlySpan<char> buffer;
+		private readonly bool isFinalBlock;
 
-		private int consumed;
-
-		public QuickIniTokenizer(ReadOnlySpan<char> buffer)
+		public QuickIniTokenizer(ReadOnlySpan<char> buffer,
+			bool isFinalBlock = false, IniTokenizerState state = default)
 		{
 			this.buffer = buffer;
-			consumed = 0;
-			TokenType = IniToken.None;
+			this.isFinalBlock = isFinalBlock;
+			Consumed = 0;
+			TokenType = state.TokenType;
 			CurrentValue = ReadOnlySpan<char>.Empty;
 		}
 
+		public IniTokenizerState GetState() => new IniTokenizerState
+		{
+			TokenType = TokenType,
+		};
+
 		public bool Read()
 		{
-			if (consumed >= buffer.Length)
+			if (Consumed >= buffer.Length)
 			{
 				return false;
 			}
 
-			switch (buffer[consumed])
+			switch (buffer[Consumed])
 			{
 				case '#':
 				case ';':
-					ConsumeComment();
-					TokenType = IniToken.Comment;
-					break;
+					return ConsumeComment();
 				case '[':
-					ConsumeSection();
-					TokenType = IniToken.Section;
-					break;
+					return ConsumeSection();
 				case '\r':
 				case '\n':
 				case '\t':
@@ -64,25 +68,19 @@ namespace Cli
 					SkipWhiteSpace();
 					return Read();
 				case '=':
-					ConsumeValue();
-					TokenType = IniToken.Value;
-					break;
+					return ConsumeValue();
 				default:
-					ConsumeKey();
-					TokenType = IniToken.Key;
-					break;
+					return ConsumeKey();
 			}
-
-			return true;
 		}
 
 		public void SkipWhiteSpace()
 		{
 			// Create local copy to avoid bounds checks.
 			var local = buffer;
-			for (; consumed < local.Length; consumed++)
+			for (; Consumed < local.Length; Consumed++)
 			{
-				switch (local[consumed])
+				switch (local[Consumed])
 				{
 					case '\r':
 					case '\n':
@@ -95,9 +93,9 @@ namespace Cli
 			}
 		}
 
-		public void ConsumeComment()
+		public bool ConsumeComment()
 		{
-			var local = buffer.Slice(consumed + 1);
+			var local = buffer.Slice(Consumed + 1);
 			var j = 0;
 
 			for (; j < local.Length; j++)
@@ -109,26 +107,42 @@ namespace Cli
 						goto SearchEnd;
 				}
 			}
+
+			if (!isFinalBlock)
+			{
+				return false;
+			}
+
 		SearchEnd:
-			consumed += j + 1;
+			TokenType = IniToken.Comment;
+			Consumed += j + 1;
 			CurrentValue = local.Slice(0, j);
+			return true;
 		}
 
-		public void ConsumeSection()
+		public bool ConsumeSection()
 		{
-			var local = buffer.Slice(consumed + 1);
+			var local = buffer.Slice(Consumed + 1);
 			var j = local.IndexOf(']');
+
 			if (j < 0)
 			{
-				throw new Exception("数据不完整");
+				if (isFinalBlock)
+				{
+					throw new Exception("数据不完整");
+				}
+				return false;
 			}
-			consumed += j + 2;
+
+			TokenType = IniToken.Section;
+			Consumed += j + 2;
 			CurrentValue = local.Slice(0, j);
+			return true;
 		}
 
-		public void ConsumeKey()
+		public bool ConsumeKey()
 		{
-			var local = buffer.Slice(consumed);
+			var local = buffer.Slice(Consumed);
 			var j = 0;
 
 			for (; j < local.Length; j++)
@@ -143,12 +157,20 @@ namespace Cli
 						goto SearchEnd;
 				}
 			}
+
+			if (!isFinalBlock)
+			{
+				return false;
+			}
+
 		SearchEnd:
-			consumed += j;
+			TokenType = IniToken.Key;
+			Consumed += j;
 			CurrentValue = local.Slice(0, j);
+			return true;
 		}
 
-		public void ConsumeValue()
+		public bool ConsumeValue()
 		{
 			if (TokenType != IniToken.Key)
 			{
@@ -156,10 +178,11 @@ namespace Cli
 			}
 
 			// 前面的等号没有跳过
-			consumed++;
+			var indexBuckup = Consumed;
+			Consumed++;
 			SkipWhiteSpace();
 
-			var local = buffer.Slice(consumed);
+			var local = buffer.Slice(Consumed);
 			var j = 0;
 
 			for (; j < local.Length; j++)
@@ -171,9 +194,18 @@ namespace Cli
 						goto SearchEnd;
 				}
 			}
+
+			if (!isFinalBlock)
+			{
+				Consumed = indexBuckup;
+				return false;
+			}
+
 		SearchEnd:
-			consumed += j;
+			TokenType = IniToken.Value;
+			Consumed += j;
 			CurrentValue = local.Slice(0, j);
+			return true;
 		}
 
 		// ======================== 以下是一些便捷方法 ========================
