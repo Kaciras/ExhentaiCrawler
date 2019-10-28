@@ -129,7 +129,7 @@ namespace Cli
 			{
 				if (isFinalBlock)
 				{
-					throw new Exception("数据不完整");
+					throw new IniParsingException("数据不完整");
 				}
 				return false;
 			}
@@ -174,7 +174,7 @@ namespace Cli
 		{
 			if (TokenType != IniToken.Key)
 			{
-				throw new Exception("等号出现在一行的开头");
+				throw new IniParsingException("等号出现在一行的开头");
 			}
 
 			// 前面的等号没有跳过
@@ -210,19 +210,19 @@ namespace Cli
 
 		// ======================== 以下是一些便捷方法 ========================
 
-		public ReadOnlySpan<char> Get(IniToken token)
+		public ReadOnlySpan<char> ReadToken(IniToken token)
 		{
 			if (!Read())
 			{
-				throw new Exception("早就读完了");
+				throw new IniParsingException("早就读完了");
 			}
 			if (TokenType != token)
 			{
-				throw new Exception($"Token不一致，预期{token}，实际{TokenType}");
+				throw new IniParsingException($"Token不一致，预期{token}，实际{TokenType}");
 			}
 			return CurrentValue;
 		}
 
-		public ReadOnlySpan<char> GetValue() => Get(IniToken.Value);
+		public ReadOnlySpan<char> ReadValue() => ReadToken(IniToken.Value);
 	}
 }

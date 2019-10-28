@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Cli;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,6 +15,25 @@ namespace Test
 			Assert.AreEqual(value, new string(tokenizer.CurrentValue));
 		}
 
+		private delegate void ThrowsAction(ref QuickIniTokenizer tokenizer);
+
+		// ref struct 只能存在于栈上，不能被lambda捕获，故没法用Assert.ThrowsException
+		private void AssertThrow<E>(ref QuickIniTokenizer tokenizer, ThrowsAction action) where E : Exception
+		{
+			try
+			{
+				action(ref tokenizer);
+				Assert.Fail("Except to throw exception");
+			}
+			catch (Exception e)
+			{
+				if (e.GetType() != typeof(E))
+				{
+					Assert.Fail($"Except to throw {typeof(E)} but got {e}");
+				}
+			}
+		}
+
 		[TestMethod]
 		public void ReadTokens()
 		{
@@ -22,7 +42,7 @@ namespace Test
 
 			AssertToken(ref instance, IniToken.Comment, " 用于测试 QuickIniTokenizer 的样例文件");
 			AssertToken(ref instance, IniToken.Comment, " This file is a simple for test QuickIniTokenizer");
-						 
+
 			AssertToken(ref instance, IniToken.Section, "Kaciras");
 			AssertToken(ref instance, IniToken.Key, "Looks");
 			AssertToken(ref instance, IniToken.Value, "Handsome");
@@ -36,6 +56,13 @@ namespace Test
 			AssertToken(ref instance, IniToken.Key, "Enable-Fast-preasing");
 
 			Assert.IsFalse(instance.Read());
+		}
+
+		[TestMethod]
+		public void InvalidSection()
+		{
+			var instance = new QuickIniTokenizer("[Section", true);
+			AssertThrow<IniParsingException>(ref instance, (ref QuickIniTokenizer r) => r.Read());
 		}
 
 		[TestMethod]

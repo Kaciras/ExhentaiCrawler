@@ -49,11 +49,11 @@ namespace Cli
 					// 【注意】不能使用 == 来比较Span的内容
 					if (reader.CurrentValue.SequenceEqual("Name"))
 					{
-						name = new string(reader.GetValue());
+						name = new string(reader.ReadValue());
 					}
 					else if (reader.CurrentValue.SequenceEqual("Path"))
 					{
-						path = new string(reader.GetValue());
+						path = new string(reader.ReadValue());
 					}
 				}
 			}
