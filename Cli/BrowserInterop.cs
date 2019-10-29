@@ -12,7 +12,6 @@ namespace Cli
 {
 	public static class BrowserInterop
 	{
-
 		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
 		{
 			var hasId = dict.TryGetValue(Exhentai.COOKIE_MEMBER_ID, out var id);
@@ -28,42 +27,7 @@ namespace Cli
 				((ICollection<KeyValuePair<K, V>>)result).Add(kv);
 			}
 			return result;
-		}
-
-		// 这个方法抽出来为了对比性能
-		internal static IList<(string, string)> ParseProfiles(string text)
-		{
-			var list = new List<(string, string)>();
-			string name = null;
-			string path = null;
-
-			var reader = new QuickIniTokenizer(text);
-			while (reader.Read())
-			{
-				if (reader.TokenType == IniToken.Section && name != null)
-				{
-					list.Add((name, path));
-					name = path = null;
-				}
-				else if (reader.TokenType == IniToken.Key)
-				{
-					// 【注意】不能使用 == 来比较Span的内容
-					if (reader.CurrentValue.SequenceEqual("Name"))
-					{
-						name = new string(reader.ReadValue());
-					}
-					else if (reader.CurrentValue.SequenceEqual("Path"))
-					{
-						path = new string(reader.ReadValue());
-					}
-				}
-			}
-			if (name != null)
-			{
-				list.Add((name, path));
-			}
-			return list;
-		}
+		}		
 
 		/// <summary>
 		/// 搜索Firefox的配置，返回一个以（配置名，路径）为元素的课枚举对象。
@@ -78,7 +42,12 @@ namespace Cli
 			{
 				var roaming = Environment.GetFolderPath(SpecialFolder.ApplicationData);
 				var file = Path.Join(roaming, @"Mozilla\Firefox\profiles.ini");
-				return ParseProfiles(File.ReadAllText(file));
+				var ini = IniFile.Parse(File.ReadAllText(file));
+
+				return ini.Sections
+					.Where(kv => kv.Key.StartsWith("Profile"))
+					.Select(kv => (kv.Value["Name"], kv.Value["Path"]))
+					.ToList();
 			}
 			catch (FileNotFoundException)
 			{

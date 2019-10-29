@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Benchmark.Properties;
 using BenchmarkDotNet.Attributes;
-using Cli;
+using Cli.Ini;
 
-// Span还是挺快的，比旧版按行检查字符串快60%
+// Span还是挺快的，比旧版按行检查字符串快56%
 namespace Benchmark
 {
 	public class FirefixProfileParsingPerf
@@ -51,22 +51,56 @@ namespace Benchmark
 			return list;
 		}
 
+		internal static IList<(string, string)> NewImpl(string text)
+		{
+			var list = new List<(string, string)>();
+			string name = null;
+			string path = null;
+
+			var reader = new QuickIniTokenizer(text);
+			while (reader.Read())
+			{
+				if (reader.TokenType == IniToken.Section && name != null)
+				{
+					list.Add((name, path));
+					name = path = null;
+				}
+				else if (reader.TokenType == IniToken.Key)
+				{
+					// 【注意】不能使用 == 来比较Span的内容
+					if (reader.CurrentValue.SequenceEqual("Name"))
+					{
+						name = reader.GetString();
+					}
+					else if (reader.CurrentValue.SequenceEqual("Path"))
+					{
+						path = reader.GetString();
+					}
+				}
+			}
+			if (name != null)
+			{
+				list.Add((name, path));
+			}
+			return list;
+		}
+
 		private static readonly string Text = Resources.profiles;
 		private static readonly string[] Lines = Resources.profiles.Split("\r\n");
 
 		[GlobalSetup]
 		public void CheckSameResult()
 		{
-			if(!OldImpl(Lines).SequenceEqual(BrowserInterop.ParseProfiles(Text)))
+			if(!OldImpl(Lines).SequenceEqual(NewImpl(Text)))
 			{
 				throw new Exception("Two implements return different value");
 			}
 		}
 
+		[Benchmark(Baseline = true)]
+		public object BySpan() => NewImpl(Text);
+
 		[Benchmark]
 		public object ByLines() => OldImpl(Lines);
-
-		[Benchmark(Baseline = true)]
-		public object BySpan() => BrowserInterop.ParseProfiles(Text);
 	}
 }

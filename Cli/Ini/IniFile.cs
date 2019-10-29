@@ -21,6 +21,15 @@ namespace Cli.Ini
 
 		public IDictionary<string, IniSection> Sections = new Dictionary<string, IniSection>();
 
+		public static IniFile Parse(ReadOnlySpan<char> data)
+		{
+			var iniFile = new IniFile();
+			var current = new IniReadState { section = iniFile.defaultSection };
+			var state = new IniTokenizerState();
+			iniFile.AddTokens(data, true, ref state, ref current);
+			return iniFile;
+		}
+
 		public static async Task<IniFile> Parse(TextReader reader, int bufferSize = 8192)
 		{
 			var iniFile = new IniFile();
