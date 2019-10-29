@@ -1,7 +1,7 @@
 ﻿using System;
 
 // 仿照 Utf8JsonReader 写一个INI文件解析器，学习一下Span的用法。
-namespace Cli
+namespace Cli.Ini
 {
 	public enum IniToken
 	{
@@ -42,7 +42,7 @@ namespace Cli
 			CurrentValue = ReadOnlySpan<char>.Empty;
 		}
 
-		public IniTokenizerState GetState() => new IniTokenizerState
+		public IniTokenizerState CurrentState => new IniTokenizerState
 		{
 			TokenType = TokenType,
 		};
@@ -224,5 +224,7 @@ namespace Cli
 		}
 
 		public ReadOnlySpan<char> ReadValue() => ReadToken(IniToken.Value);
+
+		public string GetString() => new string(CurrentValue);
 	}
 }

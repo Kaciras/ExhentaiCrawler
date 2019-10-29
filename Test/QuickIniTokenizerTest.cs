@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using Cli;
+using System.Threading.Tasks;
+using Cli.Ini;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Test
@@ -37,7 +38,7 @@ namespace Test
 		[TestMethod]
 		public void ReadTokens()
 		{
-			var buffer = File.ReadAllText(@"WebArchive/IniTokenizerTest.ini");
+			var buffer = File.ReadAllText("WebArchive/IniTokenizerTest.ini");
 			var instance = new QuickIniTokenizer(buffer, true);
 
 			AssertToken(ref instance, IniToken.Comment, " 用于测试 QuickIniTokenizer 的样例文件");
@@ -100,10 +101,20 @@ namespace Test
 			instance.Read();
 
 			var nextBlock = "A  =  123"[instance.Consumed..^0] + "456";
-			instance = new QuickIniTokenizer(nextBlock, true, instance.GetState());
+			instance = new QuickIniTokenizer(nextBlock, true, instance.CurrentState);
 
 			AssertToken(ref instance, IniToken.Value, "123456");
+		}
 
+		[TestMethod]
+		public async Task ReadIniFile()
+		{
+			using var reader = new StreamReader("WebArchive/IniTokenizerTest.ini");
+			var doc = await IniFile.Parse(reader, 32);
+			Assert.AreEqual(2, doc.Sections.Count);
+
+			var kacirasSection = doc.Sections["Kaciras"];
+			Assert.AreEqual("Handsome", kacirasSection["Looks"]);
 		}
 	}
 }
