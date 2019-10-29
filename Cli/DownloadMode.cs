@@ -28,7 +28,7 @@ namespace Cli
 		public async Task Start()
 		{
 			var exhentai = ExhentaiConfig.Load().GetExhentai();
-			var gallery = await exhentai.GetGallery(Uri);
+			var gallery = await exhentai.GetGallery(GalleryLink.Parse(Uri));
 
 			var name = gallery.Info.JapaneseName ?? gallery.Info.Name;
 			Console.WriteLine("本子名：" + name);

@@ -28,7 +28,7 @@ namespace Core
 		private IPRecord bindIP;
 		private Gallery bindGallery;
 
-		internal ImageResource(ExhentaiClient client,ImageThumbnail thumbnail, Gallery gallery)
+		internal ImageResource(ExhentaiClient client,ImageListItem thumbnail, Gallery gallery)
 		{
 			this.client = client;
 
@@ -164,9 +164,8 @@ namespace Core
 
 			if (bindGallery == null)
 			{
-				var galHref = doc.GetElementbyId("i5").FirstChild.FirstChild.Attributes["href"].Value;
-				var token = Gallery.URL_RE.Match(galHref).Groups[2].Value;
-				bindGallery = await Gallery.From(client, Link.GalleryId, token);
+				var href = doc.GetElementbyId("i5").FirstChild.FirstChild.Attributes["href"].Value;
+				bindGallery = await Gallery.From(client, GalleryLink.Parse(href));
 			}
 		}
 	}

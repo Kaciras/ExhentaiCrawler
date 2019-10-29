@@ -94,9 +94,12 @@ namespace Core
 			return GalleryListPage.ParseHtml(response.Content);
 		}
 
-		public Task<Gallery> GetGallery(string url) => Gallery.From(client, url);
-
-		public Task<Gallery> GetGallery(int id, string token) => Gallery.From(client, id, token);
+		/// <summary>
+		/// 根据链接获取本子对象
+		/// </summary>
+		/// <param name="link">本子的链接</param>
+		/// <returns>本子</returns>
+		public Task<Gallery> GetGallery(GalleryLink link) => Gallery.From(client, link);
 
 		// TODO: 没检查URI的正确性，检查与外头判断是否重了?
 		public ImageResource GetImage(ImageLink link)

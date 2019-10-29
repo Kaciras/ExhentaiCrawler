@@ -8,10 +8,6 @@ namespace Core
 {
 	public sealed class Gallery
 	{
-		const string GALLERY_RE_TEXT = @"^https://exhentai.org/g/(\d+)/(\w+)/?";
-
-		public static readonly Regex URL_RE = new Regex(GALLERY_RE_TEXT, RegexOptions.Compiled);
-
 		public int Id { get; }
 		public string Token { get; }
 
@@ -24,7 +20,7 @@ namespace Core
 		/// <summary>
 		/// 数组表示所有分页，里面的List表示每一页的图片列表。写起来有点奇怪...
 		/// </summary>
-		private IList<ImageThumbnail>[] imageListPage;
+		private IList<ImageListItem>[] imageListPage;
 
 		private Gallery(ExhentaiClient client, int id, string token)
 		{
@@ -89,7 +85,7 @@ namespace Core
 			{
 				return Task.FromResult<Gallery>(null);
 			}
-			return From(client, Info.Parent.ToString());
+			return From(client, Info.Parent);
 		}
 
 		/// <summary>
@@ -109,31 +105,25 @@ namespace Core
 			return latestVersion;
 		}
 
-		internal static Task<Gallery> From(ExhentaiClient client, string uri)
+		internal static async Task<Gallery> From(ExhentaiClient client, GalleryLink link)
 		{
-			var match = URL_RE.Match(uri);
-			if (!match.Success)
+			var uriBuilder = new UriBuilder(link.ToString())
 			{
-				throw new ArgumentException(@"画册的URL格式不对，应当符合 " + GALLERY_RE_TEXT);
-			}
-			return From(client, int.Parse(match.Groups[1].Value), match.Groups[2].Value);
-		}
+				Query = "hc=1" // 显示全部评论
+			};
 
-		internal static async Task<Gallery> From(ExhentaiClient client, int id, string token)
-		{
-			// hc=1 显示全部评论
 			var html = await client
-				.NewSiteRequest($"https://exhentai.org/g/{id}/{token}?hc=1")
+				.NewSiteRequest(uriBuilder.Uri)
 				.ExecuteForContent();
 
 			var info = GalleryPageInfo.Parse(html);
 
 			// 计算图片列表一共几页，第一页已经包含在这次的响应里了
 			var pages = 1 + (info.Length - 1) / info.Thumbnails.Count;
-			var imageListPage = new IList<ImageThumbnail>[pages];
+			var imageListPage = new IList<ImageListItem>[pages];
 			imageListPage[0] = info.Thumbnails;
 
-			return new Gallery(client, id, token)
+			return new Gallery(client, link.Id, link.Token)
 			{
 				Info = info,
 				imageListPage = imageListPage

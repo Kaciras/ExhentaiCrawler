@@ -23,7 +23,7 @@ namespace Core
 
 		// 中间的一堆属性
 		public DateTime Posted { get; set; }
-		public Uri Parent { get; set; }
+		public GalleryLink Parent { get; set; }
 		public bool Visible { get; set; }
 		public Language Language { get; set; }
 		public bool IsTranslated { get; set; }
@@ -39,9 +39,9 @@ namespace Core
 
 		// 如果有新版，则在简介栏和图片栏中间会出现链接列表，包含了新版的链接，新的靠后。
 		// 【注意】列表里并非一定包括最新版，如果要获取最新的需要遍历，直到没有新版链接为止。
-		public IList<string> NewVersions { get; set; }
+		public IList<GalleryLink> NewVersions { get; set; }
 
-		public IList<ImageThumbnail> Thumbnails { get; set; }
+		public IList<ImageListItem> Thumbnails { get; set; }
 
 		public static GalleryPageInfo Parse(string html)
 		{
@@ -98,7 +98,7 @@ namespace Core
 			var parent = tableRows[1].LastChild.FirstChild;
 			if (parent.NodeType != HtmlNodeType.Text)
 			{
-				Parent = new Uri(parent.Attributes["href"].Value);
+				Parent = GalleryLink.Parse(parent.Attributes["href"].Value);
 			}
 
 			// 第3项 Visible: Yes[No]
@@ -154,14 +154,16 @@ namespace Core
 			return tags;
 		}
 
-		internal static IList<string> ParseNewVersions(HtmlDocument doc)
+		internal static IList<GalleryLink> ParseNewVersions(HtmlDocument doc)
 		{
 			var listNode = doc.GetElementbyId("gnd");
 			if (listNode == null)
 			{
-				return Array.Empty<string>();
+				return Array.Empty<GalleryLink>();
 			}
-			return listNode.SelectNodes("a").Select(node => node.Attributes["href"].Value).ToList();
+			return listNode.SelectNodes("a")
+				.Select(node => node.Attributes["href"].Value)
+				.Select(GalleryLink.Parse).ToList();
 		}
 
 		/// <summary>
@@ -177,25 +179,25 @@ namespace Core
 			_ => throw new NotSupportedException("Unrecognized tag class: " + @class),
 		};
 		
-		public static IList<ImageThumbnail> ParseThumbnails(string html)
+		public static IList<ImageListItem> ParseThumbnails(string html)
 		{
 			var doc = new HtmlDocument();
 			doc.LoadHtml(html);
 			return ParseThumbnails(doc);
 		}
 
-		internal static IList<ImageThumbnail> ParseThumbnails(HtmlDocument doc)
+		internal static IList<ImageListItem> ParseThumbnails(HtmlDocument doc)
 		{
 			var nodes = doc.GetElementbyId("gdt").ChildNodes;
 			nodes.RemoveAt(nodes.Count - 1); // 去掉最后空白的div
 
-			var result = new List<ImageThumbnail>();
+			var result = new List<ImageListItem>();
 			foreach (var item in nodes)
 			{
 				var anchor = item.FirstChild.FirstChild;
 				var link = ImageLink.Parse(new Uri(anchor.Attributes["href"].Value));
 				var name = anchor.FirstChild.Attributes["title"].Value.Split(": ")[1];
-				result.Add(new ImageThumbnail(link, name));
+				result.Add(new ImageListItem(link, name));
 			}
 			return result;
 		}

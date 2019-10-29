@@ -5,7 +5,7 @@ namespace Core
 {
 	public sealed class ImageLink
 	{
-		public static readonly Regex PATH_RE = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?");
+		private static readonly Regex REGEX = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?", RegexOptions.Compiled);
 
 		public string Key { get; }
 		public int GalleryId { get; }
@@ -25,7 +25,7 @@ namespace Core
 
 		public static bool TryParse(Uri uri, out ImageLink result)
 		{
-			var match = PATH_RE.Match(uri.AbsolutePath);
+			var match = REGEX.Match(uri.AbsolutePath);
 			if (match.Success)
 			{
 				var page = int.Parse(match.Groups["PAGE"].Value);
@@ -45,7 +45,7 @@ namespace Core
 			{
 				return result;
 			}
-			throw new UriFormatException();
+			throw new UriFormatException($"图片的URL格式不对，{uri}");
 		}
 	}
 }
