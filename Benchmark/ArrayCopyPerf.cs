@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 
 namespace Benchmark
@@ -26,8 +24,8 @@ namespace Benchmark
 
 			var r = new Random();
 			src = Enumerable.Range(0, Size)
-				.Select(_ => r.Next(0, 65535))
-				.Cast<char>().ToArray();
+				.Select(_ => (char)r.Next(0, 65535))
+				.ToArray();
 		}
 
 		[Benchmark]

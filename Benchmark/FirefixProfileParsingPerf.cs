@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Benchmark.Properties;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Mathematics;
 using Cli.Ini;
 
-// Span还是挺快的，比旧版按行检查字符串快56%
+// Span还是挺快的，比旧版按行检查字符串快56%，内存占用也小些
 namespace Benchmark
 {
+	[MemoryDiagnoser]
 	public class FirefixProfileParsingPerf
 	{
 		internal static IList<(string, string)> OldImpl(string[] lines)
@@ -70,11 +72,11 @@ namespace Benchmark
 					// 【注意】不能使用 == 来比较Span的内容
 					if (reader.CurrentValue.SequenceEqual("Name"))
 					{
-						name = reader.GetString();
+						name = new string(reader.ReadValue());
 					}
 					else if (reader.CurrentValue.SequenceEqual("Path"))
 					{
-						path = reader.GetString();
+						path = new string(reader.ReadValue());
 					}
 				}
 			}

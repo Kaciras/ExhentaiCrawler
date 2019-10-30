@@ -4,7 +4,6 @@ using Core.Infrastructure;
 
 namespace Benchmark
 {
-	[ClrJob, CoreJob(baseline: true)]
 	[RankColumn]
 	public class RateLimiterPerf
 	{

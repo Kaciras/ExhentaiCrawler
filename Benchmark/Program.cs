@@ -1,13 +1,13 @@
-﻿using System;
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 
 namespace Benchmark
 {
 	internal static class Program
 	{
-		private static void Main()
+		private static void Main(string[] args)
 		{
-			BenchmarkRunner.Run<FirefixProfileParsingPerf>();
+			//BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).RunAll();
+			BenchmarkRunner.Run<ArrayCopyPerf>();
 		}
 	}
 }
