@@ -5,7 +5,8 @@ namespace Core
 {
 	public sealed class ImageLink
 	{
-		private static readonly Regex REGEX = new Regex(@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?", RegexOptions.Compiled);
+		private static readonly Regex REGEX = new Regex(
+			@"/s/(?<KEY>\w+)/(?<GID>\d+)-(?<PAGE>\d+)/?", RegexOptions.Compiled);
 
 		public string Key { get; }
 		public int GalleryId { get; }
@@ -23,29 +24,18 @@ namespace Core
 			return $"https://exhentai.org/s/{Key}/{GalleryId}-{Page}";
 		}
 
-		public static bool TryParse(Uri uri, out ImageLink result)
+		public static ImageLink Parse(string @string)
 		{
-			var match = REGEX.Match(uri.AbsolutePath);
-			if (match.Success)
-			{
-				var page = int.Parse(match.Groups["PAGE"].Value);
-				var gid = int.Parse(match.Groups["GID"].Value);
-				result = new ImageLink(match.Groups["KEY"].Value, gid, page);
-			}
-			else
-			{
-				result = default;
-			}
-			return result != null;
-		}
+			var path = Utils.ExtactEhentaiUriPath(@string);
 
-		public static ImageLink Parse(Uri uri)
-		{
-			if (TryParse(uri, out var result))
+			var match = REGEX.Match(path);
+			if (!match.Success)
 			{
-				return result;
+				throw new UriFormatException($"图片的URL格式不对，{@string}");
 			}
-			throw new UriFormatException($"图片的URL格式不对，{uri}");
+			var page = int.Parse(match.Groups["PAGE"].Value);
+			var gid = int.Parse(match.Groups["GID"].Value);
+			return new ImageLink(match.Groups["KEY"].Value, gid, page);
 		}
 	}
 }

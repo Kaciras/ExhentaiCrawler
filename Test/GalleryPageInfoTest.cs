@@ -1,12 +1,10 @@
-﻿using Core;
-using Core.Infrastructure;
+﻿using System;
+using System.IO;
+using System.Linq;
+using Core;
 using FluentAssertions;
 using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Test
 {
@@ -93,7 +91,7 @@ namespace Test
 		{
 			var html = File.ReadAllText("WebArchive/Index.html");
 
-			var listPage = GalleryListPage.ParseHtml(html);
+			var listPage = ListPage.ParseHtml(html);
 
 			Assert.AreEqual(769_296, listPage.TotalCount);
 			Assert.AreEqual(30772, listPage.TotalPage);

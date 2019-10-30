@@ -20,14 +20,14 @@ namespace Core
 
 		public OriginImage(ExhentaiClient client, IPRecord bindIP, Uri uri)
 		{
+			Uri = uri;
 			this.client = client;
 			this.bindIP = bindIP;
-			Uri = uri;
 		}
 
 		public Task<Stream> GetStream(bool useBindIP = true)
 		{
-			if(useBindIP)
+			if (useBindIP)
 			{
 				return client.Request(new PeerImageRequest(Uri), bindIP);
 			}

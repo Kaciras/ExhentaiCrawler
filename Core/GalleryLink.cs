@@ -9,7 +9,7 @@ namespace Core
 	/// </summary>
 	public sealed class GalleryLink
 	{
-		private static readonly Regex REGEX = new Regex(@"/g/(?<GID>\d+)/(?<TOKEN>\w+)/", RegexOptions.Compiled);
+		private static readonly Regex REGEX = new Regex(@"^/g/(?<GID>\d+)/(?<TOKEN>\w+)", RegexOptions.Compiled);
 
 		public int Id { get; }
 		public string Token { get; }
@@ -25,28 +25,17 @@ namespace Core
 			return $"https://exhentai.org/g/{Id}/{Token}";
 		}
 
-		public static bool TryParse(string uri, out GalleryLink link)
+		public static GalleryLink Parse(string @string)
 		{
-			var match = REGEX.Match(uri);
-			if (match.Success)
-			{
-				var id = int.Parse(match.Groups["GID"].Value);
-				link = new GalleryLink(id, match.Groups["TOKEN"].Value);
-			}
-			else
-			{
-				link = null;
-			}
-			return link != null;
-		}
+			var path = Utils.ExtactEhentaiUriPath(@string);
 
-		public static GalleryLink Parse(string uri)
-		{
-			if (TryParse(uri, out var result))
+			var match = REGEX.Match(path);
+			if (!match.Success)
 			{
-				return result;
+				throw new UriFormatException($"本子的URL格式不对，{@string}");
 			}
-			throw new UriFormatException($"本子的URL格式不对，{uri}");
+			var id = int.Parse(match.Groups["GID"].Value);
+			return new GalleryLink(id, match.Groups["TOKEN"].Value);
 		}
 	}
 }

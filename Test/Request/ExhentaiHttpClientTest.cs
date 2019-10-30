@@ -1,13 +1,10 @@
-﻿using Core;
+﻿using System.Net;
+using System.Threading.Tasks;
+using Core;
 using Core.Request;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Test
+namespace Test.Request
 {
 	[TestClass]
     public class ExhentaiHttpClientTest

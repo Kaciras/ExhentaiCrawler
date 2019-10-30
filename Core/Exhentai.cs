@@ -80,7 +80,7 @@ namespace Core
 			cookies.Add(new Cookie(COOKIE_PASS_HASH, passHash, "/", ".e-hentai.org"));
 		}
 
-		public async Task<GalleryListPage> GetList(FilterOptions options, int page)
+		public async Task<ListPage> GetList(FilterOptions options, int page)
 		{
 			if (page < 0)
 			{
@@ -91,7 +91,7 @@ namespace Core
 			var query = string.Join('&', param.Concat(options.AsParameters()));
 
 			var response = await client.NewSiteRequest($"https://exhentai.org/?" + query).Execute();
-			return GalleryListPage.ParseHtml(response.Content);
+			return ListPage.ParseHtml(response.Content);
 		}
 
 		/// <summary>
@@ -109,7 +109,9 @@ namespace Core
 
 		public async Task<int> GetCost()
 		{
-			var html = await client.NewSiteRequest($"https://e-hentai.org/home.php").ExecuteForContent();
+			var html = await client
+				.NewSiteRequest($"https://e-hentai.org/home.php")
+				.ExecuteForContent();
 			return int.Parse(COST.Match(html).Groups[1].Value);
 		}
 

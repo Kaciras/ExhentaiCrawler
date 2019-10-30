@@ -195,7 +195,7 @@ namespace Core
 			foreach (var item in nodes)
 			{
 				var anchor = item.FirstChild.FirstChild;
-				var link = ImageLink.Parse(new Uri(anchor.Attributes["href"].Value));
+				var link = ImageLink.Parse(anchor.Attributes["href"].Value);
 				var name = anchor.FirstChild.Attributes["title"].Value.Split(": ")[1];
 				result.Add(new ImageListItem(link, name));
 			}

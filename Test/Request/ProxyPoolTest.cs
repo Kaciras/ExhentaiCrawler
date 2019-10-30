@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using Core.Request;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test
+namespace Test.Request
 {
 	[TestClass]
 	public sealed class ProxyPoolTest

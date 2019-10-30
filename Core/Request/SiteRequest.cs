@@ -20,7 +20,8 @@ namespace Core.Request
 	/// <typeparam name="T">响应类型</typeparam>
 	public class SiteRequest<T> : ExhentaiRequest<T>
 	{
-		private static readonly Regex BAN = new Regex(@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
+		private static readonly Regex BAN = new Regex(
+			@"ban expires in(?: (\d+) hours)?(?: and (\d)+ minutes)?", RegexOptions.Compiled);
 
 		public int Cost { get; set; }
 
