@@ -106,15 +106,6 @@ namespace Test
 			AssertToken(ref instance, IniToken.Value, "123456");
 		}
 
-		[TestMethod]
-		public async Task ReadIniFile()
-		{
-			using var reader = new StreamReader("WebArchive/IniTokenizerTest.ini");
-			var doc = await IniFile.Parse(reader, 32);
-			Assert.AreEqual(2, doc.Sections.Count);
-
-			var kacirasSection = doc.Sections["Kaciras"];
-			Assert.AreEqual("Handsome", kacirasSection["Looks"]);
-		}
+		
 	}
 }

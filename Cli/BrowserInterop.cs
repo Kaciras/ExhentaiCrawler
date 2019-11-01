@@ -42,7 +42,7 @@ namespace Cli
 			{
 				var roaming = Environment.GetFolderPath(SpecialFolder.ApplicationData);
 				var file = Path.Join(roaming, @"Mozilla\Firefox\profiles.ini");
-				var ini = IniFile.Parse(File.ReadAllText(file));
+				var ini = IniDocument.Parse(File.ReadAllText(file));
 
 				return ini.Sections
 					.Where(kv => kv.Key.StartsWith("Profile"))

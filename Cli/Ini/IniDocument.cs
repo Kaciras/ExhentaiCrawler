@@ -13,24 +13,24 @@ namespace Cli.Ini
 		public string key;
 	}
 
-	public class IniFile
+	public class IniDocument
 	{
 		public IniSection defaultSection = new IniSection();
 
 		public IDictionary<string, IniSection> Sections = new Dictionary<string, IniSection>();
 
-		public static IniFile Parse(ReadOnlySpan<char> data)
+		public static IniDocument Parse(ReadOnlySpan<char> data)
 		{
-			var iniFile = new IniFile();
+			var iniFile = new IniDocument();
 			var current = new IniReadState { section = iniFile.defaultSection };
 			var state = new IniTokenizerState();
 			iniFile.AddTokens(data, true, ref state, ref current);
 			return iniFile;
 		}
 
-		public static async Task<IniFile> Parse(TextReader reader, int bufferSize = 8192)
+		public static async Task<IniDocument> Parse(TextReader reader, int bufferSize = 8192)
 		{
-			var iniFile = new IniFile();
+			var iniFile = new IniDocument();
 			var current = new IniReadState { section = iniFile.defaultSection };
 
 			var state = new IniTokenizerState();
