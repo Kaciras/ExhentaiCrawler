@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Core
+namespace Core.Request
 {
 	/// <summary>
 	/// 一个IP访问频率过快将会被封禁一段时间。
 	/// </summary>
-	public class BanException : ExhentaiException
+	public sealed class BanException : ExhentaiException
 	{
 		public TimeSpan Time { get; }
 		public DateTime ReleaseTime { get; }

@@ -25,7 +25,7 @@ namespace Core.Request
 
 		public int Cost { get; set; }
 
-		private RequestConfigurer RrequestConfigurer { get; set; }
+		public RequestConfigurer RrequestConfigurer { get; set; }
 
 		private readonly ResponseHandler<T> responseHandler;
 		private readonly Uri uri;

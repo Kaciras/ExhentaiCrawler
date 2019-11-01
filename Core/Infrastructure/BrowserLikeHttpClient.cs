@@ -26,7 +26,8 @@ namespace Core.Infrastructure
 			DefaultRequestHeaders.UserAgent.ParseAdd(USER_AGENT);
 		}
 
-		public override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+		public override async Task<HttpResponseMessage> SendAsync(
+			HttpRequestMessage request, CancellationToken cancellationToken)
 		{
 			// 如果没有 Referrer 头，就设置一个 DoNotTrack 来代替
 			if (request.Headers.Referrer == null)

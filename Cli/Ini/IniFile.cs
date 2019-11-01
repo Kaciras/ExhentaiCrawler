@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 
 namespace Cli.Ini
 {
-	public class IniSection : Dictionary<string, string> { }
-
 	internal struct IniReadState
 	{
 		public IniSection section;
@@ -111,6 +109,7 @@ namespace Cli.Ini
 		//
 		// 【扩容】
 		// 因为只能在Token处中断，所以如果出现超长的Token值超过缓冲容量，就必须扩容。
+		// 我感觉INI文件不太可能出现超长的值，但这些边界情况总得考虑。
 		// 
 		// 【数据移动】
 		// 官方JsonReader是定死了UTF8编码，然后对byte进行操作，但是我这用了char。

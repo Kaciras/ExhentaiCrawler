@@ -49,7 +49,8 @@ namespace Core.Request
 		{
 			var request = new SiteRequest<T>(uri, handler)
 			{
-				Cost = cost
+				Cost = cost,
+				RrequestConfigurer = configurer,
 			};
 			return client.Request(request);
 		}
