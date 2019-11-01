@@ -23,7 +23,7 @@ namespace Test
 			Assert.AreEqual("￥♂ung-漾", info.Uploader);
 
 			Assert.AreEqual(new DateTime(2018, 2, 20, 19, 52, 0), info.Posted);
-			Assert.AreEqual(new Uri("https://exhentai.org/g/1167472/ac1da09bc2/"), info.Parent);
+			Assert.AreEqual("https://exhentai.org/g/1167472/ac1da09bc2", info.Parent.ToString());
 			Assert.IsTrue(info.Visible);
 			Assert.AreEqual(Language.Chinese, info.Language);
 			Assert.IsTrue(info.IsTranslated);
@@ -109,9 +109,10 @@ namespace Test
 			doc.Load("WebArchive/NewVersionTestPage.html");
 
 			var list = GalleryPageInfo.ParseNewVersions(doc);
+
 			list.Should().HaveCount(4);
-			list[0].Should().Be("https://exhentai.org/g/1489813/0446282389/");
-			list[^1].Should().Be("https://exhentai.org/g/1502818/b0f0b40e2e/");
+			list[0].ToString().Should().Be("https://exhentai.org/g/1489813/0446282389");
+			list[^1].ToString().Should().Be("https://exhentai.org/g/1502818/b0f0b40e2e");
 		}
 	}
 }
