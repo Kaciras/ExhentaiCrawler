@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Test.Request
 {
 	[TestClass]
-	public sealed class ProxyPoolTest
+	public class ProxyPoolTest
 	{
 		private readonly ProxyPool pool = new ProxyPool();
 

@@ -1,25 +1,36 @@
-﻿using Core;
+﻿using System.Net;
+using System.Threading.Tasks;
+using Core;
 using Core.Request;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Test
 {
 	[TestClass]
 	public class ExhentaiTest
 	{
+		private static ExhentaiClient GetClient()
+		{
+			var setting = TestHelper.Setting;
+			var client = new PooledExhentaiClient();
+
+			if (setting.TryGetProperty("proxy", out var proxy))
+			{
+				var host = proxy.GetProperty("host").GetString();
+				var port = proxy.GetProperty("port").GetInt32();
+				client.AddProxy(new WebProxy(host, port));
+			}
+			return client;
+		}
+
 		[TestMethod]
 		public async Task GetCost()
 		{
-			var client = new PooledExhentaiClient();
-			client.AddProxy(new WebProxy("localhost", 2081));
-
+			var client = GetClient();
 			var exhentai = new Exhentai(client);
-			exhentai.SetUser("2723232", "67674c89175c751095d4c840532e6363");
+			exhentai.SetUser(
+				TestHelper.Setting.GetProperty("member_id").GetString(),
+				TestHelper.Setting.GetProperty("pass_hash").GetString());
 
 			var cost = await exhentai.GetCost();
 
@@ -30,10 +41,9 @@ namespace Test
 		[TestMethod]
 		public async Task LoginFail()
 		{
-			var client = new PooledExhentaiClient();
-			client.AddProxy(new WebProxy("localhost", 2081));
-
+			var client = GetClient();
 			var exhentai = new Exhentai(client);
+
 			try
 			{
 				// qweasdzxc - qweasdzxc 瞎几把输入一个还蒙对了

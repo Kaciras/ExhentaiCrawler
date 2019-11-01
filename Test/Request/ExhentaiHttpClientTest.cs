@@ -9,14 +9,18 @@ namespace Test.Request
 	[TestClass]
     public class ExhentaiHttpClientTest
     {
-		readonly PooledExhentaiClient client;
+		private readonly PooledExhentaiClient client;
 
 		public ExhentaiHttpClientTest()
 		{
 			client = new PooledExhentaiClient();
 			client.AddLocalIP();
-			client.Cookies.Add(new Cookie("ipb_member_id", "2723232", "/", ".exhentai.org"));
-			client.Cookies.Add(new Cookie("ipb_pass_hash", "67674c89175c751095d4c840532e6363", "/", ".exhentai.org"));
+
+			var id = TestHelper.Setting.GetProperty("member_id").GetString();
+			client.Cookies.Add(new Cookie("ipb_member_id", id, "/", ".exhentai.org"));
+
+			var pass = TestHelper.Setting.GetProperty("pass_hash").GetString();
+			client.Cookies.Add(new Cookie("ipb_pass_hash", pass, "/", ".exhentai.org"));
 		}
 
 		[TestMethod]
@@ -38,7 +42,9 @@ namespace Test.Request
 		[TestMethod]
 		public async Task RequestPage()
 		{
-			var html = await client.NewSiteRequest("https://exhentai.org/g/518681/2aa630b122").ExecuteForContent();
+			var html = await client
+				.NewSiteRequest("https://exhentai.org/g/518681/2aa630b122")
+				.ExecuteForContent();
 			StringAssert.Contains(html, "[田中あじ] アンスイート 寝取られ堕ちた女たち");
 		}
     }

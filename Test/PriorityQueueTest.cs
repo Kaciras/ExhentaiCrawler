@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Test
 {
 	[TestClass]
-	public sealed class PriorityQueueTest
+	public class PriorityQueueTest
 	{
 		private static readonly Comparison<int> comparison = (a, b) => a.CompareTo(b);
 

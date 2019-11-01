@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Test
 {
 	[TestClass]
-	public sealed class DataSizeTest
+	public class DataSizeTest
 	{
 		[DataTestMethod]
 		[DataRow("abcdefg")]

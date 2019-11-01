@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Core.Infrastructure;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

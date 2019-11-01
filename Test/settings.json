@@ -1,0 +1,13 @@
+{
+	"user": "<Enter Exhentai user name>",
+	"password": "<Enter Exhentai password>",
+
+	// 如果不需要代理就删除这个属性
+	"proxy": {
+		"host": "127.0.0.1",
+		"port": 1080
+	},
+
+	"member_id": "<ipb_member_id cookie value>",
+	"pass_hash": "<ipb_pass_hash cookie value>"
+}
