@@ -11,7 +11,7 @@ namespace Core
 	public enum Category
 	{
 		Doujinshi = 2, Manga = 4, ArtistCG = 8, GameCG = 16, Western = 512,
-		NonH = 256, Imageset = 32, Cosplay = 64, Asianporn = 128, Misc = 1,
+		NonH = 256, ImageSet = 32, Cosplay = 64, AsianPorn = 128, Misc = 1,
 	}
 
 	// 跟分类按钮显示的文本一致
@@ -19,17 +19,21 @@ namespace Core
 	{
 		public static string GetString(this Category category) => category switch
 		{
-			Category.NonH => "Non-H",
 			Category.ArtistCG => "Artist CG",
 			Category.GameCG => "Game CG",
-			_ => Enum.GetName(typeof(Category), category),
+			Category.NonH => "Non-H",
+			Category.ImageSet => "Image Set",
+			Category.AsianPorn => "Asian Porn",
+			_ => category.GetName(),
 		};
 
 		public static Category Parse(string text) => text switch
 		{
-			"Non-H" => Category.NonH,
 			"Artist CG" => Category.ArtistCG,
 			"Game CG" => Category.GameCG,
+			"Non-H" => Category.NonH,
+			"Image Set" => Category.ImageSet,
+			"Asian Porn" => Category.AsianPorn,
 			_ => Enum.Parse<Category>(char.ToUpper(text[0]) + text.Substring(1)),
 		};
 	}
