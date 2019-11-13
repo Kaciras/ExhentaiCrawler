@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 using Core;
 
+// TODO: 怎么做交互？
 namespace Cli
 {
-	[Verb("inspect", HelpText = "搜索浏览器的中用于登陆E绅士网站的Cookie")]
-	public sealed class InspectCookieMode : RunMode
+	[Verb("config", HelpText = "配置模式，通过交互的会话来修改配置文件")]
+	public sealed class ConfigMode : RunMode
 	{
-		[Option('s', "save", HelpText = "将Cookie记录到配置文件")]
-		public bool Save { get; set; }
-
 		public async Task Start()
 		{
 			//var cookies = new AuthCookies("2723232", "67674c89175c751095d4c840532e6363");
