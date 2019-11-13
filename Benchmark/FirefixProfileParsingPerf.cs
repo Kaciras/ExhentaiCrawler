@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Benchmark.Properties;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Mathematics;
 using Cli.Ini;
 
-// Span还是挺快的，比旧版按行检查字符串快56%，内存占用也小些
+// Span还是挺快的，比旧版按行检查字符串快56%，内存占用为5分之一。
 namespace Benchmark
 {
 	[MemoryDiagnoser]

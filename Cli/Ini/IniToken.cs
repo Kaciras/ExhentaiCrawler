@@ -1,6 +1,6 @@
 ﻿namespace Cli.Ini
 {
-	public enum IniToken
+	public enum IniToken : byte
 	{
 		// 用作特殊标记，比如在没有读取前的状态
 		None,
