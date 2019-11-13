@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using IniSection = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Cli.Ini
 {
@@ -105,11 +106,11 @@ namespace Cli.Ini
 			return tokenizer.Consumed;
 		}
 
-		// 准备好下一轮读取所用的缓冲，该方法将未使用的数据移到缓冲区的前面，并视情况调整缓冲区的大小。
+		// 准备好下一轮读取所用的缓冲，将未使用的数据移到缓冲区的前面，并视情况调整缓冲区的大小。
 		//
 		// 【扩容】
-		// 因为只能在Token处中断，所以如果出现超长的Token值超过缓冲容量，就必须扩容。
-		// 我感觉INI文件不太可能出现超长的值，但这些边界情况总得考虑。
+		// 因为只能在两个Token之间中断，所以如果出现超长的Token超过缓冲容量，就必须扩容。
+		// 虽然我觉得INI文件不太可能出现超长的值，但这些边界情况总得考虑。
 		// 
 		// 【数据移动】
 		// 官方JsonReader是定死了UTF8编码，然后对byte进行操作，但是我这用了char。
@@ -122,8 +123,8 @@ namespace Cli.Ini
 			{
 				var old = buffer;
 
-				// 不能用 Math.Min 因为会溢出
-				var newSize = buffer.Length < (int.MaxValue / 2) ? buffer.Length * 2 : int.MaxValue;
+				// 用 Math.Min() 会溢出
+				var newSize = old.Length < (int.MaxValue / 2) ? old.Length * 2 : int.MaxValue;
 				buffer = ArrayPool<char>.Shared.Rent(newSize);
 
 				Array.Copy(old, consumed, buffer, 0, bytesInBuffer);

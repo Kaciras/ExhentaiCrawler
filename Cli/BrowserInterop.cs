@@ -10,6 +10,9 @@ using SpecialFolder = System.Environment.SpecialFolder;
 
 namespace Cli
 {
+	/// <summary>
+	/// 跟浏览器交互的类，提供了查找配置文件、读取Cookie的功能。
+	/// </summary>
 	public static class BrowserInterop
 	{
 		static AuthCookies GetAuthCookies(IDictionary<string, string> dict)
@@ -64,9 +67,10 @@ namespace Cli
 				var cookies = await CreatDict(reader.Read("e-hentai.org"));
 				return GetAuthCookies(cookies);
 			}
-			catch (SqliteException)
+			catch (SqliteException e)
+			when (e.SqliteErrorCode == 14)  // 文件不存在 = 14
 			{
-				return null; // 文件不存在 ERROR CODE = 14
+				return null;
 			}
 		}
 
@@ -79,7 +83,8 @@ namespace Cli
 				var cookies = await CreatDict(reader.Read("e-hentai.org"));
 				return GetAuthCookies(cookies);
 			}
-			catch (SqliteException)
+			catch (SqliteException e)
+			when (e.SqliteErrorCode == 14)
 			{
 				return null;
 			}

@@ -12,8 +12,8 @@ namespace Cli
 	/// </summary>
 	public class FirefoxCookieReader : CookieReader
 	{
-		readonly DbConnection db;
-		readonly DbCommand command;
+		private readonly DbConnection db;
+		private readonly DbCommand command;
 
 		public FirefoxCookieReader(string profile)
 		{

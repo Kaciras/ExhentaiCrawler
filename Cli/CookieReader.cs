@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Cli
 {
 	/// <summary>
-	/// 读取浏览器Cookie存储的类
+	/// 读取浏览器Cookie存储的接口
 	/// </summary>
 	public interface CookieReader : IAsyncDisposable
 	{

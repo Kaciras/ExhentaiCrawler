@@ -10,18 +10,19 @@ using Microsoft.Data.Sqlite;
 namespace Cli
 {
 	/// <summary>
-	/// 读取Chrome浏览器当前用户的Cookies文件的类。
+	/// 读取 Chrome 浏览器当前用户的Cookies文件的类。
+	/// 
+	/// Chrome的Cookie存储在单个Sqlite数据库文件里，每个用户都有自己的存储，位置在：
+	/// [用户目录]\AppData\Local\Google\Chrome\User Data\Default\Cookies
+	/// 
+	/// Chrome的Cookie值是用 Data Protection API(DPAPI) 加密存储的，以用户的属性作为密钥，
+	/// 所以只能读取当前用户的Cookie。
 	/// </summary>
 	public class ChromeCookieReader : CookieReader
 	{
-		readonly DbConnection db;
-		readonly DbCommand command;
+		private readonly DbConnection db;
+		private readonly DbCommand command;
 
-		// Chrome的Cookie存储在单个Sqlite数据库文件里，每个用户都有自己的存储，位置在：
-		// [用户目录]\AppData\Local\Google\Chrome\User Data\Default\Cookies
-		// 
-		// Chrome的Cookie值是用 Data Protection API(DPAPI) 加密存储的，以用户的属性作为密钥，
-		// 所以只能读取当前用户的Cookie。
 		public ChromeCookieReader()
 		{
 			var appDataLocal = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
