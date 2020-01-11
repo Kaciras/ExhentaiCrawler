@@ -53,5 +53,12 @@ namespace Test
 		{
 			Assert.AreEqual(text, new DataSize(bytes).ToString());
 		}
+
+		// 硬盘盒上是以SI制的，而显示在电脑里则是Binary制，标注500G的硬盘实际只有466G哦。
+		[TestMethod]
+		public void SIPrefix()
+		{
+			Assert.AreEqual("465.66 GB", DataSize.Parse("500 GB", 1000).ToString(1024));
+		}
 	}
 }

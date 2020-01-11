@@ -10,7 +10,7 @@ namespace Core.Infrastructure
 
 	public readonly struct DataSize
 	{
-		private static readonly char[] SIZE_UNITS = { 'K', 'M', 'G', 'T', 'P', 'E' };
+		private static readonly char[] SIZE_UNITS = { 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' };
 
 		private static readonly Regex SIZE_TEXT = new Regex(@"([+-]?[0-9.]+)\s*([A-Z]?)i?B?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -44,12 +44,14 @@ namespace Core.Infrastructure
 		}
 
 		/// <summary>
-		/// 转换如 xx.xx MB 这样的字符串为大小。
+		/// 解析如 12.34 MB 这样的字符串。
+		/// 可以指定单位之间的倍率，通常是1024，但在硬盘大小标注时常用1000。
 		/// </summary>
-		/// <param name="string">表示大小的字符串</param>
-		/// <returns>大小数值</returns>
+		/// <param name="string">字符串</param>
+		/// <param name="fraction">单位倍率</param>
+		/// <returns>数据大小</returns>
 		/// <exception cref="FormatException">如果无法解析输入的字符串</exception>
-		public static DataSize Parse(string @string)
+		public static DataSize Parse(string @string, int fraction = 1024)
 		{
 			var match = SIZE_TEXT.Match(@string);
 			if (!match.Success)
@@ -69,28 +71,34 @@ namespace Core.Infrastructure
 				}
 			}
 
-			var bytes = double.Parse(match.Groups[1].Value) * Math.Pow(1024, level);
+			var bytes = double.Parse(match.Groups[1].Value) * Math.Pow(fraction, level);
 			return new DataSize((long)Math.Round(bytes));
 		}
 
-		public static double ConvertUnit(double value, SizeUnit origin, SizeUnit target)
-		{
-			return new DataSize(value, origin).OfUnit(target);
-		}
+		public override string ToString() => ToString(1024);
 
-		public override string ToString()
+		/// <summary>
+		/// 以人可读的形式显示该数据的大小，比如 1 KB, 96.23 GB。
+		/// 可以指定单位之间的倍率，通常是1024，但在硬盘大小标注时常用1000。
+		/// </summary>
+		/// <param name="fraction">单位倍率</param>
+		/// <returns>字符串表示</returns>
+		public string ToString(int fraction)
 		{
-			var bytesAbs = Math.Abs(Bytes);
-			if (bytesAbs < 1024)
+			var abs = Math.Abs(Bytes);
+			if (abs < fraction)
 			{
-				return Bytes.ToString() + " B";
+				return $"{Bytes} B";
 			}
-			var i = (int)Math.Log(bytesAbs, 1024);
-			var unit = SIZE_UNITS[i-1].ToString();
 
-			var number = Math.Round(ToDimension(i), 2);
-			return $"{number} {unit}B";
+			var i = (int)Math.Log(abs, fraction);
+			var unit = SIZE_UNITS[i - 1];
+			var v = Math.Round(ToDimension(i), 2);
+
+			return $"{v} {unit}B";
 		}
+
+		// =============================== 运算重载 ===============================
 
 		public static DataSize operator +(DataSize left, DataSize right)
 		{
