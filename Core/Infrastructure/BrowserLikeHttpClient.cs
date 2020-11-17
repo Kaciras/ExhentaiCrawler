@@ -37,7 +37,7 @@ namespace Core.Infrastructure
 
 			while (rateLimiter.TryAcquireFailed(1, out var sleep))
 			{
-				await Task.Delay(sleep);
+				await Task.Delay(sleep, cancellationToken);
 				Console.WriteLine($"请求过快，休息{sleep.TotalMilliseconds}毫秒");
 			}
 
