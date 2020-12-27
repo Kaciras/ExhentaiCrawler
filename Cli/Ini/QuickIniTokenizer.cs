@@ -2,7 +2,9 @@
 
 namespace Cli.Ini
 {
-	// 仿照 Utf8JsonReader 写一个INI文件解析器，学习一下Span的用法。
+	/// <summary>
+	/// 仿照 Utf8JsonReader 写一个INI文件解析器，学习一下Span的用法。
+	/// </summary>
 	public ref struct QuickIniTokenizer
 	{
 		public IniToken TokenType { get; private set; }
