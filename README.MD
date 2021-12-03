@@ -24,11 +24,6 @@ Cli inspect --save
 Cli download https://exhentai.org/g/<GID>/<Token>
 ```
 
-# 关站风波
-
-Exhantai.org 在 2019-7-26 日因荷兰法律而关站，该项目因此暂停开发。
-但是没过几天就接受了不明人士的赞助，又好了，但是这个项目到底有无必要继续开发还是个问题。
-
 # TODO
 
 增加 Hentai@Home 支持？我看了下 H@H 客户端的源码，写的很烂啊，也没搜到其它开源实现。
